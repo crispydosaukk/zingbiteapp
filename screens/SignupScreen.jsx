@@ -27,7 +27,7 @@ import {
 } from "react-native-safe-area-context";
 
 import { registerUser } from "../services/authService";
-import { fetchRestaurants } from "../services/restaurantService";
+// import { fetchRestaurants } from "../services/restaurantService";
 import { fetchAppSettings } from "../services/settingsService";
 
 const { width } = Dimensions.get("window");
@@ -43,14 +43,14 @@ export default function SignupScreen({ navigation }) {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [preferredRestaurant, setPreferredRestaurant] = useState("");
+  // const [preferredRestaurant, setPreferredRestaurant] = useState("");
   const [dob, setDob] = useState(null);
   const [showDobPicker, setShowDobPicker] = useState(false);
   const [referralCode, setReferralCode] = useState("");
   const [gender, setGender] = useState("");
 
-  const [restaurants, setRestaurants] = useState([]);
-  const [restaurantsLoading, setRestaurantsLoading] = useState(true);
+  // const [restaurants, setRestaurants] = useState([]);
+  // const [restaurantsLoading, setRestaurantsLoading] = useState(true);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -137,20 +137,20 @@ export default function SignupScreen({ navigation }) {
   };
   // PREMIUM OFFER ANIMATION END
 
-  useEffect(() => {
-    let isMounted = true;
-    (async () => {
-      try {
-        const data = await fetchRestaurants();
-        if (isMounted) setRestaurants(data || []);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        if (isMounted) setRestaurantsLoading(false);
-      }
-    })();
-    return () => { isMounted = false; };
-  }, []);
+  // useEffect(() => {
+  //   let isMounted = true;
+  //   (async () => {
+  //     try {
+  //       const data = await fetchRestaurants();
+  //       if (isMounted) setRestaurants(data || []);
+  //     } catch (err) {
+  //       console.error(err);
+  //     } finally {
+  //       if (isMounted) setRestaurantsLoading(false);
+  //     }
+  //   })();
+  //   return () => { isMounted = false; };
+  // }, []);
 
   const validateForm = () => {
     const emailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
@@ -161,7 +161,7 @@ export default function SignupScreen({ navigation }) {
     if (!password.trim()) return "Password is required.";
     if (password.length < 6) return "Password must be 6+ characters.";
     if (password !== confirmPassword) return "Passwords do not match.";
-    if (!preferredRestaurant) return "Select your preferred restaurant.";
+    // if (!preferredRestaurant) return "Select your preferred restaurant.";
     if (!dob) return "Please select your Date of Birth.";
     if (!termsAccepted) return "Please accept Terms & Conditions.";
     return null;
@@ -200,7 +200,7 @@ export default function SignupScreen({ navigation }) {
         mobile_number: phone.trim(),
         country_code: `+${callingCode}`,
         password,
-        preferred_restaurant: preferredRestaurant,
+        // preferred_restaurant: preferredRestaurant,
         date_of_birth: dob ? dob.toISOString().split("T")[0] : null,
         referral_code: referralCode.trim() || null,
         gender: gender || null,
@@ -299,8 +299,8 @@ export default function SignupScreen({ navigation }) {
 
             <InputItem icon="lock-closed-outline" placeholder="Confirm Password" value={confirmPassword} onChangeText={setConfirmPassword} secureTextEntry />
 
-            {/* RESTAURANT PICKER */}
-            <View style={styles.pickerWrapper}>
+            {/* RESTAURANT PICKER - commented out */}
+            {/* <View style={styles.pickerWrapper}>
               <Ionicons name="restaurant-outline" size={20} color="#16a34a" style={styles.pickerIcon} />
               <View style={{ flex: 1 }}>
                 <Picker
@@ -315,7 +315,7 @@ export default function SignupScreen({ navigation }) {
                   ))}
                 </Picker>
               </View>
-            </View>
+            </View> */}
 
             {/* DOB */}
             <TouchableOpacity style={styles.dobBtn} onPress={() => setShowDobPicker(true)}>

@@ -13,6 +13,7 @@ import {
   Modal,
   Animated,
   Alert,
+  Linking,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -32,6 +33,8 @@ import { getCart } from "../../services/cartService";
 import { RefreshControl } from "react-native";
 import useRefresh from "../../hooks/useRefresh";
 import { fetchAppSettings } from "../../services/settingsService";
+import { fetchActiveOffers } from "../../services/offerService";
+import { IMAGE_BASE_URL } from "../../config/baseURL";
 
 
 const { width } = Dimensions.get("window");
@@ -47,11 +50,14 @@ export default function Categories({ route, navigation }) {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
+  const [infoModalVisible, setInfoModalVisible] = useState(false);
   const [timings, setTimings] = useState([]);
   const [timingsLoading, setTimingsLoading] = useState(false);
   const [todayTiming, setTodayTiming] = useState(null);
   const [menuVisible, setMenuVisible] = useState(false);
   const [cartItems, setCartItems] = useState({});
+  const [promoOffers, setPromoOffers] = useState([]);
+  const offerScrollX = useRef(new Animated.Value(0)).current;
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const [textIndex, setTextIndex] = useState(0);
@@ -66,9 +72,9 @@ export default function Categories({ route, navigation }) {
   useEffect(() => {
     const loadSettings = async () => {
       const data = await fetchAppSettings();
-      if (data) {
-        setSettings(data);
-      }
+      if (data) setSettings(data);
+      const offersData = await fetchActiveOffers();
+      setPromoOffers(offersData || []);
     };
     loadSettings();
   }, []);
@@ -187,6 +193,10 @@ export default function Categories({ route, navigation }) {
     const sData = await fetchAppSettings();
     if (sData) setSettings(sData);
 
+    // Reload offers
+    const offersData = await fetchActiveOffers();
+    setPromoOffers(offersData || []);
+
     // Reload restaurant
     const d = await fetchRestaurantDetails(userId);
     setRestaurant(d);
@@ -285,6 +295,17 @@ export default function Categories({ route, navigation }) {
     );
   };
 
+  const formatFoodType = (types) => {
+    if (!types) return '';
+    const mapping = {
+      '0': 'Veg',
+      '1': 'Non Veg',
+      '2': 'Vegan',
+      '3': 'Egg',
+    };
+    return String(types).split(',').map(t => mapping[t.trim()] || t).join(', ');
+  };
+
   return (
     // 🔧 only left/right safe insets so we don't double-pad top/bottom
     <SafeAreaView style={styles.safeArea} edges={["left", "right"]}>
@@ -348,7 +369,12 @@ export default function Categories({ route, navigation }) {
                 </View>
 
                 <View style={styles.executiveInfo}>
-                  <Text style={styles.boutiqueName}>{restaurant.restaurant_name}</Text>
+                  <View style={styles.nameHeaderRow}>
+                    <Text style={styles.boutiqueName}>{restaurant.restaurant_name}</Text>
+                    <TouchableOpacity onPress={() => setInfoModalVisible(true)} style={styles.infoIconBtn}>
+                      <Ionicons name="information-circle-outline" size={24} color="#FF2B5C" />
+                    </TouchableOpacity>
+                  </View>
 
                   <View style={styles.infoRow}>
                     <View style={styles.locIconBtn}>
@@ -442,6 +468,58 @@ export default function Categories({ route, navigation }) {
         user={user}
         navigation={navigation}
       />
+
+      {/* PROMOTIONAL OFFERS BANNER */}
+      {promoOffers.length > 0 && (
+        <View style={offerStyles.offerSection}>
+          <View style={offerStyles.offerHeaderRow}>
+            <View style={offerStyles.offerTitleBadge}>
+              <Ionicons name="pricetag" size={14} color="#FF2B5C" />
+              <Text style={offerStyles.offerSectionTitle}>Special Offers</Text>
+            </View>
+            <Text style={offerStyles.offerCount}>{promoOffers.length} active</Text>
+          </View>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={offerStyles.offerScrollContent}
+          >
+            {promoOffers.map((offer, idx) => (
+              <View key={offer.id} style={offerStyles.offerCard}>
+                <LinearGradient
+                  colors={idx % 3 === 0 ? ['#FF2B5C', '#FF6B8B'] : idx % 3 === 1 ? ['#7C3AED', '#A855F7'] : ['#0F766E', '#14B8A6']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={offerStyles.offerCardGrad}
+                >
+                  {offer.banner_image ? (
+                    <Image
+                      source={{ uri: `${IMAGE_BASE_URL}${offer.banner_image}` }}
+                      style={offerStyles.offerBannerImg}
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <View style={offerStyles.offerIconPlaceholder}>
+                      <Ionicons name="gift" size={36} color="rgba(255,255,255,0.9)" />
+                    </View>
+                  )}
+                  <View style={offerStyles.offerCardContent}>
+                    <View style={offerStyles.offerBadgePill}>
+                      <Ionicons name="sparkles" size={10} color="#FF2B5C" />
+                      <Text style={offerStyles.offerBadgeText}>OFFER</Text>
+                    </View>
+                    <Text style={offerStyles.offerCardTitle} numberOfLines={2}>{offer.title}</Text>
+                    {offer.description ? (
+                      <Text style={offerStyles.offerCardDesc} numberOfLines={2}>{offer.description}</Text>
+                    ) : null}
+                  </View>
+                </LinearGradient>
+              </View>
+            ))}
+          </ScrollView>
+        </View>
+      )}
+
       <BottomBar navigation={navigation} />
 
       {/* TIMINGS MODAL */}
@@ -473,6 +551,149 @@ export default function Categories({ route, navigation }) {
               onPress={() => setModalVisible(false)}
               style={styles.closeBtn}
             >
+              <Text style={styles.closeText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* RESTAURANT INFO MODAL */}
+      <Modal visible={infoModalVisible} transparent animationType="fade">
+        <View style={styles.modalWrapper}>
+          <View style={styles.modalBox}>
+            <Text style={styles.modalTitle}>Restaurant Information</Text>
+
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.infoModalContent}>
+              {/* Basic Info */}
+              <View style={styles.infoSection}>
+                <View style={styles.contactRow}>
+                  <View style={styles.contactIconBg}>
+                    <Ionicons name="location" size={20} color="#FF2B5C" />
+                  </View>
+                  <Text style={styles.contactText}>{restaurant?.restaurant_address || 'Address not available'}</Text>
+                </View>
+                {restaurant?.restaurant_phonenumber && (
+                  <View style={styles.contactRow}>
+                    <View style={styles.contactIconBg}>
+                      <Ionicons name="call" size={18} color="#FF2B5C" />
+                    </View>
+                    <TouchableOpacity style={{ flex: 1 }} onPress={() => Linking.openURL(`tel:${restaurant.restaurant_phonenumber}`)}>
+                      <Text style={[styles.contactText, styles.linkText]}>{restaurant.restaurant_phonenumber}</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+                {restaurant?.restaurant_email && (
+                  <View style={styles.contactRow}>
+                    <View style={styles.contactIconBg}>
+                      <Ionicons name="mail" size={18} color="#FF2B5C" />
+                    </View>
+                    <TouchableOpacity style={{ flex: 1 }} onPress={() => Linking.openURL(`mailto:${restaurant.restaurant_email}`)}>
+                      <Text style={[styles.contactText, styles.linkText]}>{restaurant.restaurant_email}</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+                {restaurant?.website_url && (
+                  <View style={styles.contactRow}>
+                    <View style={styles.contactIconBg}>
+                      <Ionicons name="globe" size={18} color="#FF2B5C" />
+                    </View>
+                    <TouchableOpacity style={{ flex: 1 }} onPress={() => Linking.openURL(restaurant.website_url)}>
+                      <Text style={[styles.contactText, styles.linkText]}>{restaurant.website_url}</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+                {restaurant?.google_review_link && (
+                  <View style={styles.contactRow}>
+                    <View style={styles.contactIconBg}>
+                      <Ionicons name="star" size={18} color="#FF2B5C" />
+                    </View>
+                    <TouchableOpacity style={{ flex: 1 }} onPress={() => Linking.openURL(restaurant.google_review_link)}>
+                      <Text style={[styles.contactText, styles.linkText]}>View Reviews</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </View>
+
+              <View style={styles.divider} />
+
+              <View style={styles.infoSection}>
+                <Text style={styles.sectionTitle}>Details</Text>
+                
+                {restaurant?.food_type && (
+                  <View style={styles.detailRow}>
+                    <Text style={styles.detailLabel}>Food Type</Text>
+                    <Text style={styles.detailValue}>{formatFoodType(restaurant.food_type)}</Text>
+                  </View>
+                )}
+                
+                {restaurant?.cuisine_type && (
+                  <View style={styles.detailRow}>
+                    <Text style={styles.detailLabel}>Cuisine</Text>
+                    <Text style={styles.detailValue}>{String(restaurant.cuisine_type)}</Text>
+                  </View>
+                )}
+
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>Halal</Text>
+                  <Text style={styles.detailValue}>{restaurant?.is_halal == 1 ? 'Yes' : 'No'}</Text>
+                </View>
+
+                {(restaurant?.instore == 1) && (
+                  <View style={styles.detailRow}>
+                    <Text style={styles.detailLabel}>In-store Dining</Text>
+                    <Text style={styles.detailValue}>Available</Text>
+                  </View>
+                )}
+
+                {(restaurant?.kerbside == 1) && (
+                  <View style={styles.detailRow}>
+                    <Text style={styles.detailLabel}>Kerbside Pickup</Text>
+                    <Text style={styles.detailValue}>Available</Text>
+                  </View>
+                )}
+
+                {restaurant?.parking_info && (
+                  <View style={styles.detailRow}>
+                    <Text style={styles.detailLabel}>Parking</Text>
+                    <Text style={styles.detailValue}>{restaurant.parking_info}</Text>
+                  </View>
+                )}
+              </View>
+
+              {/* Social Channels */}
+              {(restaurant?.restaurant_facebook || restaurant?.restaurant_twitter || restaurant?.restaurant_instagram || restaurant?.restaurant_linkedin) && (
+                <>
+                  <View style={styles.divider} />
+                  <View style={styles.infoSection}>
+                    <Text style={styles.sectionTitle}>Follow Us</Text>
+                    <View style={styles.socialsContainer}>
+                      {restaurant?.restaurant_facebook && (
+                        <TouchableOpacity style={styles.socialIcon} onPress={() => Linking.openURL(restaurant.restaurant_facebook)}>
+                          <Ionicons name="logo-facebook" size={24} color="#1877F2" />
+                        </TouchableOpacity>
+                      )}
+                      {restaurant?.restaurant_instagram && (
+                        <TouchableOpacity style={styles.socialIcon} onPress={() => Linking.openURL(restaurant.restaurant_instagram)}>
+                          <Ionicons name="logo-instagram" size={24} color="#E4405F" />
+                        </TouchableOpacity>
+                      )}
+                      {restaurant?.restaurant_twitter && (
+                        <TouchableOpacity style={styles.socialIcon} onPress={() => Linking.openURL(restaurant.restaurant_twitter)}>
+                          <Ionicons name="logo-twitter" size={24} color="#1DA1F2" />
+                        </TouchableOpacity>
+                      )}
+                      {restaurant?.restaurant_linkedin && (
+                        <TouchableOpacity style={styles.socialIcon} onPress={() => Linking.openURL(restaurant.restaurant_linkedin)}>
+                          <Ionicons name="logo-linkedin" size={24} color="#0A66C2" />
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                  </View>
+                </>
+              )}
+            </ScrollView>
+
+            <TouchableOpacity onPress={() => setInfoModalVisible(false)} style={styles.closeBtn}>
               <Text style={styles.closeText}>Close</Text>
             </TouchableOpacity>
           </View>
@@ -904,5 +1125,294 @@ const cardStyles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#FFF',
     elevation: 4,
+  },
+  nameHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  infoIconBtn: {
+    marginLeft: 6,
+    padding: 2,
+  },
+  infoModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  infoModalContainer: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    maxHeight: '85%',
+    paddingTop: 24,
+    paddingBottom: 40,
+    paddingHorizontal: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -5 },
+    shadowOpacity: 0.1,
+    shadowRadius: 15,
+    elevation: 20,
+  },
+  infoModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  infoModalTitle: {
+    fontSize: 22 * scale,
+    fontFamily: 'PoppinsBold',
+    color: '#1C1C1C',
+  },
+  infoModalCloseBox: {
+    backgroundColor: '#F5F5F5',
+    padding: 6,
+    borderRadius: 20,
+  },
+  infoModalContent: {
+    paddingBottom: 20,
+  },
+  infoSection: {
+    marginBottom: 10,
+  },
+  sectionTitle: {
+    fontSize: 16 * scale,
+    fontFamily: 'PoppinsSemiBold',
+    color: '#333',
+    marginBottom: 12,
+  },
+  contactRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+    paddingRight: 10,
+  },
+  contactIconBg: {
+    width: 38 * scale,
+    height: 38 * scale,
+    backgroundColor: '#FFF0F3',
+    borderRadius: 19 * scale,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 14,
+  },
+  contactText: {
+    fontSize: 14 * scale,
+    fontFamily: 'PoppinsMedium',
+    color: '#444',
+    flex: 1,
+  },
+  detailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderRadius: 12,
+    marginBottom: 8,
+  },
+  detailLabel: {
+    fontSize: 14 * scale,
+    fontFamily: 'PoppinsMedium',
+    color: '#64748B',
+    flex: 1,
+  },
+  detailValue: {
+    fontSize: 14 * scale,
+    fontFamily: 'PoppinsSemiBold',
+    color: '#0F172A',
+    flex: 1,
+    textAlign: 'right',
+  },
+  infoRowItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  infoRowText: {
+    fontSize: 14 * scale,
+    fontFamily: 'PoppinsMedium',
+    color: '#555',
+    marginLeft: 12,
+    flex: 1,
+  },
+  linkText: {
+    color: '#0066CC',
+    textDecorationLine: 'underline',
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#EEE',
+    marginVertical: 16,
+  },
+  tagsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  tagPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F3F4F6',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    marginRight: 8,
+    marginBottom: 8,
+  },
+  tagText: {
+    fontSize: 12 * scale,
+    fontFamily: 'PoppinsMedium',
+    color: '#4B5563',
+  },
+  partnersContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  partnerBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1C1C1C',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 12,
+    marginRight: 10,
+    marginBottom: 10,
+  },
+  partnerBtnText: {
+    color: '#FFF',
+    fontFamily: 'PoppinsSemiBold',
+    fontSize: 13 * scale,
+    marginLeft: 8,
+  },
+  socialsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  socialIcon: {
+    backgroundColor: '#F9FAFB',
+    padding: 10,
+    borderRadius: 20,
+    marginRight: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  infoLabel: {
+    fontSize: 14 * scale,
+    fontFamily: 'PoppinsSemiBold',
+    color: '#1C1C1C',
+    width: 120 * scale,
+  },
+});
+
+const offerStyles = StyleSheet.create({
+  offerSection: {
+    backgroundColor: '#FFFFFF',
+    paddingTop: 14,
+    paddingBottom: 10,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    elevation: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+  },
+  offerHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 18,
+    marginBottom: 12,
+  },
+  offerTitleBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF0F3',
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 20,
+    gap: 6,
+  },
+  offerSectionTitle: {
+    fontSize: 13 * scale,
+    fontFamily: 'PoppinsBold',
+    color: '#FF2B5C',
+    marginLeft: 5,
+  },
+  offerCount: {
+    fontSize: 12 * scale,
+    fontFamily: 'PoppinsMedium',
+    color: '#94A3B8',
+  },
+  offerScrollContent: {
+    paddingHorizontal: 16,
+    paddingBottom: 4,
+    gap: 12,
+  },
+  offerCard: {
+    width: 240 * scale,
+    height: 130 * scale,
+    borderRadius: 20,
+    overflow: 'hidden',
+    marginRight: 12,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 10,
+  },
+  offerCardGrad: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'stretch',
+  },
+  offerBannerImg: {
+    width: 100 * scale,
+    height: '100%',
+    opacity: 0.9,
+  },
+  offerIconPlaceholder: {
+    width: 80 * scale,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.1)',
+  },
+  offerCardContent: {
+    flex: 1,
+    padding: 14,
+    justifyContent: 'center',
+  },
+  offerBadgePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    alignSelf: 'flex-start',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 10,
+    marginBottom: 8,
+    gap: 4,
+  },
+  offerBadgeText: {
+    fontSize: 9 * scale,
+    fontFamily: 'PoppinsBold',
+    color: '#FF2B5C',
+    marginLeft: 3,
+    letterSpacing: 0.5,
+  },
+  offerCardTitle: {
+    fontSize: 14 * scale,
+    fontFamily: 'PoppinsBold',
+    color: '#FFFFFF',
+    lineHeight: 20,
+    marginBottom: 4,
+  },
+  offerCardDesc: {
+    fontSize: 11 * scale,
+    fontFamily: 'PoppinsMedium',
+    color: 'rgba(255,255,255,0.8)',
+    lineHeight: 16,
   },
 });

@@ -1,4 +1,4 @@
-export const BASE_URL = "http://192.168.1.13:4000";
+export const BASE_URL = "http://192.168.29.66:4000";
 
 export const API_BASE_URL = `${BASE_URL}/mobile`;
 
