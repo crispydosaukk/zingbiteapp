@@ -116,6 +116,8 @@ export default function HomeScreen({ navigation }) {
         }),
       ])
     ).start();
+
+
   }, []);
 
   const swing = swingAnim.interpolate({
@@ -182,14 +184,14 @@ export default function HomeScreen({ navigation }) {
     const parts = text.split(regex);
 
     return (
-      <Text style={[styles.offerText, { color: "#FFFFFF" }]}>
+      <Text style={[styles.offerText, { color: "#1E293B" }]}>
         {parts[0].toUpperCase()}
         {parts[1] && (
           <Text
             style={[
               styles.offerAmount,
               {
-                color: "#FBFF00",
+                color: "#C62828",
                 fontWeight: "900",
                 textShadowColor: 'rgba(0, 0, 0, 0.4)',
                 textShadowOffset: { width: 1, height: 1 },
@@ -208,13 +210,13 @@ export default function HomeScreen({ navigation }) {
 
   return (
     <>
-      <StatusBar backgroundColor="#F7CB45" barStyle="dark-content" />
+      <StatusBar backgroundColor="#B3E5FC" barStyle="dark-content" />
       <SafeAreaView
-        style={{ flex: 1, backgroundColor: "#F7CB45" }}
+        style={{ flex: 1, backgroundColor: "#B3E5FC" }}
         edges={["top"]}
       >
         <LinearGradient
-          colors={["#F7CB45", "#F7CB45"]}
+          colors={["#B3E5FC", "#F7CB45"]}
           style={styles.container}
         >
           <View style={[styles.mainContent, { paddingVertical: verticalPadding }]}>
@@ -233,56 +235,53 @@ export default function HomeScreen({ navigation }) {
               />
 
               <View style={styles.mainTitleWrap}>
-                <Text style={styles.mainTitleBlack}>UK’S FINEST PURE</Text>
-                <Text style={styles.mainTitleOrange}>
-                  VEGETARIAN FOOD CHAIN
-                </Text>
-              </View>
-
-              <View
-                style={[
-                  styles.imageWrapper,
-                  {
-                    width: imageCircleSize,
-                    height: imageCircleSize,
-                    borderRadius: imageCircleSize / 2,
-                  },
-                ]}
-              >
-                <Image
-                  source={require("../assets/yourFoodImage.png")}
-                  style={styles.foodImage}
-                  resizeMode="cover"
-                />
-              </View>
-
-              <Text style={styles.subtitle}>Fresh • Authentic • Pure Veg</Text>
-            </View>
-
-            {settings && messages.length > 0 && (
-              <View style={{ width: "100%", alignItems: "center", marginTop: 8 }}>
-                <Animated.View
+                <Text style={styles.mainTitleBlack}>Order UK’S Finest Quality</Text>
+                <Text 
                   style={[
-                    {
-                      opacity: fadeAnim,
-                      transform: [{ translateY: slideAnim }],
-                    },
+                    styles.mainTitleOrange, 
+                    { 
+                      color: '#C62828',
+                      fontSize: 28,
+                      marginVertical: 2
+                    }
                   ]}
                 >
-                  <LinearGradient
-                    colors={offers[msgIndex % offers.length].colors}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                    style={styles.offerPill}
-                  >
-                    <Ionicons name="gift-outline" size={20} color="#fcf9f9ff" />
-                    <Text style={styles.offerText}>
-                      {highlightOffer(messages[msgIndex])}
-                    </Text>
-                  </LinearGradient>
-                </Animated.View>
+                  TAKEAWAY FOOD
+                </Text>
+                <Text style={[styles.mainTitleBlack, { fontSize: 18 }]}>From Local Restaurants</Text>
               </View>
-            )}
+
+              {settings && messages.length > 0 && (
+                <View style={{ width: "100%", alignItems: "center", height: imageCircleSize, justifyContent: 'center' }}>
+                  <View style={[styles.premiumOfferCard, { width: width * 0.88 }]}>
+                    <Animated.View
+                      style={[
+                        {
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          opacity: fadeAnim,
+                          transform: [{ translateY: slideAnim }],
+                        },
+                      ]}
+                    >
+                      <View style={styles.offerIconCircle}>
+                        <Ionicons name="gift" size={30} color="#0288D1" />
+                      </View>
+                      <View style={styles.offerTextContainer}>
+                        <Text style={styles.offerLabel}>ZINGBITE SPECIAL</Text>
+                        <Text style={[styles.offerText, { color: '#1E293B', marginLeft: 0 }]}>
+                          {highlightOffer(messages[msgIndex])}
+                        </Text>
+                      </View>
+                    </Animated.View>
+                  </View>
+                </View>
+              )}
+
+              <Text style={styles.subtitle}>Fresh • Authentic • Veg & Non-Veg</Text>
+            </View>
+
+
 
             {/* 🔻 Buttons brought closer under subtitle */}
             <View style={styles.bottomSection}>
@@ -295,7 +294,7 @@ export default function HomeScreen({ navigation }) {
                   <Ionicons
                     name="restaurant-outline"
                     size={20}
-                    color="#1c1c1c"
+                    color="#000000"
                     style={styles.btnIcon}
                   />
                   <Text style={styles.primaryBtnText}>Explore</Text>
@@ -312,7 +311,7 @@ export default function HomeScreen({ navigation }) {
                   <Ionicons
                     name={isLoggedIn ? "log-out-outline" : "log-in-outline"}
                     size={20}
-                    color="#1c1c1c"
+                    color="#000000"
                     style={styles.btnIcon}
                   />
                   <Text style={styles.secondaryBtnText}>
@@ -396,7 +395,7 @@ const styles = StyleSheet.create({
   mainTitleBlack: {
     fontSize: 22,
     fontFamily: "PoppinsSemiBold",
-    color: "#1c1c1c",
+    color: "#1E293B",
   },
   mainTitleOrange: {
     fontSize: 24,
@@ -418,8 +417,42 @@ const styles = StyleSheet.create({
   subtitle: {
     marginTop: 6,
     fontSize: 14,
-    color: "#1c1c1c",
+    color: "#1E293B",
     fontFamily: "PoppinsSemiBold",
+  },
+  premiumOfferCard: {
+    paddingHorizontal: 20,
+    paddingVertical: 18,
+    borderRadius: 30,
+    backgroundColor: '#FFFFFF',
+    elevation: 8,
+    shadowColor: "#0288D1",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.12,
+    shadowRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(2, 136, 209, 0.08)',
+  },
+  offerIconCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: 'rgba(2, 136, 209, 0.06)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 18,
+  },
+  offerTextContainer: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  offerLabel: {
+    fontSize: 10,
+    fontFamily: "PoppinsBold",
+    color: "#0288D1",
+    letterSpacing: 2.5,
+    marginBottom: 4,
+    fontWeight: '900',
   },
   offerPill: {
     paddingHorizontal: 16,
@@ -427,14 +460,13 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     flexDirection: "row",
     alignItems: "center",
-    // 🔧 REMOVED ELEVATION AND SHADOW THAT CAUSED ARTIFACTS
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.1)',
   },
   offerText: {
     fontSize: 13,
     fontFamily: "PoppinsBold",
-    marginLeft: 8,
+    marginLeft: 0,
     fontWeight: 'bold',
   },
   buttonArea: {
@@ -446,7 +478,7 @@ const styles = StyleSheet.create({
     width: width * 0.75,
     borderRadius: 14,
     borderWidth: 2,
-    borderColor: "#1c1c1c",
+    borderColor: "#1E293B",
     paddingVertical: 14,
     justifyContent: "center",
     alignItems: "center",
@@ -455,13 +487,13 @@ const styles = StyleSheet.create({
   primaryBtnText: {
     fontSize: 16,
     fontFamily: "PoppinsSemiBold",
-    color: "#1c1c1c",
+    color: "#1E293B",
   },
   secondaryBtn: {
     flexDirection: "row",
     width: width * 0.75,
     borderWidth: 2,
-    borderColor: "#2D1B0F",
+    borderColor: "rgba(30, 41, 59, 0.6)",
     paddingVertical: 14,
     borderRadius: 14,
     justifyContent: "center",
@@ -471,14 +503,14 @@ const styles = StyleSheet.create({
   secondaryBtnText: {
     fontSize: 16,
     fontFamily: "PoppinsSemiBold",
-    color: "#1c1c1c",
+    color: "#1E293B",
   },
   btnIcon: {
     marginRight: 8,
   },
   bottomLine: {
     fontSize: 14,
-    color: "#1c1c1c",
+    color: "#1E293B",
     marginTop: 2,
     fontFamily: "PoppinsSemiBold",
   },

@@ -29,12 +29,12 @@ import {
   fetchRestaurantDetails,
   fetchRestaurantTimings,
 } from "../../services/restaurantService";
-import { getCart } from "../../services/cartService";
+import { getCart, addToCart } from "../../services/cartService";
 import { RefreshControl } from "react-native";
 import useRefresh from "../../hooks/useRefresh";
 import { fetchAppSettings } from "../../services/settingsService";
 import { fetchActiveOffers } from "../../services/offerService";
-import { IMAGE_BASE_URL } from "../../config/baseURL";
+// import { IMAGE_BASE_URL } from "../../config/baseURL";
 
 
 const { width } = Dimensions.get("window");
@@ -56,7 +56,10 @@ export default function Categories({ route, navigation }) {
   const [todayTiming, setTodayTiming] = useState(null);
   const [menuVisible, setMenuVisible] = useState(false);
   const [cartItems, setCartItems] = useState({});
-  const [promoOffers, setPromoOffers] = useState([]);
+   const [promoOffers, setPromoOffers] = useState([]);
+  const [selectedOffer, setSelectedOffer] = useState(null);
+  const [updating, setUpdating] = useState({});
+  const bannerScrollX = useRef(new Animated.Value(0)).current;
   const offerScrollX = useRef(new Animated.Value(0)).current;
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -225,6 +228,43 @@ export default function Categories({ route, navigation }) {
       }
     }
   });
+
+  const handleAddItem = async (item) => {
+    if (!user) {
+      Alert.alert("Login Required", "Please sign in to add items to your cart.", [
+        { text: "Cancel" },
+        { text: "Login", onPress: () => navigation.navigate("Login") }
+      ]);
+      return;
+    }
+
+    const pid = item.id;
+    setUpdating(prev => ({ ...prev, [pid]: true }));
+
+    try {
+      const currentQty = cartItems[pid] || 0;
+      const res = await addToCart({
+        customer_id: user.id ?? user.customer_id,
+        user_id: item.user_id,
+        product_id: item.id,
+        product_name: item.name,
+        product_price: item.price,
+        product_tax: 0,
+        product_quantity: currentQty + 1,
+        textfield: "",
+      });
+
+      if (res.status === 1) {
+        setCartItems(prev => ({ ...prev, [pid]: currentQty + 1 }));
+      } else {
+        Alert.alert("Error", res.message || "Could not add to cart");
+      }
+    } catch (err) {
+      console.log("Add to cart error:", err);
+    } finally {
+      setUpdating(prev => ({ ...prev, [pid]: false }));
+    }
+  };
 
   const renderCategory = ({ item, index }) => {
     const isEven = index % 2 === 0;
@@ -475,48 +515,157 @@ export default function Categories({ route, navigation }) {
           <View style={offerStyles.offerHeaderRow}>
             <View style={offerStyles.offerTitleBadge}>
               <Ionicons name="pricetag" size={14} color="#FF2B5C" />
-              <Text style={offerStyles.offerSectionTitle}>Special Offers</Text>
+              <Text style={offerStyles.offerSectionTitle}>Available Offers</Text>
             </View>
-            <Text style={offerStyles.offerCount}>{promoOffers.length} active</Text>
+             <Text style={offerStyles.offerCount}>{promoOffers.length} active</Text>
           </View>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={offerStyles.offerScrollContent}
-          >
-            {promoOffers.map((offer, idx) => (
-              <View key={offer.id} style={offerStyles.offerCard}>
-                <LinearGradient
-                  colors={idx % 3 === 0 ? ['#FF2B5C', '#FF6B8B'] : idx % 3 === 1 ? ['#7C3AED', '#A855F7'] : ['#0F766E', '#14B8A6']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={offerStyles.offerCardGrad}
+          <View>
+            <Animated.ScrollView
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              onScroll={Animated.event(
+                [{ nativeEvent: { contentOffset: { x: bannerScrollX } } }],
+                { useNativeDriver: false }
+              )}
+              scrollEventThrottle={16}
+              contentContainerStyle={offerStyles.offerScrollContent}
+            >
+              {promoOffers.map((offer, idx) => (
+                <TouchableOpacity
+                  key={offer.id}
+                  style={offerStyles.offerCard}
+                  activeOpacity={0.9}
+                  onPress={() => setSelectedOffer(selectedOffer?.id === offer.id ? null : offer)}
                 >
-                  {offer.banner_image ? (
-                    <Image
-                      source={{ uri: `${IMAGE_BASE_URL}${offer.banner_image}` }}
-                      style={offerStyles.offerBannerImg}
-                      resizeMode="cover"
+                  <LinearGradient
+                    colors={idx % 3 === 0 ? ['#FF2B5C', '#FF6B8B'] : idx % 3 === 1 ? ['#7C3AED', '#A855F7'] : ['#0F766E', '#14B8A6']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={offerStyles.offerCardGrad}
+                  >
+                    {offer.banner_image ? (
+                      <Image
+                        source={{ uri: offer.banner_image }}
+                        style={offerStyles.offerBannerImg}
+                        resizeMode="cover"
+                      />
+                    ) : (
+                      <View style={offerStyles.offerIconPlaceholder}>
+                        <Ionicons name="gift" size={36} color="rgba(255,255,255,0.9)" />
+                      </View>
+                    )}
+                    <View style={offerStyles.offerCardContent}>
+                      <View style={offerStyles.offerBadgePill}>
+                        <Ionicons name="sparkles" size={10} color="#FF2B5C" />
+                        <Text style={offerStyles.offerBadgeText}>OFFER</Text>
+                      </View>
+                      <Text style={offerStyles.offerCardTitle} numberOfLines={2}>{offer.title}</Text>
+                      {offer.description ? (
+                        <Text style={offerStyles.offerCardDesc} numberOfLines={2}>{offer.description}</Text>
+                      ) : null}
+
+                      {/* CLICK HINT BUTTON */}
+                      <View style={offerStyles.offerClickHint}>
+                        <Text style={offerStyles.offerClickHintText}>See Details</Text>
+                        <Ionicons name="arrow-forward-circle" size={16} color="rgba(255,255,255,0.9)" />
+                      </View>
+                    </View>
+                  </LinearGradient>
+                </TouchableOpacity>
+              ))}
+            </Animated.ScrollView>
+
+            {/* DOT INDICATORS */}
+            {promoOffers.length > 1 && (
+              <View style={offerStyles.dotContainer}>
+                {promoOffers.map((_, i) => {
+                  const opacity = bannerScrollX.interpolate({
+                    inputRange: [(i - 1) * width, i * width, (i + 1) * width],
+                    outputRange: [0.3, 1, 0.3],
+                    extrapolate: 'clamp',
+                  });
+                  const dotWidth = bannerScrollX.interpolate({
+                    inputRange: [(i - 1) * width, i * width, (i + 1) * width],
+                    outputRange: [8, 20, 8],
+                    extrapolate: 'clamp',
+                  });
+                  return (
+                    <Animated.View
+                      key={i}
+                      style={[
+                        offerStyles.dot,
+                        { opacity, width: dotWidth, backgroundColor: '#FF2B5C' }
+                      ]}
                     />
-                  ) : (
-                    <View style={offerStyles.offerIconPlaceholder}>
-                      <Ionicons name="gift" size={36} color="rgba(255,255,255,0.9)" />
-                    </View>
-                  )}
-                  <View style={offerStyles.offerCardContent}>
-                    <View style={offerStyles.offerBadgePill}>
-                      <Ionicons name="sparkles" size={10} color="#FF2B5C" />
-                      <Text style={offerStyles.offerBadgeText}>OFFER</Text>
-                    </View>
-                    <Text style={offerStyles.offerCardTitle} numberOfLines={2}>{offer.title}</Text>
-                    {offer.description ? (
-                      <Text style={offerStyles.offerCardDesc} numberOfLines={2}>{offer.description}</Text>
-                    ) : null}
-                  </View>
-                </LinearGradient>
+                  );
+                })}
               </View>
-            ))}
-          </ScrollView>
+            )}
+          </View>
+
+          {/* SELECTED OFFER ITEMS SECTION (RECOMMENDED STYLE) */}
+          {selectedOffer && (
+            <Animated.View style={offerStyles.selectedOfferSection}>
+              <View style={offerStyles.selectedOfferHeader}>
+                <View>
+                  <Text style={offerStyles.selectedOfferTitle}>Exclusive Offer Items</Text>
+                  <Text style={offerStyles.selectedOfferSub}>Handpicked from {selectedOffer.title}</Text>
+                </View>
+                <TouchableOpacity onPress={() => setSelectedOffer(null)}>
+                  <Ionicons name="close-circle" size={28} color="#FF2B5C" />
+                </TouchableOpacity>
+              </View>
+
+              <ScrollView
+                horizontal={false}
+                showsVerticalScrollIndicator={false}
+                style={offerStyles.itemsList}
+                contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 20 }}
+              >
+                {selectedOffer.targets?.filter(t => t.type === 'product').map((item, idx) => (
+                  <TouchableOpacity
+                    key={idx}
+                    style={offerStyles.itemRowCard}
+                    activeOpacity={0.9}
+                    onPress={() => {
+                        navigation.navigate("Products", { userId, productId: item.id });
+                    }}
+                  >
+                    <Image
+                      source={item.image ? { uri: item.image } : require("../../assets/restaurant.png")}
+                      style={offerStyles.itemRowImage}
+                    />
+                    <View style={offerStyles.itemRowInfo}>
+                      <Text style={offerStyles.itemName} numberOfLines={1}>{item.name}</Text>
+                      <Text style={offerStyles.itemRowDesc} numberOfLines={1}>{item.description}</Text>
+                      <View style={offerStyles.itemPriceRow}>
+                        <Text style={offerStyles.itemPrice}>£{Number(item.price || 0).toFixed(2)}</Text>
+                        
+                        <TouchableOpacity 
+                           style={offerStyles.addCircleBtn} 
+                           onPress={(e) => {
+                             e.stopPropagation();
+                             handleAddItem(item);
+                           }}
+                           disabled={!!updating[item.id]}
+                        >
+                          {updating[item.id] ? (
+                            <ActivityIndicator size="small" color="#FFF" />
+                          ) : (
+                            <>
+                              <Ionicons name="add" size={18} color="#FFF" />
+                              <Text style={offerStyles.addBtnText}>ADD</Text>
+                            </>
+                          )}
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </Animated.View>
+          )}
         </View>
       )}
 
@@ -618,14 +767,14 @@ export default function Categories({ route, navigation }) {
 
               <View style={styles.infoSection}>
                 <Text style={styles.sectionTitle}>Details</Text>
-                
+
                 {restaurant?.food_type && (
                   <View style={styles.detailRow}>
                     <Text style={styles.detailLabel}>Food Type</Text>
                     <Text style={styles.detailValue}>{formatFoodType(restaurant.food_type)}</Text>
                   </View>
                 )}
-                
+
                 {restaurant?.cuisine_type && (
                   <View style={styles.detailRow}>
                     <Text style={styles.detailLabel}>Cuisine</Text>
@@ -1414,5 +1563,171 @@ const offerStyles = StyleSheet.create({
     fontFamily: 'PoppinsMedium',
     color: 'rgba(255,255,255,0.8)',
     lineHeight: 16,
+  },
+  dotContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 12,
+    gap: 6,
+  },
+  dot: {
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#E2E8F0',
+    marginHorizontal: 0,
+  },
+  selectedOfferSection: {
+    paddingTop: 20,
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    marginTop: 15,
+  },
+  selectedOfferHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    marginBottom: 15,
+  },
+  selectedOfferTitle: {
+    fontSize: 18 * scale,
+    fontFamily: 'PoppinsBold',
+    color: '#1E293B',
+    fontWeight: '900',
+  },
+  selectedOfferSub: {
+    fontSize: 12 * scale,
+    fontFamily: 'PoppinsMedium',
+    color: '#64748B',
+    marginTop: -2,
+  },
+  itemsList: {
+    paddingVertical: 10,
+  },
+  itemCard: {
+    width: 140 * scale,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 22,
+    marginRight: 15,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowOffset: { width: 0, height: 4 },
+    position: 'relative',
+  },
+  itemImage: {
+    width: '100%',
+    height: 100 * scale,
+    borderRadius: 15,
+    backgroundColor: '#EEEEEE',
+  },
+  itemInfo: {
+    marginTop: 10,
+    paddingHorizontal: 4,
+  },
+  itemName: {
+    fontSize: 13 * scale,
+    fontFamily: 'PoppinsBold',
+    color: '#1E293B',
+  },
+  itemPriceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 4,
+  },
+  itemPrice: {
+    fontSize: 14 * scale,
+    fontFamily: 'PoppinsExtraBold',
+    color: '#FF2B5C',
+    fontWeight: '900',
+  },
+  catLabel: {
+    fontSize: 11 * scale,
+    fontFamily: 'PoppinsBold',
+    color: '#94A3B8',
+  },
+  itemBadge: {
+    position: 'absolute',
+    top: 15,
+    right: 15,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+  itemBadgeText: {
+    fontSize: 9 * scale,
+    fontFamily: 'PoppinsBold',
+     color: '#64748B',
+  },
+  offerClickHint: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
+    alignSelf: 'flex-start',
+    gap: 6,
+  },
+  offerClickHintText: {
+    fontSize: 10 * scale,
+    fontFamily: 'PoppinsBold',
+    color: '#FFFFFF',
+    fontWeight: '900',
+  },
+  itemRowCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 22,
+    marginBottom: 12,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOpacity: 0.04,
+    shadowOffset: { width: 0, height: 4 },
+  },
+  itemRowImage: {
+    width: 90 * scale,
+    height: 90 * scale,
+    borderRadius: 18,
+    backgroundColor: '#F8F9FA',
+  },
+  itemRowInfo: {
+    flex: 1,
+    marginLeft: 15,
+    justifyContent: 'center',
+  },
+  itemRowDesc: {
+    fontSize: 11 * scale,
+    fontFamily: 'PoppinsMedium',
+    color: '#94A3B8',
+    marginTop: 2,
+    marginBottom: 8,
+  },
+  addCircleBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#16a34a',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 12,
+    gap: 5,
+  },
+  addBtnText: {
+    fontSize: 11 * scale,
+    fontFamily: 'PoppinsBold',
+    color: '#FFF',
+    fontWeight: '900',
   },
 });

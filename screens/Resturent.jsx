@@ -70,11 +70,6 @@ function RestaurantCard({ name, address, photo, onPress, instore, kerbside, dist
             <Ionicons name="chevron-forward" size={18 * scale} color="#CCC" />
           </View>
 
-          <View style={cardStyles.vegBadge}>
-            <Ionicons name="leaf" size={12 * scale} color="#16a34a" />
-            <Text style={cardStyles.vegText}>Pure Veg</Text>
-          </View>
-
           <View style={cardStyles.addressRow}>
             <Ionicons name="location-sharp" size={14 * scale} color="#E23744" style={{ marginTop: 2 }} />
             <Text style={cardStyles.address} numberOfLines={3}>

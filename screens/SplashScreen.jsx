@@ -1,5 +1,4 @@
 
-// SplashScreen.js
 import React, { useEffect, useRef } from "react";
 import {
   View,
@@ -9,57 +8,51 @@ import {
   StatusBar,
   Dimensions,
   Easing,
+  Image,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { initAndSaveFcmToken } from "../utils/fcm";
+import Ionicons from "react-native-vector-icons/Ionicons";
+import LinearGradient from "react-native-linear-gradient";
 
 const { width } = Dimensions.get("window");
+const scale = width / 400;
 
 export default function SplashScreen({ navigation }) {
-  // Main animations
   const scaleAnim = useRef(new Animated.Value(0.85)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const loaderWidth = useRef(new Animated.Value(0)).current;
-
-  // underline + text animation
-  const lineAnim = useRef(new Animated.Value(0)).current;
   const textOpacity = useRef(new Animated.Value(0)).current;
-  const textTranslateY = useRef(new Animated.Value(8)).current;
+  const textTranslateY = useRef(new Animated.Value(12)).current;
 
   useEffect(() => {
     Animated.parallel([
       Animated.spring(scaleAnim, {
         toValue: 1,
         friction: 7,
-        tension: 45,
+        tension: 40,
         useNativeDriver: true,
       }),
       Animated.timing(opacityAnim, {
         toValue: 1,
-        duration: 700,
+        duration: 900,
         useNativeDriver: true,
       }),
     ]).start();
 
     Animated.sequence([
-      Animated.delay(450),
+      Animated.delay(600),
       Animated.parallel([
-        Animated.timing(lineAnim, {
-          toValue: 1,
-          duration: 650,
-          easing: Easing.out(Easing.cubic),
-          useNativeDriver: false,
-        }),
         Animated.timing(textOpacity, {
           toValue: 1,
-          duration: 550,
+          duration: 700,
           useNativeDriver: true,
         }),
         Animated.timing(textTranslateY, {
           toValue: 0,
-          duration: 550,
+          duration: 700,
           useNativeDriver: true,
         }),
       ]),
@@ -67,7 +60,7 @@ export default function SplashScreen({ navigation }) {
 
     Animated.timing(loaderWidth, {
       toValue: 1,
-      duration: 2400,
+      duration: 2600,
       easing: Easing.bezier(0.4, 0, 0.2, 1),
       useNativeDriver: false,
     }).start();
@@ -75,14 +68,14 @@ export default function SplashScreen({ navigation }) {
     Animated.loop(
       Animated.sequence([
         Animated.timing(pulseAnim, {
-          toValue: 1.03,
-          duration: 1600,
+          toValue: 1.05,
+          duration: 1800,
           easing: Easing.inOut(Easing.sin),
           useNativeDriver: true,
         }),
         Animated.timing(pulseAnim, {
           toValue: 1,
-          duration: 1600,
+          duration: 1800,
           easing: Easing.inOut(Easing.sin),
           useNativeDriver: true,
         }),
@@ -102,64 +95,57 @@ export default function SplashScreen({ navigation }) {
       } catch {
         navigation.replace("Login");
       }
-    }, 2800);
+    }, 3200);
 
     return () => clearTimeout(timeout);
   }, []);
 
   return (
     <View style={styles.container}>
-      <StatusBar backgroundColor="#F7CB45" barStyle="dark-content" />
+      {/* 🎨 CLEAN BOLD DUAL-TONE: LOGO BLUE + ZING YELLOW */}
+      <LinearGradient
+        colors={["#B3E5FC", "#F7CB45"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        style={StyleSheet.absoluteFill}
+      />
+      <StatusBar backgroundColor="#B3E5FC" barStyle="dark-content" />
 
       <SafeAreaView style={styles.safeArea}>
-        {/* CENTER CONTENT (Logo) - Moved to absolute to ensure perfect centering */}
         <View style={styles.center} pointerEvents="none">
           <Animated.View
             style={{
               opacity: opacityAnim,
               alignItems: "center",
-              transform: [{ scale: scaleAnim }],
+              transform: [
+                { scale: Animated.multiply(scaleAnim, pulseAnim) }
+              ],
             }}
           >
-            {/* TEXT LOGO */}
-            <Animated.View
-              style={{
-                flexDirection: "row",
+            <View style={styles.logoContainer}>
+              <Image
+                source={require("../assets/logo.png")}
+                style={styles.logoImg}
+                resizeMode="contain"
+              />
+            </View>
+
+            <Animated.View style={[styles.taglineContainer, { 
                 opacity: textOpacity,
-                transform: [{ translateY: textTranslateY }],
-              }}
-            >
-              <Text style={styles.crispy}>Crispy</Text>
-              <Text style={styles.dosa}>Dosa</Text>
+                transform: [{ translateY: textTranslateY }] 
+            }]}>
+              <Text style={styles.taglineText}>Order. Bite. Enjoy. 🍔</Text>
+              <View style={styles.accentLine} />
             </Animated.View>
-
-            {/* 🆕 ANIMATED LINE BELOW TEXT */}
-            <Animated.View
-              style={[
-                styles.underline,
-                {
-                  width: lineAnim.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [0, width * 0.42],
-                  }),
-                },
-              ]}
-            />
-
-            {/* TAGLINE */}
-            <Text style={styles.tagline}>Pure Veg. Freshly Made.</Text>
           </Animated.View>
         </View>
 
-        {/* Spacer to keep bottom content at the bottom */}
         <View style={{ flex: 1 }} />
 
-        {/* BOTTOM COMPANY TEXT */}
         <Animated.View style={[styles.bottomInfo, { opacity: textOpacity }]}>
-          <Text style={styles.eternal}>WHERE TRADITION MEETS TASTE</Text>
+            <Text style={styles.eternal}>WHERE TRADITION MEETS TASTE</Text>
         </Animated.View>
 
-        {/* LOADER */}
         <View style={styles.footer}>
           <View style={styles.loaderTrack}>
             <Animated.View
@@ -183,7 +169,7 @@ export default function SplashScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F7CB45",
+    backgroundColor: "#FFFFFF",
   },
   safeArea: {
     flex: 1,
@@ -193,68 +179,59 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     zIndex: 1,
-    paddingBottom: 60, // Nudge the logo up slightly
+    paddingBottom: 40,
   },
-
-  // 🔑 UPDATED COLOR FOR CRISPY
-  crispy: {
-    fontFamily: "PoppinsSemiBold",
-    fontSize: 50,
-    color: "#C62828", // 🔴 dark red / orange tone
-    letterSpacing: -1.5,
+  logoContainer: {
+    marginBottom: 0,
   },
-
-  dosa: {
-    fontFamily: "PoppinsSemiBold",
-    fontSize: 50,
-    color: "#3E863F",
-    marginLeft: 0,
-    letterSpacing: -1.5,
+  logoImg: {
+    width: width * 0.85,
+    height: 160 * scale,
   },
-
-  underline: {
-    height: 3,
-    backgroundColor: "#1C1C1C",
-    borderRadius: 6,
-    marginTop: 0,
-    marginBottom: 10,
+  taglineContainer: {
+    alignItems: 'center',
+    marginTop: -15,
   },
-
-  tagline: {
-    fontFamily: "PoppinsSemiBold",
-    fontSize: 18,
-    color: "#1C1C1C",
-    letterSpacing: -0.2,
-    marginTop: 2,
+  taglineText: {
+    fontFamily: "PoppinsBold",
+    fontSize: 20 * scale,
+    color: "#1E293B",
+    fontWeight: '900',
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
   },
-
+  accentLine: {
+    width: 45 * scale,
+    height: 4,
+    backgroundColor: '#C62828',
+    borderRadius: 2,
+    marginTop: 8,
+  },
   bottomInfo: {
     alignItems: "center",
-    marginBottom: 20, // Reduced to move text closer to loader
+    marginBottom: 20,
   },
-
   eternal: {
     fontFamily: "PoppinsSemiBold",
-    fontSize: 11,
+    fontSize: 11 * scale,
     color: "#1C1C1C",
     letterSpacing: 4,
+    fontWeight: '700',
+    opacity: 0.9,
   },
-
   footer: {
-    paddingBottom: 110, // Increased to move below content up
+    paddingBottom: 110,
     alignItems: "center",
   },
-
   loaderTrack: {
-    width: 52,
-    height: 3,
-    backgroundColor: "rgba(28,28,28,0.15)",
-    borderRadius: 2,
+    width: 60,
+    height: 5,
+    backgroundColor: "rgba(30,41,59,0.1)",
+    borderRadius: 3,
     overflow: "hidden",
   },
-
   loaderFill: {
     height: "100%",
-    backgroundColor: "#1C1C1C",
+    backgroundColor: "#C62828",
   },
 });
