@@ -56,9 +56,25 @@ export default function Categories({ route, navigation }) {
   const [todayTiming, setTodayTiming] = useState(null);
   const [menuVisible, setMenuVisible] = useState(false);
   const [cartItems, setCartItems] = useState({});
-   const [promoOffers, setPromoOffers] = useState([]);
+  const [promoOffers, setPromoOffers] = useState([]);
   const [selectedOffer, setSelectedOffer] = useState(null);
   const [updating, setUpdating] = useState({});
+  const [instructionPopupVisible, setInstructionPopupVisible] = useState(false);
+  const [instructionNote, setInstructionNote] = useState("");
+  const [instructionPopupTarget, setInstructionPopupTarget] = useState(null);
+  const [isOffersOpen, setIsOffersOpen] = useState(false);
+  const offersAnim = useRef(new Animated.Value(0)).current;
+
+  const toggleOffers = () => {
+    const toValue = isOffersOpen ? 0 : 1;
+    Animated.timing(offersAnim, {
+      toValue,
+      duration: 300,
+      useNativeDriver: false,
+    }).start();
+    setIsOffersOpen(!isOffersOpen);
+  };
+
   const bannerScrollX = useRef(new Animated.Value(0)).current;
   const offerScrollX = useRef(new Animated.Value(0)).current;
 
@@ -229,7 +245,7 @@ export default function Categories({ route, navigation }) {
     }
   });
 
-  const handleAddItem = async (item) => {
+  const handleAddItem = (item) => {
     if (!user) {
       Alert.alert("Login Required", "Please sign in to add items to your cart.", [
         { text: "Cancel" },
@@ -237,37 +253,66 @@ export default function Categories({ route, navigation }) {
       ]);
       return;
     }
+    setInstructionPopupTarget(item);
+    setInstructionNote("");
+    setInstructionPopupVisible(true);
+  };
 
-    const pid = item.id;
-    setUpdating(prev => ({ ...prev, [pid]: true }));
-
+  const handleSubmitInstructionPopup = async () => {
+    const item = instructionPopupTarget;
+    if (!item || !user) return;
+    setUpdating(prev => ({ ...prev, [item.id]: true }));
     try {
-      const currentQty = cartItems[pid] || 0;
+      const currentQty = cartItems[item.id] || 0;
       const res = await addToCart({
         customer_id: user.id ?? user.customer_id,
-        user_id: item.user_id,
+        user_id: item.user_id || userId, 
         product_id: item.id,
         product_name: item.name,
         product_price: item.price,
         product_tax: 0,
         product_quantity: currentQty + 1,
-        textfield: "",
+        textfield: instructionNote || "",
       });
 
       if (res.status === 1) {
-        setCartItems(prev => ({ ...prev, [pid]: currentQty + 1 }));
+        setCartItems(prev => ({ ...prev, [item.id]: currentQty + 1 }));
+        setInstructionPopupVisible(false);
+        setInstructionPopupTarget(null);
+
+        // Saved Amount Calculation
+        const discountValue = item.discount_price || item.product_discount_price || 0;
+        if (discountValue && Number(discountValue) > Number(item.price)) {
+           const saved = Number(discountValue) - Number(item.price);
+           if (saved > 0) {
+             Alert.alert("🛒 Added to Cart", `Item safely added to your cart!\nYou saved £${saved.toFixed(2)} with this exclusive offer!`);
+           } else {
+             Alert.alert("🛒 Added to Cart", "Item successfully added to your cart!");
+           }
+        } else {
+           Alert.alert("🛒 Added to Cart", "Item successfully added to your cart!");
+        }
+
       } else {
         Alert.alert("Error", res.message || "Could not add to cart");
       }
     } catch (err) {
       console.log("Add to cart error:", err);
     } finally {
-      setUpdating(prev => ({ ...prev, [pid]: false }));
+      if (item && item.id) {
+        setUpdating(prev => ({ ...prev, [item.id]: false }));
+      }
     }
   };
 
   const renderCategory = ({ item, index }) => {
     const isEven = index % 2 === 0;
+    
+    // Check if this category has an active offer
+    const hasOffer = (promoOffers || []).some(o => 
+      o.targets?.some(t => t.type === 'category' && t.id === item.id)
+    );
+
     return (
       <TouchableOpacity
         style={cardStyles.wideCard}
@@ -282,17 +327,36 @@ export default function Categories({ route, navigation }) {
           end={{ x: 1, y: 0 }}
           style={cardStyles.cardGradient}
         >
+          {hasOffer && (
+            <View style={cardStyles.offerBadgeWrapper}>
+              <LinearGradient
+                colors={["#FFB800", "#FF8A00"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={cardStyles.offerBadgeRibbon}
+              >
+                <Ionicons name="flash" size={10} color="#FFF" />
+                <Text style={cardStyles.offerBadgeText}>OFFER</Text>
+              </LinearGradient>
+            </View>
+          )}
+
           <View style={cardStyles.cardInfo}>
             <Text style={cardStyles.categoryName}>{item?.name}</Text>
-            <View style={styles.serviceRow}>
-              <View style={[styles.serviceChip, { backgroundColor: isEven ? '#FCE7F3' : '#DCFCE7' }]}>
-                <Text style={[styles.serviceChipText, { color: isEven ? '#9D174D' : '#166534', fontWeight: '800' }]}>EXPLORE MENU</Text>
-              </View>
+            <View style={cardStyles.exploreRow}>
+              <LinearGradient
+                colors={isEven ? ["#FEF2F2", "#FFE4E6"] : ["#F0FDF4", "#DCFCE7"]}
+                style={cardStyles.exploreBadge}
+              >
+                <Text style={[cardStyles.exploreText, { color: isEven ? '#E11D48' : '#166534' }]}>
+                  EXPLORE MENU
+                </Text>
+              </LinearGradient>
             </View>
           </View>
 
           <View style={cardStyles.floatingImageContainer}>
-            <View style={[cardStyles.imageShadow, { shadowColor: isEven ? '#DB2777' : '#16a34a' }]}>
+            <View style={[cardStyles.imageShadow, { shadowColor: isEven ? '#FF2B5C' : '#22C55E' }]}>
               <Image
                 source={
                   item?.image
@@ -347,132 +411,199 @@ export default function Categories({ route, navigation }) {
   };
 
   return (
-    // 🔧 only left/right safe insets so we don't double-pad top/bottom
-    <SafeAreaView style={styles.safeArea} edges={["left", "right"]}>
-      <View style={styles.brandSection}>
-        <LinearGradient
-          colors={["#FF2B5C", "#FF6B8B"]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={StyleSheet.absoluteFill}
-        />
+    // 🔧 only left/right safe insets so we don't double-pad   return (
+    <SafeAreaView
+      style={styles.safeArea}
+      edges={["left", "right", "bottom"]}
+    >
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 100 }}
+        style={styles.mainScroll}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        <View style={styles.brandSectionScrolling}>
+          <AppHeader
+            user={user}
+            navigation={navigation}
+            onMenuPress={() => setMenuVisible(true)}
+            cartItems={cartItems}
+            transparent={false}
+            textColor="#1C1C1B"
+            barStyle="dark-content"
+            statusColor="#FFFFFF"
+          />
 
-        <AppHeader
-          user={user}
-          navigation={navigation}
-          onMenuPress={() => setMenuVisible(true)}
-          cartItems={cartItems}
-          transparent
-          textColor="#FFFFFF"
-          barStyle="light-content"
-          statusColor="#FF2B5C"
-        />
+          {/* DYNAMIC COLOR OFFER PILL */}
+          {settings && animatedTexts.length > 0 && (
+            <Animated.View style={[styles.premiumOfferWrap, { opacity: fadeAnim }]}>
+              <LinearGradient
+                colors={offers[activeIndex]?.colors || ["#FF2B5C", "#FF6B8B"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.premiumOfferInner}
+              >
+                <View style={styles.offerIconBadge}>
+                  <Ionicons name={offers[activeIndex]?.icon || "gift"} size={18 * scale} color="#FFFFFF" />
+                </View>
+                <View style={styles.offerTextContainer}>
+                  {highlightAmount(animatedTexts[textIndex])}
+                </View>
+                <View style={[styles.glowingDot, { backgroundColor: '#FFFFFF' }]} />
+              </LinearGradient>
+            </Animated.View>
+          )}
 
-        {/* DYNAMIC COLOR OFFER PILL */}
-        {settings && animatedTexts.length > 0 && (
-          <Animated.View style={[styles.premiumOfferWrap, { opacity: fadeAnim }]}>
-            <LinearGradient
-              colors={offers[activeIndex]?.colors || ["#FF2B5C", "#FF6B8B"]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.premiumOfferInner}
-            >
-              <View style={styles.offerIconBadge}>
-                <Ionicons name={offers[activeIndex]?.icon || "gift"} size={18 * scale} color="#FFFFFF" />
-              </View>
-              <View style={styles.offerTextContainer}>
-                {highlightAmount(animatedTexts[textIndex])}
-              </View>
-              <View style={[styles.glowingDot, { backgroundColor: '#FFFFFF' }]} />
-            </LinearGradient>
-          </Animated.View>
-        )}
-
-        {/* EXECUTIVE RESTAURANT CARD (The Boutique Experience) */}
-        {restaurant && (
-          <View style={styles.infoCardWrapper}>
-            <View style={styles.executiveCard}>
-              <View style={styles.cardHeader}>
-                <View style={styles.imageContainer}>
+          {/* FULL-WIDTH RESTAURANT INFO SECTION */}
+          {restaurant && (
+            <View style={styles.fullWidthInfoContainer}>
+              <View style={styles.infoContent}>
+                <View style={styles.imageColumn}>
                   <Image
                     source={
                       restaurant?.restaurant_photo
                         ? { uri: restaurant.restaurant_photo }
                         : require("../../assets/restaurant.png")
                     }
-                    style={styles.boutiqueImage}
+                    style={styles.fullBoutiqueImage}
                   />
-                  <View style={styles.vegFloatingTag}>
-                    <Ionicons name="leaf" size={10} color="#16a34a" />
-                    <Text style={styles.vegBadgeText}>PURE VEG</Text>
-                  </View>
                 </View>
 
-                <View style={styles.executiveInfo}>
-                  <View style={styles.nameHeaderRow}>
-                    <Text style={styles.boutiqueName}>{restaurant.restaurant_name}</Text>
-                    <TouchableOpacity onPress={() => setInfoModalVisible(true)} style={styles.infoIconBtn}>
-                      <Ionicons name="information-circle-outline" size={24} color="#FF2B5C" />
+                <View style={styles.textColumn}>
+                  <View style={styles.nameHeaderRowWide}>
+                    <Text style={styles.fullBoutiqueName}>{restaurant.restaurant_name}</Text>
+                    <TouchableOpacity onPress={() => setInfoModalVisible(true)} style={styles.infoIconBtnCorner}>
+                      <Ionicons name="information-circle-outline" size={28} color="#FF2B5C" />
                     </TouchableOpacity>
                   </View>
 
-                  <View style={styles.infoRow}>
-                    <View style={styles.locIconBtn}>
-                      <Ionicons name="location" size={14} color="#FF2B5C" />
-                    </View>
-                    <Text style={styles.locText} numberOfLines={4}>
+                  <View style={styles.infoRowCompact}>
+                    <Ionicons name="location" size={14} color="#FF2B5C" />
+                    <Text style={styles.locTextCompact} numberOfLines={1}>
                       {restaurant.restaurant_address}
                     </Text>
                   </View>
 
-                  <View style={styles.serviceRow}>
+                  <View style={styles.serviceRowSingleLine}>
                     {restaurant.instore && (
-                      <View style={styles.serviceChip}>
-                        <Ionicons name="storefront" size={16 * scale} color="#FF2B5C" />
-                        <Text style={styles.serviceChipText}>In-store</Text>
+                      <View style={styles.serviceChipMinimal}>
+                        <Ionicons name="storefront" size={14 * scale} color="#FF2B5C" />
+                        <Text style={styles.serviceChipTextMinimal}>In-store</Text>
                       </View>
                     )}
                     {restaurant.kerbside && (
-                      <View style={styles.serviceChip}>
-                        <Ionicons name="car-sport" size={18 * scale} color="#16a34a" />
-                        <Text style={[styles.serviceChipText, { color: '#16a34a' }]}>Kerbside</Text>
+                      <View style={styles.serviceChipMinimal}>
+                        <Ionicons name="car-sport" size={16 * scale} color="#16a34a" />
+                        <Text style={[styles.serviceChipTextMinimal, { color: '#166534' }]}>Kerbside</Text>
                       </View>
                     )}
                   </View>
                 </View>
               </View>
 
-              <View style={styles.cardFooter}>
-                <View style={styles.footerCol}>
-                  <View style={styles.footerIconRow}>
-                    <Ionicons name="call" size={14 * scale} color="#FF2B5C" />
-                    <Text style={styles.footerValLarge}>{restaurant.restaurant_phonenumber}</Text>
-                  </View>
+              <View style={styles.fullCardFooterCompact}>
+                <View style={styles.footerRowItem}>
+                  <Ionicons name="call" size={16 * scale} color="#FF2B5C" />
+                  <Text style={styles.footerTextSmall}>{restaurant.restaurant_phonenumber}</Text>
                 </View>
-                <View style={styles.footerDivider} />
-                <View style={styles.footerCol}>
-                  <View style={styles.footerIconRow}>
-                    <Ionicons name="time" size={14 * scale} color="#FF2B5C" />
-                    <Text style={styles.footerValLarge}>{timeLabel}</Text>
-                  </View>
+
+                <View style={styles.vDividerSmall} />
+
+                <View style={styles.footerRowItem}>
+                  <Ionicons name="time" size={16 * scale} color="#FF2B5C" />
+                  <Text style={styles.footerTextSmall}>{timeLabel}</Text>
                 </View>
-                <TouchableOpacity style={styles.detailsCirc} onPress={openTimingsModal}>
+
+                <TouchableOpacity style={styles.detailsChevron} onPress={openTimingsModal}>
                   <Ionicons name="chevron-forward" size={18} color="#FF2B5C" />
                 </TouchableOpacity>
               </View>
             </View>
+          )}
+        </View>
+
+        {/* DROPDOWN OFFERS SECTION - Inline with ScrollView */}
+        {promoOffers.length > 0 && (
+          <View style={styles.inlineOfferSection}>
+            <TouchableOpacity
+              style={offerStyles.offerToggleHeaderInline}
+              activeOpacity={0.8}
+              onPress={toggleOffers}
+            >
+              <View style={offerStyles.offerHeaderRow}>
+                <View style={offerStyles.offerTitleBadge}>
+                  <Ionicons name="pricetag" size={16 * scale} color="#FF2B5C" />
+                  <Text style={offerStyles.offerSectionTitle}>Current Special Offers</Text>
+                </View>
+                <View style={offerStyles.headerRight}>
+                  <Text style={offerStyles.offerCount}>{promoOffers.length} available</Text>
+                  <Ionicons
+                    name={isOffersOpen ? "chevron-down" : "chevron-up"}
+                    size={22 * scale}
+                    color="#FF2B5C"
+                    style={{ marginLeft: 8 }}
+                  />
+                </View>
+              </View>
+            </TouchableOpacity>
+
+            <Animated.View
+              style={{
+                height: offersAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0, 260 * scale] // Content height
+                }),
+                overflow: 'hidden'
+              }}
+            >
+              <Animated.ScrollView
+                horizontal
+                pagingEnabled
+                showsHorizontalScrollIndicator={false}
+                onScroll={Animated.event(
+                  [{ nativeEvent: { contentOffset: { x: bannerScrollX } } }],
+                  { useNativeDriver: false }
+                )}
+                scrollEventThrottle={16}
+                contentContainerStyle={offerStyles.offerScrollContent}
+              >
+                {promoOffers.map((offer, idx) => (
+                  <TouchableOpacity
+                    key={offer.id}
+                    style={offerStyles.offerCardInline}
+                    activeOpacity={0.9}
+                    onPress={() => setSelectedOffer(selectedOffer?.id === offer.id ? null : offer)}
+                  >
+                    <View style={offerStyles.offerCardGrad}>
+                      {offer.banner_image ? (
+                        <Image source={{ uri: offer.banner_image }} style={offerStyles.offerBannerImgSmall} resizeMode="cover" />
+                      ) : (
+                        <LinearGradient colors={idx % 3 === 0 ? ['#FF2B5C', '#FF6B8B'] : idx % 3 === 1 ? ['#7C3AED', '#A855F7'] : ['#0F766E', '#14B8A6']} style={offerStyles.offerBannerImgSmall}>
+                          <Ionicons name="gift" size={32 * scale} color="rgba(255,255,255,0.9)" />
+                        </LinearGradient>
+                      )}
+                      <View style={offerStyles.offerCardContent}>
+                        <View style={{ flex: 1, paddingRight: 10 }}>
+                          <View style={offerStyles.offerBadgePill}>
+                            <Text style={offerStyles.offerBadgeText}>EXCLUSIVE</Text>
+                          </View>
+                          <Text style={offerStyles.offerCardTitle} numberOfLines={1}>{offer.title}</Text>
+                          <Text style={offerStyles.offerCardDesc} numberOfLines={1}>{offer.description || 'Tap for details'}</Text>
+                        </View>
+                        <View style={offerStyles.offerActionContainer}>
+                          <View style={offerStyles.offerClickCirc}><Ionicons name="chevron-forward" size={16 * scale} color="#FFF" /></View>
+                        </View>
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </Animated.ScrollView>
+            </Animated.View>
           </View>
         )}
-      </View>
 
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 20 }}
-        style={styles.mainScroll}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-      >
         {/* SEARCH BOX */}
         <View style={styles.searchBox}>
           <Ionicons name="search-outline" size={18} color="#777" />
@@ -509,141 +640,85 @@ export default function Categories({ route, navigation }) {
         navigation={navigation}
       />
 
-      {/* PROMOTIONAL OFFERS BANNER */}
-      {promoOffers.length > 0 && (
-        <View style={offerStyles.offerSection}>
-          <View style={offerStyles.offerHeaderRow}>
-            <View style={offerStyles.offerTitleBadge}>
-              <Ionicons name="pricetag" size={14} color="#FF2B5C" />
-              <Text style={offerStyles.offerSectionTitle}>Available Offers</Text>
-            </View>
-             <Text style={offerStyles.offerCount}>{promoOffers.length} active</Text>
-          </View>
-          <View>
-            <Animated.ScrollView
-              horizontal
-              pagingEnabled
-              showsHorizontalScrollIndicator={false}
-              onScroll={Animated.event(
-                [{ nativeEvent: { contentOffset: { x: bannerScrollX } } }],
-                { useNativeDriver: false }
-              )}
-              scrollEventThrottle={16}
-              contentContainerStyle={offerStyles.offerScrollContent}
-            >
-              {promoOffers.map((offer, idx) => (
-                <TouchableOpacity
-                  key={offer.id}
-                  style={offerStyles.offerCard}
-                  activeOpacity={0.9}
-                  onPress={() => setSelectedOffer(selectedOffer?.id === offer.id ? null : offer)}
-                >
-                  <LinearGradient
-                    colors={idx % 3 === 0 ? ['#FF2B5C', '#FF6B8B'] : idx % 3 === 1 ? ['#7C3AED', '#A855F7'] : ['#0F766E', '#14B8A6']}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={offerStyles.offerCardGrad}
-                  >
-                    {offer.banner_image ? (
-                      <Image
-                        source={{ uri: offer.banner_image }}
-                        style={offerStyles.offerBannerImg}
-                        resizeMode="cover"
-                      />
-                    ) : (
-                      <View style={offerStyles.offerIconPlaceholder}>
-                        <Ionicons name="gift" size={36} color="rgba(255,255,255,0.9)" />
-                      </View>
-                    )}
-                    <View style={offerStyles.offerCardContent}>
-                      <View style={offerStyles.offerBadgePill}>
-                        <Ionicons name="sparkles" size={10} color="#FF2B5C" />
-                        <Text style={offerStyles.offerBadgeText}>OFFER</Text>
-                      </View>
-                      <Text style={offerStyles.offerCardTitle} numberOfLines={2}>{offer.title}</Text>
-                      {offer.description ? (
-                        <Text style={offerStyles.offerCardDesc} numberOfLines={2}>{offer.description}</Text>
-                      ) : null}
-
-                      {/* CLICK HINT BUTTON */}
-                      <View style={offerStyles.offerClickHint}>
-                        <Text style={offerStyles.offerClickHintText}>See Details</Text>
-                        <Ionicons name="arrow-forward-circle" size={16} color="rgba(255,255,255,0.9)" />
-                      </View>
-                    </View>
-                  </LinearGradient>
-                </TouchableOpacity>
-              ))}
-            </Animated.ScrollView>
-
-            {/* DOT INDICATORS */}
-            {promoOffers.length > 1 && (
-              <View style={offerStyles.dotContainer}>
-                {promoOffers.map((_, i) => {
-                  const opacity = bannerScrollX.interpolate({
-                    inputRange: [(i - 1) * width, i * width, (i + 1) * width],
-                    outputRange: [0.3, 1, 0.3],
-                    extrapolate: 'clamp',
-                  });
-                  const dotWidth = bannerScrollX.interpolate({
-                    inputRange: [(i - 1) * width, i * width, (i + 1) * width],
-                    outputRange: [8, 20, 8],
-                    extrapolate: 'clamp',
-                  });
-                  return (
-                    <Animated.View
-                      key={i}
-                      style={[
-                        offerStyles.dot,
-                        { opacity, width: dotWidth, backgroundColor: '#FF2B5C' }
-                      ]}
-                    />
-                  );
-                })}
-              </View>
-            )}
-          </View>
-
-          {/* SELECTED OFFER ITEMS SECTION (RECOMMENDED STYLE) */}
-          {selectedOffer && (
-            <Animated.View style={offerStyles.selectedOfferSection}>
-              <View style={offerStyles.selectedOfferHeader}>
-                <View>
-                  <Text style={offerStyles.selectedOfferTitle}>Exclusive Offer Items</Text>
-                  <Text style={offerStyles.selectedOfferSub}>Handpicked from {selectedOffer.title}</Text>
+      {/* PREMIUM SELECTED OFFER MODAL */}
+      {selectedOffer && (
+        <Modal transparent animationType="fade" visible={!!selectedOffer}>
+          <View style={styles.modalWrapper}>
+            <Animated.View style={[styles.modalBox, { maxHeight: '85%', padding: 0, overflow: 'hidden', backgroundColor: '#F8FAFC' }]}>
+              {/* Premium Header */}
+              <LinearGradient 
+                colors={['#FF2B5C', '#FF6B8B']} 
+                start={{x: 0, y: 0}} end={{x: 1, y: 1}}
+                style={offerStyles.premiumModalHeader}
+              >
+                <View style={{ flex: 1 }}>
+                  <View style={offerStyles.modalBadge}>
+                    <Ionicons name="star" size={12} color="#FFD700" />
+                    <Text style={offerStyles.modalBadgeText}>EXCLUSIVE ITEMS</Text>
+                  </View>
+                  <Text style={offerStyles.premiumModalTitle} numberOfLines={1}>{selectedOffer.title}</Text>
+                  <Text style={offerStyles.premiumModalSub} numberOfLines={1}>{selectedOffer.description || "Unlock these special deals!"}</Text>
                 </View>
-                <TouchableOpacity onPress={() => setSelectedOffer(null)}>
-                  <Ionicons name="close-circle" size={28} color="#FF2B5C" />
+                <TouchableOpacity onPress={() => setSelectedOffer(null)} style={offerStyles.modalCloseCirc}>
+                  <Ionicons name="close" size={24} color="#FF2B5C" />
                 </TouchableOpacity>
-              </View>
+              </LinearGradient>
 
               <ScrollView
-                horizontal={false}
                 showsVerticalScrollIndicator={false}
-                style={offerStyles.itemsList}
-                contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 20 }}
+                style={{ flexShrink: 1, flexGrow: 0, width: '100%' }}
+                contentContainerStyle={{ padding: 16, paddingBottom: 30 }}
               >
-                {selectedOffer.targets?.filter(t => t.type === 'product').map((item, idx) => (
-                  <TouchableOpacity
-                    key={idx}
-                    style={offerStyles.itemRowCard}
-                    activeOpacity={0.9}
-                    onPress={() => {
+                {selectedOffer.targets?.filter(t => t.type === 'product').map((item, idx) => {
+                  const discountValue = item.discount_price || item.product_discount_price;
+                  const hasDiscount = discountValue && Number(discountValue) > Number(item.price);
+                  const discountPercent = hasDiscount ? Math.round(((Number(discountValue) - Number(item.price)) / Number(discountValue)) * 100) : 0;
+                  
+                  return (
+                    <TouchableOpacity
+                      key={idx}
+                      style={offerStyles.premiumItemCard}
+                      activeOpacity={0.9}
+                      onPress={() => {
+                        setSelectedOffer(null);
                         navigation.navigate("Products", { userId, productId: item.id });
-                    }}
-                  >
-                    <Image
-                      source={item.image ? { uri: item.image } : require("../../assets/restaurant.png")}
-                      style={offerStyles.itemRowImage}
-                    />
-                    <View style={offerStyles.itemRowInfo}>
-                      <Text style={offerStyles.itemName} numberOfLines={1}>{item.name}</Text>
-                      <Text style={offerStyles.itemRowDesc} numberOfLines={1}>{item.description}</Text>
-                      <View style={offerStyles.itemPriceRow}>
-                        <Text style={offerStyles.itemPrice}>£{Number(item.price || 0).toFixed(2)}</Text>
+                      }}
+                    >
+                      <View style={offerStyles.premiumImageWrap}>
+                        <Image
+                          source={item.image ? { uri: item.image } : require("../../assets/restaurant.png")}
+                          style={offerStyles.premiumItemImage}
+                        />
+                        {hasDiscount && (
+                          <LinearGradient colors={['#FFB800', '#FF8A00']} start={{x:0,y:0}} end={{x:1,y:0}} style={offerStyles.premiumDiscountBadge}>
+                            <Text style={offerStyles.premiumDiscountText}>{discountPercent}% OFF</Text>
+                          </LinearGradient>
+                        )}
+                      </View>
+
+                      <View style={offerStyles.premiumItemInfo}>
+                        <Text style={offerStyles.premiumItemName} numberOfLines={2}>{item.name}</Text>
+                        
+                        <View style={offerStyles.premiumPriceActionRow}>
+                           <View style={{ flexDirection: 'column', justifyContent: 'center', flex: 1 }}>
+                              <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap' }}>
+                                <Text style={offerStyles.premiumActualPrice}>£{Number(item.price || 0).toFixed(2)}</Text>
+                               {hasDiscount && (
+                                <Text style={[offerStyles.premiumOriginalPrice, { marginLeft: 8 }]}>£{Number(discountValue).toFixed(2)}</Text>
+                              )}
+                            </View>
+                            {hasDiscount && (
+                               <View style={offerStyles.discountBadgeSmall}>
+                                 <Text style={offerStyles.discountBadgeTextSmall}>
+                                   SAVE {discountPercent}%
+                                 </Text>
+                               </View>
+                            )}
+                           </View>
+                        </View>
                         
                         <TouchableOpacity 
-                           style={offerStyles.addCircleBtn} 
+                           style={[offerStyles.addCircleBtn, { marginTop: 12, justifyContent: 'center' }]} 
                            onPress={(e) => {
                              e.stopPropagation();
                              handleAddItem(item);
@@ -654,22 +729,162 @@ export default function Categories({ route, navigation }) {
                             <ActivityIndicator size="small" color="#FFF" />
                           ) : (
                             <>
-                              <Ionicons name="add" size={18} color="#FFF" />
-                              <Text style={offerStyles.addBtnText}>ADD</Text>
+                              <Ionicons name="add" size={16 * scale} color="#FFF" />
+                              <Text style={offerStyles.addBtnText}>ADD TO CART</Text>
                             </>
                           )}
                         </TouchableOpacity>
                       </View>
-                    </View>
                   </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </Animated.View>
+                );
+              })}
+            </ScrollView>
+          </Animated.View>
+
+          {/* Instruction Popup OVERLAYing the whole screen */}
+          {instructionPopupVisible && (
+            <View style={{
+              position: 'absolute',
+              top: 0, left: 0, right: 0, bottom: 0,
+              backgroundColor: 'rgba(0,0,0,0.5)',
+              justifyContent: 'center',
+              alignItems: 'center',
+              zIndex: 9999,
+            }}>
+              <View style={{
+                width: '85%',
+                backgroundColor: '#FFFFFF',
+                borderRadius: 24,
+                overflow: 'hidden',
+                elevation: 20,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 10 },
+                shadowOpacity: 0.25,
+                shadowRadius: 20,
+              }}>
+                {/* Cart Icon Circle */}
+                <View style={{ alignItems: 'center', paddingTop: 28, paddingBottom: 8 }}>
+                  <View style={{
+                    width: 68 * scale,
+                    height: 68 * scale,
+                    borderRadius: 34 * scale,
+                    backgroundColor: 'rgba(22, 163, 74, 0.1)',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    borderWidth: 1.5,
+                    borderColor: 'rgba(22, 163, 74, 0.2)',
+                  }}>
+                    <Ionicons name="cart-outline" size={32 * scale} color="#16a34a" />
+                  </View>
+                </View>
+
+                {/* Name + Price + Close Row */}
+                <View style={{
+                  flexDirection: 'row',
+                  paddingHorizontal: 24,
+                  paddingTop: 12,
+                  paddingBottom: 4,
+                  alignItems: 'flex-start',
+                  justifyContent: 'space-between',
+                }}>
+                  <View style={{ flex: 1, paddingRight: 12 }}>
+                    {instructionPopupTarget && (
+                      <Text style={{
+                        fontSize: 18 * scale,
+                        fontFamily: 'PoppinsBold',
+                        fontWeight: '900',
+                        color: '#0F172A',
+                      }}>{instructionPopupTarget.name}</Text>
+                    )}
+                    {instructionPopupTarget && (
+                      <Text style={{
+                        fontSize: 16 * scale,
+                        fontFamily: 'PoppinsBold',
+                        fontWeight: '900',
+                        color: '#16a34a',
+                        marginTop: 2,
+                      }}>£{(Number(instructionPopupTarget.price)).toFixed(2)}</Text>
+                    )}
+                  </View>
+                  <TouchableOpacity
+                    onPress={() => { setInstructionPopupVisible(false); setInstructionPopupTarget(null); }}
+                    style={{ padding: 4, marginTop: 2 }}
+                  >
+                    <Ionicons name="close" size={22 * scale} color="#94A3B8" />
+                  </TouchableOpacity>
+                </View>
+
+                {/* Hint Text */}
+                <Text style={{
+                  fontSize: 13 * scale,
+                  fontFamily: 'PoppinsMedium',
+                  color: '#64748B',
+                  textAlign: 'center',
+                  paddingHorizontal: 24,
+                  marginTop: 8,
+                  marginBottom: 12,
+                }}>
+                  Enter any special instructions (e.g. "Spicy", "No Onion")
+                </Text>
+
+                {/* Text Input */}
+                <View style={{ paddingHorizontal: 24 }}>
+                  <TextInput
+                    style={{
+                      backgroundColor: '#F8FAFC',
+                      borderWidth: 1,
+                      borderColor: '#E2E8F0',
+                      minHeight: 90,
+                      width: '100%',
+                      borderRadius: 16,
+                      padding: 14,
+                      paddingTop: 14,
+                      fontSize: 14 * scale,
+                      fontFamily: 'PoppinsMedium',
+                      color: '#333',
+                      textAlignVertical: 'top',
+                    }}
+                    placeholder="Type your instructions..."
+                    value={instructionNote}
+                    onChangeText={setInstructionNote}
+                    multiline
+                    placeholderTextColor="#999999"
+                  />
+                </View>
+
+                {/* Add to Cart Button */}
+                <View style={{ paddingHorizontal: 24, paddingTop: 20, paddingBottom: 24 }}>
+                  <TouchableOpacity
+                    style={{ borderRadius: 14, overflow: 'hidden', elevation: 4 }}
+                    onPress={handleSubmitInstructionPopup}
+                    activeOpacity={0.85}
+                  >
+                    <LinearGradient
+                      colors={["#16a34a", "#15803d"]}
+                      style={{
+                        paddingVertical: 15,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <Text style={{
+                        color: '#FFF',
+                        fontSize: 16 * scale,
+                        fontFamily: 'PoppinsBold',
+                        fontWeight: '900',
+                        letterSpacing: 0.5,
+                      }}>
+                        {updating[instructionPopupTarget?.id] ? "Adding..." : "Add to Cart"}
+                      </Text>
+                    </LinearGradient>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
           )}
         </View>
+      </Modal>
       )}
-
-      <BottomBar navigation={navigation} />
 
       {/* TIMINGS MODAL */}
       <Modal visible={modalVisible} transparent animationType="fade">
@@ -848,6 +1063,8 @@ export default function Categories({ route, navigation }) {
           </View>
         </View>
       </Modal>
+
+      <BottomBar navigation={navigation} />
     </SafeAreaView>
   );
 }
@@ -855,10 +1072,14 @@ export default function Categories({ route, navigation }) {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#F8F8F8",
+    backgroundColor: "#FFFFFF",
   },
   mainScroll: {
-    marginTop: 0,
+    backgroundColor: "#FFFFFF",
+  },
+  brandSectionScrolling: {
+    backgroundColor: "#FFFFFF",
+    paddingBottom: 0, // Removed padding to close gap
   },
   offerAmount: {
     color: "#FBFF00",
@@ -883,7 +1104,8 @@ const styles = StyleSheet.create({
   },
   premiumOfferWrap: {
     marginHorizontal: 16,
-    marginTop: 12,
+    marginTop: 2,
+    marginBottom: 0, // No extra space at bottom
     borderRadius: 50,
     overflow: 'hidden',
     elevation: 8,
@@ -927,154 +1149,115 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
 
-  // EXECUTIVE BOUTIQUE CARD
-  infoCardWrapper: {
-    paddingHorizontal: 16,
-    marginTop: 15,
+  // FULL WIDTH INFO SECTION - REFINED
+  fullWidthInfoContainer: {
+    backgroundColor: '#F8FAFC',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+    marginTop: -56, // Pull tight to header
   },
-  executiveCard: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 28,
-    padding: 18,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 15 },
-    shadowOpacity: 0.15,
-    shadowRadius: 25,
-    elevation: 20,
+  infoContent: {
+    flexDirection: 'row',
   },
-  cardHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  imageContainer: {
-    position: 'relative',
-  },
-  boutiqueImage: {
-    width: 110 * scale,
-    height: 110 * scale,
-    borderRadius: 22,
-    backgroundColor: "#F0F0F0",
-    borderWidth: 2,
-    borderColor: "#FFF",
-  },
-  vegFloatingTag: {
-    position: 'absolute',
-    bottom: 6,
-    left: 6,
-    backgroundColor: "#FFFFFF",
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 6,
-    paddingVertical: 3,
-    borderRadius: 8,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  vegBadgeText: {
-    fontSize: 8 * scale,
-    fontFamily: "PoppinsBold",
-    color: "#16a34a",
-    marginLeft: 3,
-  },
-  executiveInfo: {
-    flex: 1,
-    marginLeft: 18,
-  },
-  boutiqueName: {
-    fontSize: 20 * scale,
-    fontFamily: "PoppinsBold",
-    fontWeight: '900',
-    color: "#1C1C1C",
-    marginBottom: 6,
-  },
-  infoRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-  },
-  locIconBtn: {
-    width: 24,
-    height: 24,
-    borderRadius: 8,
-    backgroundColor: "rgba(255,43,92,0.08)",
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 2,
-  },
-  locText: {
-    fontSize: 12 * scale,
-    fontFamily: "PoppinsMedium",
-    color: "#666",
-    marginLeft: 8,
-    flex: 1,
-    lineHeight: 18,
-  },
-  serviceRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 8,
-  },
-  serviceChip: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "transparent",
-    paddingVertical: 4,
+  imageColumn: {
+    width: 90 * scale,
     marginRight: 15,
   },
-  serviceChipText: {
-    marginLeft: 6,
-    fontSize: 14 * scale,
-    fontFamily: "PoppinsBold",
-    color: "#FF2B5C",
-    letterSpacing: 0.3,
+  fullBoutiqueImage: {
+    width: 90 * scale,
+    height: 90 * scale,
+    borderRadius: 12,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.2,
+    borderColor: '#E2E8F0',
   },
-  cardFooter: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 12,
-    paddingTop: 10,
-    borderTopWidth: 1,
-    borderTopColor: "#F5F5F5",
+  textColumn: {
+    flex: 1,
+    justifyContent: 'space-between',
   },
-  footerCol: {
+  nameHeaderRowWide: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  fullBoutiqueName: {
+    fontSize: 20 * scale,
+    fontFamily: 'PoppinsBold',
+    color: '#1C1C1C',
+    fontWeight: '900',
     flex: 1,
   },
-  footerLabel: {
-    fontSize: 9 * scale,
-    fontFamily: "PoppinsBold",
-    color: "#AAA",
-    letterSpacing: 0.5,
-    marginBottom: 2,
+  infoIconBtnCorner: {
+    padding: 2,
   },
-  footerVal: {
-    fontSize: 11 * scale,
-    fontFamily: "PoppinsSemiBold",
-    color: "#333",
-  },
-  footerValLarge: {
-    fontSize: 13.5 * scale,
-    fontFamily: "PoppinsBold",
-    color: "#1C1C1C",
-    marginLeft: 6,
-  },
-  footerIconRow: {
+  infoRowCompact: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: 6,
   },
-  footerDivider: {
-    width: 1,
-    height: 20,
-    backgroundColor: "#EEE",
+  locTextCompact: {
+    fontSize: 12 * scale,
+    fontFamily: 'PoppinsMedium',
+    color: '#64748B',
+    marginLeft: 6,
+    flex: 1,
+  },
+  serviceRowSingleLine: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 15,
+  },
+  serviceChipMinimal: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  serviceChipTextMinimal: {
+    fontSize: 12 * scale,
+    fontFamily: 'PoppinsBold',
+    color: '#FF2B5C',
+    fontWeight: '900',
+  },
+  fullCardFooterCompact: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#E2E8F0',
+  },
+  footerRowItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  footerTextSmall: {
+    fontSize: 13 * scale,
+    fontFamily: 'PoppinsBold',
+    color: '#1C1C1C',
+    fontWeight: '900',
+  },
+  vDividerSmall: {
+    width: 1.5,
+    height: 18,
+    backgroundColor: '#CBD5E1',
     marginHorizontal: 15,
   },
-  detailsCirc: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: "rgba(255,43,92,0.08)",
-    alignItems: "center",
-    justifyContent: "center",
+  detailsChevron: {
+    marginLeft: 'auto',
+    backgroundColor: '#F1F5F9',
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  inlineOfferSection: {
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
   },
 
   // SEARCH BOX
@@ -1268,12 +1451,48 @@ const cardStyles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#1E293B',
+    backgroundColor: '#1C1C1C',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
     borderColor: '#FFF',
     elevation: 4,
+  },
+  exploreRow: {
+    flexDirection: 'row',
+    marginTop: 8,
+  },
+  exploreBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 8,
+  },
+  exploreText: {
+    fontSize: 11 * scale,
+    fontFamily: 'PoppinsBold',
+    fontWeight: '900',
+    letterSpacing: 0.5,
+  },
+  offerBadgeWrapper: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    zIndex: 10,
+  },
+  offerBadgeRibbon: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderBottomRightRadius: 15,
+    gap: 4,
+  },
+  offerBadgeText: {
+    color: '#FFF',
+    fontSize: 10 * scale,
+    fontFamily: 'PoppinsBold',
+    fontWeight: '900',
+    letterSpacing: 0.4,
   },
   nameHeaderRow: {
     flexDirection: 'row',
@@ -1387,6 +1606,118 @@ const cardStyles = StyleSheet.create({
     marginLeft: 12,
     flex: 1,
   },
+  
+  /* POPUP MATCHING PRODUCTS STYLE */
+  popupOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  popupBox: {
+    width: "85%",
+    borderRadius: 25,
+    overflow: "hidden",
+    elevation: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.2,
+    shadowRadius: 15,
+    backgroundColor: '#fff' 
+  },
+  popupContent: {
+    padding: 24,
+    alignItems: "center",
+  },
+  addIconCircle: {
+    width: 70 * scale,
+    height: 70 * scale,
+    borderRadius: 35 * scale,
+    backgroundColor: "rgba(22, 163, 74, 0.1)",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "rgba(22, 163, 74, 0.2)",
+  },
+  popupHeaderRow: {
+    flexDirection: 'row',
+    width: '100%',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 12
+  },
+  popupTitle: {
+    fontSize: 20 * scale,
+    fontFamily: "PoppinsBold",
+    fontWeight: "900",
+    color: "#0F172A",
+  },
+  popupPrice: {
+    fontSize: 18 * scale,
+    fontFamily: "PoppinsBold",
+    fontWeight: "900",
+    color: "#16a34a",
+  },
+  popupCloseBtn: {
+    padding: 4,
+  },
+  popupHint: {
+    fontSize: 13 * scale,
+    fontFamily: "PoppinsMedium",
+    color: "#64748B",
+    marginBottom: 12,
+    textAlign: 'center'
+  },
+  popupInput: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    minHeight: 100,
+    width: '100%',
+    borderRadius: 16,
+    padding: 16,
+    paddingTop: 16,
+    fontSize: 14 * scale,
+    fontFamily: "PoppinsMedium",
+    color: "#333",
+    textAlignVertical: "top",
+    marginBottom: 24,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowOffset: { width: 0, height: 2 },
+  },
+  popupRow: {
+    flexDirection: 'row',
+    width: '100%',
+    justifyContent: 'center',
+    gap: 12,
+  },
+  popupPrimaryWrap: {
+    flex: 1,
+    borderRadius: 14,
+    overflow: "hidden",
+    shadowColor: "#16a34a",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 6,
+  },
+  popupPrimaryBtn: {
+    paddingVertical: 14,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  popupPrimaryText: {
+    color: "#FFF",
+    fontSize: 15 * scale,
+    fontFamily: "PoppinsBold",
+    fontWeight: "900",
+    letterSpacing: 0.5,
+  },
+  /* END POPUP STYLES */
+
   linkText: {
     color: '#0066CC',
     textDecorationLine: 'underline',
@@ -1456,17 +1787,43 @@ const cardStyles = StyleSheet.create({
 });
 
 const offerStyles = StyleSheet.create({
-  offerSection: {
+  // INLINE DROPDOWN OFFERS
+  offerToggleHeaderInline: {
+    paddingVertical: 18,
     backgroundColor: '#FFFFFF',
-    paddingTop: 14,
-    paddingBottom: 10,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    elevation: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+  },
+  offerCardInline: {
+    width: width - 40,
+    borderRadius: 20,
+    overflow: 'hidden',
+    marginRight: 12,
+    backgroundColor: '#FFFFFF',
+    elevation: 6,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 4 },
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+    height: 220 * scale,
+  },
+  offerBannerImgSmall: {
+    width: '100%',
+    height: 110 * scale,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  offerToggleHeader: {
+    height: 60 * scale,
+    justifyContent: 'center',
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   offerHeaderRow: {
     flexDirection: 'row',
@@ -1501,68 +1858,98 @@ const offerStyles = StyleSheet.create({
     gap: 12,
   },
   offerCard: {
-    width: 240 * scale,
-    height: 130 * scale,
-    borderRadius: 20,
+    width: width - 36,
+    borderRadius: 22,
     overflow: 'hidden',
     marginRight: 12,
     elevation: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.18,
+    shadowOpacity: 0.15,
     shadowRadius: 10,
+    backgroundColor: '#FFF',
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
   },
   offerCardGrad: {
     flex: 1,
-    flexDirection: 'row',
+    flexDirection: 'column',
     alignItems: 'stretch',
   },
   offerBannerImg: {
-    width: 100 * scale,
-    height: '100%',
-    opacity: 0.9,
+    width: '100%',
+    height: 140 * scale,
+    opacity: 0.95,
   },
   offerIconPlaceholder: {
-    width: 80 * scale,
+    width: '100%',
+    height: 140 * scale,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgba(255,255,255,0.1)',
   },
   offerCardContent: {
-    flex: 1,
     padding: 14,
+    backgroundColor: '#FFFFFF',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  offerActionContainer: {
+    alignItems: 'center',
     justifyContent: 'center',
+    borderLeftWidth: 1,
+    borderLeftColor: '#F1F5F9',
+    paddingLeft: 12,
+  },
+  offerClickCirc: {
+    width: 36 * scale,
+    height: 36 * scale,
+    borderRadius: 18 * scale,
+    backgroundColor: '#FF2B5C',
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 4,
+    shadowColor: '#FF2B5C',
+    shadowOpacity: 0.3,
+    shadowOffset: { width: 0, height: 4 },
+  },
+  offerTapText: {
+    fontSize: 8 * scale,
+    fontFamily: 'PoppinsBold',
+    color: '#FF2B5C',
+    marginTop: 4,
+    fontWeight: '900',
   },
   offerBadgePill: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.9)',
+    backgroundColor: '#FFF0F3',
     alignSelf: 'flex-start',
     paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 10,
-    marginBottom: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
+    marginBottom: 6,
     gap: 4,
   },
   offerBadgeText: {
     fontSize: 9 * scale,
     fontFamily: 'PoppinsBold',
     color: '#FF2B5C',
-    marginLeft: 3,
     letterSpacing: 0.5,
   },
   offerCardTitle: {
-    fontSize: 14 * scale,
+    fontSize: 16 * scale,
     fontFamily: 'PoppinsBold',
-    color: '#FFFFFF',
-    lineHeight: 20,
-    marginBottom: 4,
+    color: '#1C1C1C',
+    fontWeight: '900',
+    marginBottom: 1,
   },
   offerCardDesc: {
-    fontSize: 11 * scale,
+    fontSize: 12 * scale,
     fontFamily: 'PoppinsMedium',
-    color: 'rgba(255,255,255,0.8)',
-    lineHeight: 16,
+    color: '#64748B',
+    lineHeight: 16 * scale,
   },
   dotContainer: {
     flexDirection: 'row',
@@ -1642,9 +2029,32 @@ const offerStyles = StyleSheet.create({
     marginTop: 4,
   },
   itemPrice: {
-    fontSize: 14 * scale,
-    fontFamily: 'PoppinsExtraBold',
+    fontSize: 16 * scale,
+    fontFamily: 'PoppinsBold',
     color: '#FF2B5C',
+    fontWeight: '900',
+  },
+  itemOriginalPrice: {
+    fontSize: 11 * scale,
+    fontFamily: 'PoppinsMedium',
+    color: '#94A3B8',
+    textDecorationLine: 'line-through',
+    marginTop: 2,
+  },
+  itemRowDiscountBadge: {
+    position: 'absolute',
+    top: 6,
+    left: 6,
+    backgroundColor: '#FF2B5C',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+    zIndex: 2,
+  },
+  itemRowDiscountText: {
+    color: '#FFFFFF',
+    fontSize: 10 * scale,
+    fontFamily: 'PoppinsBold',
     fontWeight: '900',
   },
   catLabel: {
@@ -1664,70 +2074,193 @@ const offerStyles = StyleSheet.create({
   itemBadgeText: {
     fontSize: 9 * scale,
     fontFamily: 'PoppinsBold',
-     color: '#64748B',
+    color: '#64748B',
   },
   offerClickHint: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 8,
-    backgroundColor: 'rgba(255,255,255,0.15)',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
+    marginTop: 10,
+    backgroundColor: '#F8FAFC',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     borderRadius: 12,
     alignSelf: 'flex-start',
-    gap: 6,
+    gap: 8,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
   offerClickHintText: {
     fontSize: 10 * scale,
     fontFamily: 'PoppinsBold',
-    color: '#FFFFFF',
+    color: '#FF2B5C',
     fontWeight: '900',
-  },
-  itemRowCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 22,
-    marginBottom: 12,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOpacity: 0.04,
-    shadowOffset: { width: 0, height: 4 },
-  },
-  itemRowImage: {
-    width: 90 * scale,
-    height: 90 * scale,
-    borderRadius: 18,
-    backgroundColor: '#F8F9FA',
-  },
-  itemRowInfo: {
-    flex: 1,
-    marginLeft: 15,
-    justifyContent: 'center',
-  },
-  itemRowDesc: {
-    fontSize: 11 * scale,
-    fontFamily: 'PoppinsMedium',
-    color: '#94A3B8',
-    marginTop: 2,
-    marginBottom: 8,
+    letterSpacing: 0.5,
   },
   addCircleBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#16a34a',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 12,
+    backgroundColor: '#FF2B5C',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 14,
     gap: 5,
   },
   addBtnText: {
-    fontSize: 11 * scale,
+    fontSize: 13 * scale,
     fontFamily: 'PoppinsBold',
     color: '#FFF',
+    fontWeight: '900',
+  },
+  
+  discountBadgeSmall: {
+    backgroundColor: 'rgba(22, 163, 74, 0.1)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    marginTop: 4,
+    alignSelf: 'flex-start',
+  },
+  discountBadgeTextSmall: {
+    fontSize: 9 * scale,
+    fontFamily: 'PoppinsBold',
+    color: '#166534',
+    fontWeight: '900',
+  },
+  
+  // PREMIUM MODAL STYLES ADDED
+  premiumModalHeader: {
+    flexDirection: 'row',
+    padding: 24,
+    paddingTop: 30,
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    borderBottomWidth: 0,
+  },
+  modalBadge: {
+    alignSelf: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.25)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 20,
+    marginBottom: 8,
+    gap: 4,
+  },
+  modalBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 10 * scale,
+    fontFamily: 'PoppinsBold',
+    fontWeight: '900',
+    letterSpacing: 0.5,
+  },
+  premiumModalTitle: {
+    color: '#FFFFFF',
+    fontSize: 22 * scale,
+    fontFamily: 'PoppinsBold',
+    fontWeight: '900',
+    marginBottom: 2,
+    letterSpacing: -0.5,
+  },
+  premiumModalSub: {
+    color: 'rgba(255,255,255,0.9)',
+    fontSize: 13 * scale,
+    fontFamily: 'PoppinsMedium',
+  },
+  modalCloseCirc: {
+    width: 36 * scale,
+    height: 36 * scale,
+    borderRadius: 18 * scale,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 4 },
+  },
+  premiumItemCard: {
+    flexDirection: 'row',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    marginBottom: 16,
+    padding: 12,
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+    alignItems: 'center',
+  },
+  premiumImageWrap: {
+    width: 100 * scale,
+    height: 100 * scale,
+    borderRadius: 16,
+    backgroundColor: '#F8F9FA',
+    position: 'relative',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 3 },
+  },
+  premiumItemImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 15,
+    resizeMode: 'cover',
+  },
+  premiumDiscountBadge: {
+    position: 'absolute',
+    top: -6,
+    left: -6,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 10,
+    elevation: 4,
+    shadowColor: '#FFB800',
+    shadowOpacity: 0.4,
+    shadowOffset: { width: 0, height: 2 },
+    borderWidth: 1,
+    borderColor: '#FFF',
+  },
+  premiumDiscountText: {
+    color: '#FFF',
+    fontSize: 10 * scale,
+    fontFamily: 'PoppinsBold',
+    fontWeight: '900',
+  },
+  premiumItemInfo: {
+    flex: 1,
+    marginLeft: 16,
+    justifyContent: 'space-between',
+    minHeight: 90 * scale,
+  },
+  premiumItemName: {
+    fontSize: 15 * scale,
+    fontFamily: 'PoppinsBold',
+    color: '#1E293B',
+    lineHeight: 20 * scale,
+    fontWeight: '900',
+  },
+  premiumPriceActionRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    marginTop: 8,
+  },
+  premiumOriginalPrice: {
+    fontSize: 12 * scale,
+    fontFamily: 'PoppinsMedium',
+    color: '#94A3B8',
+    textDecorationLine: 'line-through',
+    marginTop: 2,
+  },
+  premiumActualPrice: {
+    fontSize: 18 * scale,
+    fontFamily: 'PoppinsBold',
+    color: '#FF2B5C',
     fontWeight: '900',
   },
 });

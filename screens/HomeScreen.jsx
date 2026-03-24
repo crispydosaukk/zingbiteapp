@@ -236,10 +236,10 @@ export default function HomeScreen({ navigation }) {
 
               <View style={styles.mainTitleWrap}>
                 <Text style={styles.mainTitleBlack}>Order UK’S Finest Quality</Text>
-                <Text 
+                <Text
                   style={[
-                    styles.mainTitleOrange, 
-                    { 
+                    styles.mainTitleOrange,
+                    {
                       color: '#C62828',
                       fontSize: 28,
                       marginVertical: 2

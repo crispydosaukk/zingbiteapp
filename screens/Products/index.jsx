@@ -632,7 +632,21 @@ export default function Products({ route, navigation }) {
             )}
 
             <View style={styles.priceRow}>
-              <Text style={styles.price}>£{item.price}</Text>
+              <View style={{ flexDirection: 'column' }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <Text style={styles.price}>£{item.price}</Text>
+                  {(item.discount_price && Number(item.discount_price) > Number(item.price)) && (
+                    <Text style={styles.originalPrice}>£{item.discount_price}</Text>
+                  )}
+                </View>
+                {(item.discount_price && Number(item.discount_price) > Number(item.price)) && (
+                  <View style={styles.discountBadgeSmall}>
+                    <Text style={styles.discountBadgeTextSmall}>
+                      SAVE {Math.round(((Number(item.discount_price) - Number(item.price)) / Number(item.discount_price)) * 100)}%
+                    </Text>
+                  </View>
+                )}
+              </View>
 
               {qty > 0 ? (
                 <View style={styles.qtyRow}>
@@ -1139,6 +1153,27 @@ const styles = StyleSheet.create({
     fontFamily: "PoppinsBold",
     fontWeight: "900",
     color: "#FF2B5C",
+  },
+  originalPrice: {
+    fontSize: 12 * scale,
+    fontFamily: "PoppinsMedium",
+    color: "#94A3B8",
+    textDecorationLine: 'line-through',
+    marginTop: 2,
+  },
+  discountBadgeSmall: {
+    backgroundColor: 'rgba(22, 163, 74, 0.1)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    marginTop: 2,
+    alignSelf: 'flex-start',
+  },
+  discountBadgeTextSmall: {
+    fontSize: 9 * scale,
+    fontFamily: 'PoppinsBold',
+    color: '#166534',
+    fontWeight: '900',
   },
 
   qtyRow: {

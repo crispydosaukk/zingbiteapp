@@ -17,7 +17,7 @@ export const fetchProducts = async (userId, categoryId) => {
           }
 
           return {
-            ...product,
+            ...product, // The API natively returns 'price' and 'discount_price'
             contains: Array.isArray(c) ? c : [],
             restaurantId: product.user_id,
           };

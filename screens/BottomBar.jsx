@@ -10,43 +10,68 @@ export default function BottomBar({ navigation }) {
   const insets = useSafeAreaInsets();
 
   return (
-    <View style={[styles.wrapper, { paddingBottom: insets.bottom }]}>
-      {/* HOME */}
-      <TouchableOpacity style={styles.tabButton} onPress={() => navigation.navigate("Home")}>
-        <Ionicons name="home-outline" size={24 * scale} color="#333" />
-        <Text style={styles.label}>Home</Text>
+    <View style={styles.bottomBarContainer}>
+      <TouchableOpacity 
+        style={styles.tabItem} 
+        onPress={() => navigation.navigate("Home")}
+        activeOpacity={0.6}
+      >
+        <Ionicons name="home-outline" size={24 * scale} color="#334155" />
+        <Text style={styles.tabLabel}>HOME</Text>
       </TouchableOpacity>
 
-      {/* ORDERS */}
-      <TouchableOpacity style={styles.tabButton} onPress={() => navigation.navigate("Orders")}>
-        <Ionicons name="receipt-outline" size={24 * scale} color="#333" />
-        <Text style={styles.label}>Orders</Text>
+      <TouchableOpacity 
+        style={styles.tabItem} 
+        onPress={() => navigation.navigate("Orders")}
+        activeOpacity={0.6}
+      >
+        <Ionicons name="receipt-outline" size={24 * scale} color="#334155" />
+        <Text style={styles.tabLabel}>ORDERS</Text>
       </TouchableOpacity>
 
-      {/* QR SCAN */}
-      <TouchableOpacity style={styles.qrButton} onPress={() => navigation.navigate("Scanner")}>
-        <Ionicons name="qr-code-outline" size={26 * scale} color="#fff" />
+      <TouchableOpacity 
+        style={styles.tabItem} 
+        onPress={() => navigation.navigate("Credits")}
+        activeOpacity={0.6}
+      >
+        <Ionicons name="wallet-outline" size={24 * scale} color="#334155" />
+        <Text style={styles.tabLabel}>CREDITS</Text>
       </TouchableOpacity>
 
-      {/* CREDITS */}
-      <TouchableOpacity style={styles.tabButton} onPress={() => navigation.navigate("Credits")}>
-        <Ionicons name="wallet-outline" size={24 * scale} color="#333" />
-        <Text style={styles.label}>Credits</Text>
-      </TouchableOpacity>
-
-      {/* PROFILE */}
-      <TouchableOpacity style={styles.tabButton} onPress={() => navigation.navigate("Profile")}>
-        <Ionicons name="person-outline" size={24 * scale} color="#333" />
-        <Text style={styles.label}>Profile</Text>
+      <TouchableOpacity 
+        style={styles.tabItem} 
+        onPress={() => navigation.navigate("Profile")}
+        activeOpacity={0.6}
+      >
+        <Ionicons name="person-outline" size={24 * scale} color="#334155" />
+        <Text style={styles.tabLabel}>PROFILE</Text>
       </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  wrapper: { backgroundColor: "#fff", borderTopWidth: 0.4, borderColor: "#e2e2e2", elevation: 10, shadowColor: "#000", shadowOpacity: 0.1, shadowRadius: 8, shadowOffset: { width: 0, height: -2 }, flexDirection: "row", alignItems: "center", justifyContent: "space-around" },
-  container: {}, // not used now, kept if you want later
-  tabButton: { alignItems: "center", justifyContent: "center", width: width * 0.18, paddingTop: 8, paddingBottom: 6 },
-  label: { fontSize: 11 * scale, marginTop: 2, color: "#444", fontWeight: "500" },
-  qrButton: { width: 52, height: 52, borderRadius: 30, backgroundColor: "#16a34a", justifyContent: "center", alignItems: "center", marginBottom: 6, elevation: 12, shadowColor: "#000", shadowOpacity: 0.25, shadowRadius: 6, shadowOffset: { width: 0, height: 3 } },
+  bottomBarContainer: {
+    flexDirection: "row",
+    backgroundColor: "#FFFFFF",
+    borderTopWidth: 1,
+    borderTopColor: "#F1F5F9",
+    height: 65 * scale,
+    alignItems: "center",
+    justifyContent: "space-between",
+    elevation: 0, // Keep it flat like image 1
+  },
+  tabItem: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingBottom: 2,
+  },
+  tabLabel: {
+    fontSize: 10 * scale,
+    fontFamily: "PoppinsSemiBold",
+    color: "#1E293B",
+    marginTop: 4,
+    letterSpacing: 0.5,
+  },
 });

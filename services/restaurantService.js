@@ -11,13 +11,17 @@ export const fetchRestaurants = async (lat, lng) => {
     const res = await api.get(url);
     if (res.data.status === 1) {
       return res.data.data.map(r => ({
+        ...r, // Spread everything for safety
         id: r.id,
         userId: r.userid,
+        foodType: r.food_type ?? r.foodType,
+        isHalal: r.is_halal ?? r.isHalal,
+        cuisineType: r.cuisine_type ?? r.cuisineType,
         name: r.name,
         address: r.address,
         photo: r.photo,
         instore: r.instore,
-        kerbside: r.kerbside,
+        kerbside: r.kerbside ?? r.kerbelde,
         distance: r.distance,
       }));
     }

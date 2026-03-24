@@ -41,69 +41,97 @@ const { width } = Dimensions.get("window");
 const scale = width / 400;
 const FONT_FAMILY = Platform.select({ ios: "System", android: "System" });
 
-function RestaurantCard({ name, address, photo, onPress, instore, kerbside, distance, index }) {
+function RestaurantCard({ name, address, photo, onPress, instore, kerbside, distance, index, foodType, isHalal }) {
   const isEven = index % 2 === 0;
+
+  // Extremely robust dynamic parsing (0=Veg, 1=NonVeg, 2=Jain)
+  const rawFT = foodType !== null && foodType !== undefined ? String(foodType) : "";
+  const foodTypeArr = rawFT ? rawFT.split(',').map(s => s.trim().toLowerCase()) : [];
+  
+  const isVeg = foodTypeArr.includes('0') || foodTypeArr.includes('veg') || foodTypeArr.includes('pure veg');
+  const isNonVeg = foodTypeArr.includes('1') || foodTypeArr.includes('nonveg') || foodTypeArr.includes('non-veg');
+  const isJain = foodTypeArr.includes('2') || foodTypeArr.includes('jain');
+  const isHalalValue = Number(isHalal) === 1 || String(isHalal).trim().toLowerCase() === "1" || String(isHalal).trim().toLowerCase() === "halal";
+
   return (
     <TouchableOpacity
       style={cardStyles.card}
       onPress={onPress}
       activeOpacity={0.9}
     >
-      <LinearGradient
-        colors={isEven ? ["#FFF", "#FDF2F8"] : ["#FFF", "#F0FDF4"]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
-        style={cardStyles.cardBody}
-      >
-        <View style={cardStyles.imageContainer}>
+      <View style={cardStyles.cardBody}>
+        <View style={cardStyles.imageColumn}>
           <Image
             source={photo ? { uri: photo } : RestaurantImg}
             style={cardStyles.image}
           />
+          {distance !== null && distance !== undefined && (
+            <View style={cardStyles.distanceBadgeBelow}>
+              <Ionicons name="navigate" size={10 * scale} color="#FFF" />
+              <Text style={cardStyles.distanceText}>{(distance * 0.621371).toFixed(2)} mi</Text>
+            </View>
+          )}
         </View>
 
         <View style={cardStyles.info}>
           <View style={cardStyles.headerRow}>
-            <Text style={cardStyles.name}>
+            <Text style={cardStyles.name} numberOfLines={1}>
               {name}
             </Text>
-            <Ionicons name="chevron-forward" size={18 * scale} color="#CCC" />
+            <Ionicons name="chevron-forward" size={18 * scale} color="#CBD5E1" />
+          </View>
+
+          {/* DYNAMIC FOOD TYPE ROW */}
+          <View style={cardStyles.foodBadgeRow}>
+            {isVeg && (
+              <View style={cardStyles.vegBadgeCompact}>
+                <Ionicons name="leaf" size={12 * scale} color="#16a34a" />
+                <Text style={[cardStyles.dietText, { color: '#16a34a' }]}>PURE VEG</Text>
+              </View>
+            )}
+            {isNonVeg && (
+              <View style={cardStyles.vegBadgeCompact}>
+                <View style={[cardStyles.dietDot, { borderColor: '#C62828' }]}>
+                  <View style={[cardStyles.dietInner, { backgroundColor: '#C62828' }]} />
+                </View>
+                <Text style={[cardStyles.dietText, { color: '#C62828' }]}>
+                  NON-VEG{isHalalValue ? " (HALAL)" : ""}
+                </Text>
+              </View>
+            )}
+            {isJain && (
+              <View style={cardStyles.vegBadgeCompact}>
+                <Ionicons name="flower" size={12 * scale} color="#DB2777" />
+                <Text style={[cardStyles.dietText, { color: '#DB2777' }]}>JAIN</Text>
+              </View>
+            )}
           </View>
 
           <View style={cardStyles.addressRow}>
-            <Ionicons name="location-sharp" size={14 * scale} color="#E23744" style={{ marginTop: 2 }} />
-            <Text style={cardStyles.address} numberOfLines={3}>
+            <Ionicons name="location" size={12 * scale} color="#94A3B8" style={{ marginTop: 2 }} />
+            <Text style={cardStyles.address} numberOfLines={1}>
               {address}
             </Text>
           </View>
 
-          {distance !== null && distance !== undefined && (
-            <View style={cardStyles.distanceRow}>
-              <View style={cardStyles.distanceBadge}>
-                <Ionicons name="navigate" size={12 * scale} color="#FFF" />
-                <Text style={cardStyles.distanceText}>{distance} km</Text>
-              </View>
-              <Text style={cardStyles.awayText}>away from you</Text>
+          <View style={cardStyles.bottomRow}>
+            <View style={cardStyles.serviceGroup}>
+              {instore && (
+                <View style={cardStyles.serviceItem}>
+                  <Ionicons name="storefront" size={14 * scale} color="#C62828" />
+                  <Text style={cardStyles.serviceText}>In-store</Text>
+                </View>
+              )}
+              {kerbside && (
+                <View style={cardStyles.serviceItem}>
+                  <Ionicons name="car" size={14 * scale} color="#16a34a" />
+                  <Text style={[cardStyles.serviceText, { color: '#16a34a' }]}>Kerbside</Text>
+                </View>
+              )}
             </View>
-          )}
-
-          <View style={cardStyles.serviceRow}>
-            {instore && (
-              <View style={cardStyles.serviceChip}>
-                <Ionicons name="storefront" size={16 * scale} color="#FF2B5C" />
-                <Text style={cardStyles.serviceChipText}>In-store</Text>
-              </View>
-            )}
-
-            {kerbside && (
-              <View style={cardStyles.serviceChip}>
-                <Ionicons name="car-sport" size={18 * scale} color="#16a34a" />
-                <Text style={[cardStyles.serviceChipText, { color: '#16a34a' }]}>Kerbside</Text>
-              </View>
-            )}
           </View>
         </View>
-      </LinearGradient>
+      </View>
     </TouchableOpacity>
   );
 }
@@ -121,6 +149,7 @@ export default function Resturent({ navigation }) {
   const [searchLocationModal, setSearchLocationModal] = useState(false);
   const [locationSearchQuery, setLocationSearchQuery] = useState("");
   const [locationSuggestions, setLocationSuggestions] = useState([]);
+  const [infoVisible, setInfoVisible] = useState(false);
 
   const scrollRef = useRef(null);
   const isFocused = useIsFocused();
@@ -149,28 +178,28 @@ export default function Resturent({ navigation }) {
       title: "SIGNUP BONUS",
       subtitle: `EARN £${Number(settings?.signup_bonus_amount || 0).toFixed(2)} COMPLETELY FREE`,
       desc: "Register now and get instant credit in your wallet.",
-      icon: "gift-outline",
-      colors: ["#FF416C", "#FF4B2B"], // Red
+      icon: "gift",
+      colors: ["#0288D1", "#03A9F4"], // Brand Blue
       textColor: "#FFFFFF",
-      badgeColor: "rgba(255,255,255,0.25)",
+      badgeColor: "rgba(255,255,255,0.2)",
     },
     {
       title: "LOYALTY REWARDS",
       subtitle: `EARN £${Number(settings?.earn_per_order_amount || 0).toFixed(2)} ON EVERY ORDER`,
       desc: "Order your favorite food and get cashback every time.",
-      icon: "ribbon-outline",
-      colors: ["#1D976C", "#93F9B9"], // Green
-      textColor: "#004D40", // Dark green for better visibility
-      badgeColor: "rgba(0,77,64,0.15)",
+      icon: "ribbon",
+      colors: ["#F7CB45", "#FBC02D"], // Brand Yellow
+      textColor: "#1E293B",
+      badgeColor: "rgba(0,0,0,0.08)",
     },
     {
       title: "REFER & EARN",
       subtitle: `EARN £${Number(settings?.referral_bonus_amount || 0).toFixed(2)} PER FRIEND`,
       desc: "Invite your friends and earn rewards when they join.",
-      icon: "people-outline",
-      colors: ["#F2994A", "#F2C94C"], // Gold
-      textColor: "#5D4037", // Dark brown for contrast
-      badgeColor: "rgba(93,64,55,0.15)",
+      icon: "people",
+      colors: ["#1E293B", "#334155"], // Dark Premium
+      textColor: "#FFFFFF",
+      badgeColor: "rgba(255,255,255,0.15)",
     },
   ] : [];
 
@@ -519,16 +548,18 @@ export default function Resturent({ navigation }) {
       <TouchableOpacity
         activeOpacity={0.8}
         onPress={() => setSearchLocationModal(true)}
-        style={[styles.locationBar, { backgroundColor: offers[activeIndex]?.colors?.[0] || "#E23744", paddingTop: insets.top }]}
+        style={[styles.locationBar, { backgroundColor: offers[activeIndex]?.colors?.[0] || "#0288D1", paddingTop: insets.top }]}
       >
         <View style={styles.locationContent}>
-          <Ionicons name="location" size={16 * scale} color={offers[activeIndex]?.textColor || "#FFFFFF"} />
+          <View style={styles.locIconBg}>
+            <Ionicons name="location" size={14 * scale} color={offers[activeIndex]?.textColor || "#FFFFFF"} />
+          </View>
           <View style={styles.locationTextContainer}>
             <Text style={[styles.deliveringTo, { color: offers[activeIndex]?.textColor || "#FFFFFF", opacity: 0.8 }]}>
-              Your Current Location
+              YOUR CURRENT LOCATION
             </Text>
             <View style={styles.locationRow}>
-              <Text style={[styles.currentLocationText, { color: offers[activeIndex]?.textColor || "#FFFFFF" }]} numberOfLines={2}>
+              <Text style={[styles.currentLocationText, { color: offers[activeIndex]?.textColor || "#FFFFFF" }]} numberOfLines={1}>
                 {currentLocationName}
               </Text>
             </View>
@@ -536,44 +567,20 @@ export default function Resturent({ navigation }) {
         </View>
         <Ionicons
           name={locationLoading ? "sync" : "chevron-down"}
-          size={18 * scale}
+          size={16 * scale}
           color={offers[activeIndex]?.textColor || "#FFFFFF"}
         />
       </TouchableOpacity>
 
-      {/* Top Zomato-style Unified Section - Fully Dynamic Immersive Gradient */}
-      <View style={styles.topSection}>
-        {/* Dynamic Background Layers - Smooth cross-fade spread across the whole section */}
-        <View style={StyleSheet.absoluteFill}>
-          {offers.map((offer, i) => {
-            const opacity = scrollX.interpolate({
-              inputRange: [(i - 1) * width, i * width, (i + 1) * width],
-              outputRange: [0, 1, 0],
-              extrapolate: 'clamp',
-            });
-            return (
-              <Animated.View
-                key={`bg-${i}`}
-                style={[StyleSheet.absoluteFill, { opacity }]}
-              >
-                <LinearGradient
-                  colors={offer.colors}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 0, y: 1 }}
-                  style={StyleSheet.absoluteFill}
-                />
-              </Animated.View>
-            );
-          })}
-        </View>
-
+      {/* Top Zomato-style Unified Section - Clean Unified Background */}
+      <View style={[styles.topSection, { backgroundColor: offers[activeIndex]?.colors?.[0] || "#FFFFFF" }]}>
         <AppHeader
           user={user}
           navigation={navigation}
           cartItems={cartItems}
           onMenuPress={() => setMenuVisible(true)}
           transparent
-          statusColor={offers[activeIndex]?.colors?.[0] || "#E23744"}
+          statusColor={offers[activeIndex]?.colors?.[0] || "#0288D1"}
           textColor={offers[activeIndex]?.textColor || "#FFFFFF"}
           barStyle={offers[activeIndex]?.textColor === "#FFFFFF" ? "light-content" : "dark-content"}
           disableSafeArea
@@ -582,20 +589,18 @@ export default function Resturent({ navigation }) {
         {/* Search Bar */}
         <View style={styles.searchWrapper}>
           <View style={styles.searchBox}>
-            <View style={styles.searchLeft}>
-              <Ionicons
-                name="search"
-                size={20 * scale}
-                color="#E23744"
-              />
-              <TextInput
-                placeholder="Search restaurants, cuisines..."
-                placeholderTextColor="#999"
-                value={search}
-                onChangeText={setSearch}
-                style={styles.searchInput}
-              />
-            </View>
+            <Ionicons
+              name="search"
+              size={20 * scale}
+              color="#C62828"
+            />
+            <TextInput
+              placeholder="Search restaurants, cuisines..."
+              placeholderTextColor="#94A3B8"
+              value={search}
+              onChangeText={setSearch}
+              style={styles.searchInput}
+            />
           </View>
         </View>
 
@@ -671,15 +676,27 @@ export default function Resturent({ navigation }) {
         }
       >
         <View style={styles.contentWrap}>
-          {/* Info Banners in Premium Containers */}
-          <View style={styles.infoBannerRow}>
-            <View style={styles.infoCard}>
-              <Image source={AllergyAlert} style={styles.infoBannerImg} />
+          {/* Food Safety & Hygiene Dropdown */}
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() => setInfoVisible(!infoVisible)}
+            style={styles.infoDropdownHeader}
+          >
+            <View style={styles.infoTitleBox}>
+              <Ionicons name="shield-checkmark" size={18 * scale} color="#16a34a" />
+              <Text style={styles.infoDropdownText}>Food Safety & Hygiene</Text>
             </View>
-            <View style={styles.infoCard}>
-              <Image source={Rating5} style={styles.infoBannerImg} />
+            <Ionicons name={infoVisible ? "chevron-up" : "chevron-down"} size={18 * scale} color="#64748B" />
+          </TouchableOpacity>
+
+          {infoVisible && (
+            <View style={styles.infoExpandedContent}>
+              <View style={styles.infoBannerRowPlain}>
+                <Image source={AllergyAlert} style={styles.infoImageSingle} />
+                <Image source={Rating5} style={styles.infoImageSingle} />
+              </View>
             </View>
-          </View>
+          )}
 
           <View style={styles.listHeader}>
             <Text style={styles.listTitle}>Explore Our Locations</Text>
@@ -696,6 +713,8 @@ export default function Resturent({ navigation }) {
               instore={r.instore}
               kerbside={r.kerbside}
               distance={r.distance}
+              foodType={r.food_type || r.foodType || r.restaurant_food_type}
+              isHalal={r.is_halal || r.isHalal || r.halal}
               onPress={() =>
                 navigation.navigate("Categories", { userId: r.userId })
               }
@@ -819,19 +838,11 @@ export default function Resturent({ navigation }) {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#ffffff",
   },
   topSection: {
-    paddingBottom: 0, // Slider fills to the bottom
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
-    elevation: 4,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
+    paddingBottom: 0,
     zIndex: 10,
-    overflow: "hidden", // Clip the full-width slider to the rounded corners
   },
   locationBar: {
     paddingHorizontal: 16,
@@ -866,6 +877,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
+  locIconBg: {
+    width: 28 * scale,
+    height: 28 * scale,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: 14 * scale,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   retryBtn: {
     marginLeft: 10,
     backgroundColor: 'rgba(255,255,255,0.2)',
@@ -886,16 +905,16 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#ffffff",
-    borderRadius: 14,
-    paddingHorizontal: 12,
-    paddingVertical: Platform.OS === "ios" ? 12 : 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: Platform.OS === "ios" ? 14 : 4,
+    shadowColor: "#1E293B",
+    shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 5,
+    shadowRadius: 20,
+    elevation: 10,
     borderWidth: 1,
-    borderColor: "#F0F0F0",
+    borderColor: "rgba(255,255,255,0.8)",
   },
   searchLeft: {
     flex: 1,
@@ -1009,31 +1028,48 @@ const styles = StyleSheet.create({
     borderRadius: 3,
     marginHorizontal: 3,
   },
-  infoBannerRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+  infoDropdownHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     marginHorizontal: 16,
-    marginTop: 10,
-    marginBottom: 20,
-  },
-  infoCard: {
-    backgroundColor: '#FFF',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    backgroundColor: '#F8FAFC',
     borderRadius: 12,
-    padding: 8,
-    width: (width - 44) / 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 3,
+    marginTop: 10,
+    marginBottom: 5,
     borderWidth: 1,
-    borderColor: '#F0F0F0',
+    borderColor: '#F1F5F9',
   },
-  infoBannerImg: {
-    width: '100%',
+  infoTitleBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  infoDropdownText: {
+    fontSize: 14 * scale,
+    fontFamily: 'PoppinsSemiBold',
+    color: '#334155',
+    marginLeft: 10,
+  },
+  infoExpandedContent: {
+    marginHorizontal: 16,
+    marginBottom: 10,
+  },
+  infoBannerRowPlain: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 10,
+  },
+  infoImageSingle: {
+    width: (width - 44) / 2,
     height: 90 * scale,
-    borderRadius: 6,
+    borderRadius: 12,
     resizeMode: "contain",
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
   },
   sectionHeader: {
     paddingHorizontal: 16,
@@ -1059,7 +1095,7 @@ const styles = StyleSheet.create({
   viewAllText: {
     fontSize: 13 * scale,
     fontFamily: "PoppinsSemiBold",
-    color: "#E23744",
+    color: "#C62828",
   },
   contentWrap: {
     paddingTop: 10,
@@ -1235,7 +1271,7 @@ const styles = StyleSheet.create({
     marginLeft: 12,
     fontSize: 15 * scale,
     fontFamily: 'PoppinsSemiBold',
-    color: '#E23744',
+    color: '#C62828',
   },
   suggestionList: {
     paddingHorizontal: 16,
@@ -1266,16 +1302,12 @@ const styles = StyleSheet.create({
 const cardStyles = StyleSheet.create({
   card: {
     marginHorizontal: 16,
-    marginVertical: 8,
-    borderRadius: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 3,
+    marginVertical: 12,
+    borderRadius: 16,
+    backgroundColor: "#ffffff",
+    borderWidth: 1.5,
+    borderColor: "#F1F5F9",
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: '#F8F8F8',
   },
   cardBody: {
     flexDirection: "row",
@@ -1364,29 +1396,120 @@ const cardStyles = StyleSheet.create({
     fontFamily: "PoppinsBold",
     letterSpacing: 0.3,
   },
-  distanceRow: {
+  awayText: {
+    color: '#64748B',
+    fontSize: 11 * scale,
+    fontFamily: 'PoppinsMedium',
+  },
+  bottomRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 8,
+    justifyContent: 'space-between',
+    marginTop: 12,
+  },
+  serviceGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  serviceItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 12,
+  },
+  serviceText: {
+    fontSize: 12 * scale,
+    fontFamily: 'PoppinsBold',
+    marginLeft: 4,
+    color: '#C62828',
+  },
+  card: {
+    marginHorizontal: 16,
+    marginVertical: 10,
+    borderRadius: 20,
+    backgroundColor: "#ffffff",
+    borderWidth: 1.5,
+    borderColor: "#F1F5F9",
+    overflow: 'hidden',
   },
   distanceBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#E23744',
+    backgroundColor: '#334155',
     paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 12,
-    marginRight: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  distanceBadgeOverlay: {
+    position: 'absolute',
+    bottom: 8,
+    left: 8,
+    right: 8,
+    justifyContent: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(30, 41, 59, 0.9)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  imageColumn: {
+    alignItems: 'center',
+  },
+  distanceBadgeBelow: {
+    marginTop: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FF2B5C',
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 8,
+    width: 100 * scale,
+    justifyContent: 'center',
   },
   distanceText: {
     color: '#FFF',
-    fontSize: 12 * scale,
+    fontSize: 10 * scale,
     fontFamily: 'PoppinsBold',
     marginLeft: 4,
   },
-  awayText: {
-    color: '#666',
-    fontSize: 12 * scale,
-    fontFamily: 'PoppinsMedium',
-  }
+  foodBadgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+    flexWrap: 'wrap',
+  },
+  vegBadgeCompact: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 10,
+    backgroundColor: '#fff',
+    paddingVertical: 2,
+  },
+  dietDot: {
+    width: 14 * scale,
+    height: 14 * scale,
+    borderWidth: 1.5,
+    borderRadius: 2,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 2,
+  },
+  dietInner: {
+    width: 6 * scale,
+    height: 6 * scale,
+    borderRadius: 3 * scale,
+  },
+  dietText: {
+    fontSize: 10 * scale,
+    fontFamily: 'PoppinsBold',
+    marginLeft: 5,
+    letterSpacing: 0.5,
+    fontWeight: '900',
+  },
+  dietChipPlain: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
+    marginRight: 8,
+  },
 });

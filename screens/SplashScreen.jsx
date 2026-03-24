@@ -130,9 +130,9 @@ export default function SplashScreen({ navigation }) {
               />
             </View>
 
-            <Animated.View style={[styles.taglineContainer, { 
-                opacity: textOpacity,
-                transform: [{ translateY: textTranslateY }] 
+            <Animated.View style={[styles.taglineContainer, {
+              opacity: textOpacity,
+              transform: [{ translateY: textTranslateY }]
             }]}>
               <Text style={styles.taglineText}>Order. Bite. Enjoy. 🍔</Text>
               <View style={styles.accentLine} />
@@ -143,7 +143,7 @@ export default function SplashScreen({ navigation }) {
         <View style={{ flex: 1 }} />
 
         <Animated.View style={[styles.bottomInfo, { opacity: textOpacity }]}>
-            <Text style={styles.eternal}>WHERE TRADITION MEETS TASTE</Text>
+          <Text style={styles.eternal}>WHERE TRADITION MEETS TASTE</Text>
         </Animated.View>
 
         <View style={styles.footer}>
@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
     fontFamily: "PoppinsBold",
     fontSize: 20 * scale,
     color: "#1E293B",
-    fontWeight: '900',
+    fontWeight: '700',
     letterSpacing: 1.2,
     textTransform: 'uppercase',
   },
