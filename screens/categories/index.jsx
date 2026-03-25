@@ -62,6 +62,8 @@ export default function Categories({ route, navigation }) {
   const [instructionPopupVisible, setInstructionPopupVisible] = useState(false);
   const [instructionNote, setInstructionNote] = useState("");
   const [instructionPopupTarget, setInstructionPopupTarget] = useState(null);
+  const [successModalVisible, setSuccessModalVisible] = useState(false);
+  const [savedAmount, setSavedAmount] = useState(0);
   const [isOffersOpen, setIsOffersOpen] = useState(false);
   const offersAnim = useRef(new Animated.Value(0)).current;
 
@@ -282,16 +284,14 @@ export default function Categories({ route, navigation }) {
 
         // Saved Amount Calculation
         const discountValue = item.discount_price || item.product_discount_price || 0;
+        let saved = 0;
         if (discountValue && Number(discountValue) > Number(item.price)) {
-           const saved = Number(discountValue) - Number(item.price);
-           if (saved > 0) {
-             Alert.alert("🛒 Added to Cart", `Item safely added to your cart!\nYou saved £${saved.toFixed(2)} with this exclusive offer!`);
-           } else {
-             Alert.alert("🛒 Added to Cart", "Item successfully added to your cart!");
-           }
-        } else {
-           Alert.alert("🛒 Added to Cart", "Item successfully added to your cart!");
+           saved = Number(discountValue) - Number(item.price);
         }
+        
+        setSavedAmount(saved);
+        setInstructionPopupVisible(false);
+        setSuccessModalVisible(true);
 
       } else {
         Alert.alert("Error", res.message || "Could not add to cart");
@@ -740,151 +740,289 @@ export default function Categories({ route, navigation }) {
               })}
             </ScrollView>
           </Animated.View>
-
-          {/* Instruction Popup OVERLAYing the whole screen */}
-          {instructionPopupVisible && (
-            <View style={{
-              position: 'absolute',
-              top: 0, left: 0, right: 0, bottom: 0,
-              backgroundColor: 'rgba(0,0,0,0.5)',
-              justifyContent: 'center',
-              alignItems: 'center',
-              zIndex: 9999,
-            }}>
-              <View style={{
-                width: '85%',
-                backgroundColor: '#FFFFFF',
-                borderRadius: 24,
-                overflow: 'hidden',
-                elevation: 20,
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 10 },
-                shadowOpacity: 0.25,
-                shadowRadius: 20,
-              }}>
-                {/* Cart Icon Circle */}
-                <View style={{ alignItems: 'center', paddingTop: 28, paddingBottom: 8 }}>
-                  <View style={{
-                    width: 68 * scale,
-                    height: 68 * scale,
-                    borderRadius: 34 * scale,
-                    backgroundColor: 'rgba(22, 163, 74, 0.1)',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    borderWidth: 1.5,
-                    borderColor: 'rgba(22, 163, 74, 0.2)',
-                  }}>
-                    <Ionicons name="cart-outline" size={32 * scale} color="#16a34a" />
-                  </View>
-                </View>
-
-                {/* Name + Price + Close Row */}
-                <View style={{
-                  flexDirection: 'row',
-                  paddingHorizontal: 24,
-                  paddingTop: 12,
-                  paddingBottom: 4,
-                  alignItems: 'flex-start',
-                  justifyContent: 'space-between',
-                }}>
-                  <View style={{ flex: 1, paddingRight: 12 }}>
-                    {instructionPopupTarget && (
-                      <Text style={{
-                        fontSize: 18 * scale,
-                        fontFamily: 'PoppinsBold',
-                        fontWeight: '900',
-                        color: '#0F172A',
-                      }}>{instructionPopupTarget.name}</Text>
-                    )}
-                    {instructionPopupTarget && (
-                      <Text style={{
-                        fontSize: 16 * scale,
-                        fontFamily: 'PoppinsBold',
-                        fontWeight: '900',
-                        color: '#16a34a',
-                        marginTop: 2,
-                      }}>£{(Number(instructionPopupTarget.price)).toFixed(2)}</Text>
-                    )}
-                  </View>
-                  <TouchableOpacity
-                    onPress={() => { setInstructionPopupVisible(false); setInstructionPopupTarget(null); }}
-                    style={{ padding: 4, marginTop: 2 }}
-                  >
-                    <Ionicons name="close" size={22 * scale} color="#94A3B8" />
-                  </TouchableOpacity>
-                </View>
-
-                {/* Hint Text */}
-                <Text style={{
-                  fontSize: 13 * scale,
-                  fontFamily: 'PoppinsMedium',
-                  color: '#64748B',
-                  textAlign: 'center',
-                  paddingHorizontal: 24,
-                  marginTop: 8,
-                  marginBottom: 12,
-                }}>
-                  Enter any special instructions (e.g. "Spicy", "No Onion")
-                </Text>
-
-                {/* Text Input */}
-                <View style={{ paddingHorizontal: 24 }}>
-                  <TextInput
-                    style={{
-                      backgroundColor: '#F8FAFC',
-                      borderWidth: 1,
-                      borderColor: '#E2E8F0',
-                      minHeight: 90,
-                      width: '100%',
-                      borderRadius: 16,
-                      padding: 14,
-                      paddingTop: 14,
-                      fontSize: 14 * scale,
-                      fontFamily: 'PoppinsMedium',
-                      color: '#333',
-                      textAlignVertical: 'top',
-                    }}
-                    placeholder="Type your instructions..."
-                    value={instructionNote}
-                    onChangeText={setInstructionNote}
-                    multiline
-                    placeholderTextColor="#999999"
-                  />
-                </View>
-
-                {/* Add to Cart Button */}
-                <View style={{ paddingHorizontal: 24, paddingTop: 20, paddingBottom: 24 }}>
-                  <TouchableOpacity
-                    style={{ borderRadius: 14, overflow: 'hidden', elevation: 4 }}
-                    onPress={handleSubmitInstructionPopup}
-                    activeOpacity={0.85}
-                  >
-                    <LinearGradient
-                      colors={["#16a34a", "#15803d"]}
-                      style={{
-                        paddingVertical: 15,
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
-                    >
-                      <Text style={{
-                        color: '#FFF',
-                        fontSize: 16 * scale,
-                        fontFamily: 'PoppinsBold',
-                        fontWeight: '900',
-                        letterSpacing: 0.5,
-                      }}>
-                        {updating[instructionPopupTarget?.id] ? "Adding..." : "Add to Cart"}
-                      </Text>
-                    </LinearGradient>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </View>
-          )}
         </View>
       </Modal>
       )}
+
+      {/* Premium Notes/Instructions Popup */}
+      <Modal visible={instructionPopupVisible} transparent animationType="fade">
+        <View style={{
+          flex: 1,
+          backgroundColor: 'rgba(0,0,0,0.6)',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}>
+          <View style={{
+            width: '90%',
+            backgroundColor: '#FFF',
+            borderRadius: 32,
+            overflow: 'hidden',
+            elevation: 20,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 10 },
+            shadowOpacity: 0.3,
+            shadowRadius: 15,
+          }}>
+            {/* Header Gradient */}
+            <LinearGradient
+                  colors={["#FF2B5C", "#FF6B8B"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={{ paddingVertical: 18, alignItems: 'center' }}
+                >
+                  <Text style={{
+                    color: '#FFF',
+                    fontSize: 16 * scale,
+                    fontFamily: 'PoppinsBold',
+                    fontWeight: '900',
+                    letterSpacing: 1.2,
+                  }}>SPECIAL INSTRUCTIONS</Text>
+            </LinearGradient>
+
+            <View style={{ padding: 24 }}>
+              {/* Header Row */}
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
+                <View style={{ flex: 1 }}>
+                  {instructionPopupTarget && (
+                    <Text style={{ fontSize: 20 * scale, fontFamily: 'PoppinsBold', color: '#1E293B', fontWeight: '900' }}>
+                      {instructionPopupTarget.name}
+                    </Text>
+                  )}
+                  <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4, gap: 8 }}>
+                    {instructionPopupTarget && (
+                      <Text style={{ fontSize: 18 * scale, fontFamily: 'PoppinsBold', color: '#16a34a', fontWeight: '900' }}>
+                        £{Number(instructionPopupTarget.price || 0).toFixed(2)}
+                      </Text>
+                    )}
+                    {instructionPopupTarget && (instructionPopupTarget.discount_price || instructionPopupTarget.product_discount_price) && 
+                     Number(instructionPopupTarget.discount_price || instructionPopupTarget.product_discount_price) > Number(instructionPopupTarget.price) && (
+                      <Text style={{
+                        fontSize: 14 * scale,
+                        fontFamily: 'PoppinsMedium',
+                        color: '#94A3B8',
+                        textDecorationLine: 'line-through',
+                      }}>£{Number(instructionPopupTarget.discount_price || instructionPopupTarget.product_discount_price).toFixed(2)}</Text>
+                    )}
+                  </View>
+                </View>
+                <TouchableOpacity
+                  onPress={() => setInstructionPopupVisible(false)}
+                  style={{ padding: 4 }}
+                >
+                  <Ionicons name="close-circle" size={30 * scale} color="#CBD5E1" />
+                </TouchableOpacity>
+              </View>
+
+              {/* Savings Badge */}
+              {instructionPopupTarget && (instructionPopupTarget.discount_price || instructionPopupTarget.product_discount_price) && 
+                Number(instructionPopupTarget.discount_price || instructionPopupTarget.product_discount_price) > Number(instructionPopupTarget.price) && (
+                <View style={{
+                  backgroundColor: '#F0FDF4',
+                  paddingHorizontal: 12,
+                  paddingVertical: 6,
+                  borderRadius: 10,
+                  alignSelf: 'flex-start',
+                  marginTop: 4,
+                  marginBottom: 16,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  borderWidth: 1,
+                  borderColor: '#DCFCE7',
+                }}>
+                  <Ionicons name="sparkles" size={14} color="#16a34a" style={{ marginRight: 6 }} />
+                  <Text style={{
+                    fontSize: 12 * scale,
+                    fontFamily: 'PoppinsBold',
+                    color: '#16a34a',
+                    fontWeight: '900',
+                  }}>
+                    YOU SAVE £{(Number(instructionPopupTarget.discount_price || instructionPopupTarget.product_discount_price) - Number(instructionPopupTarget.price)).toFixed(2)}
+                  </Text>
+                </View>
+              )}
+
+              <Text style={{
+                fontSize: 14 * scale,
+                fontFamily: 'PoppinsSemiBold',
+                color: '#64748B',
+                marginBottom: 10,
+              }}>
+                Any specific requests for this item?
+              </Text>
+
+              <TextInput
+                style={{
+                  backgroundColor: '#F8FAFC',
+                  borderWidth: 1,
+                  borderColor: "#E2E8F0",
+                  minHeight: 120,
+                  width: '100%',
+                  borderRadius: 18,
+                  padding: 16,
+                  textAlignVertical: "top",
+                  fontSize: 15 * scale,
+                  color: "#1E293B",
+                  marginBottom: 24,
+                  fontFamily: 'PoppinsMedium',
+                }}
+                placeholder="e.g. Extra spicy, no onions, etc."
+                value={instructionNote}
+                onChangeText={setInstructionNote}
+                multiline
+                placeholderTextColor="#94A3B8"
+              />
+
+              {/* BUTTONS */}
+              <TouchableOpacity
+                onPress={handleSubmitInstructionPopup}
+                style={{ borderRadius: 16, overflow: 'hidden' }}
+              >
+                <LinearGradient
+                  colors={["#16a34a", "#059669"]}
+                  style={{ paddingVertical: 16, alignItems: 'center' }}
+                >
+                  <Text style={{ fontSize: 16 * scale, fontFamily: 'PoppinsBold', color: '#FFF', fontWeight: '900', letterSpacing: 1 }}>
+                    ADD TO CART
+                  </Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* PREMIUM SUCCESS MODAL */}
+      <Modal visible={successModalVisible} transparent animationType="fade">
+        <View style={{
+          flex: 1,
+          backgroundColor: 'rgba(0,0,0,0.6)',
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}>
+          <View style={{
+            width: '85%',
+            backgroundColor: '#FFFFFF',
+            borderRadius: 32,
+            padding: 30,
+            alignItems: 'center',
+            elevation: 30,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 15 },
+            shadowOpacity: 0.4,
+            shadowRadius: 20,
+          }}>
+            <View style={{
+              width: 80 * scale,
+              height: 80 * scale,
+              borderRadius: 40 * scale,
+              backgroundColor: '#F0FDF4',
+              justifyContent: 'center',
+              alignItems: 'center',
+              marginBottom: 20,
+              borderWidth: 2,
+              borderColor: '#DCFCE7',
+            }}>
+              <Ionicons name="checkmark-circle" size={50 * scale} color="#16a34a" />
+            </View>
+
+            <Text style={{
+              fontSize: 22 * scale,
+              fontFamily: 'PoppinsBold',
+              color: '#0F172A',
+              fontWeight: '900',
+              textAlign: 'center',
+            }}>Added to Cart!</Text>
+            
+            <Text style={{
+              fontSize: 14 * scale,
+              fontFamily: 'PoppinsMedium',
+              color: '#64748B',
+              textAlign: 'center',
+              marginTop: 8,
+            }}>
+              Your item is now in the cart.
+            </Text>
+
+            {savedAmount > 0 && (
+              <LinearGradient
+                colors={["#FFFBEB", "#FEF3C7"]}
+                style={{
+                  marginTop: 20,
+                  paddingHorizontal: 20,
+                  paddingVertical: 12,
+                  borderRadius: 20,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  borderWidth: 1,
+                  borderColor: '#FDE68A',
+                }}
+              >
+                <Ionicons name="gift" size={20} color="#D97706" style={{ marginRight: 10 }} />
+                <View>
+                  <Text style={{
+                    fontSize: 11 * scale,
+                    fontFamily: 'PoppinsBold',
+                    color: '#B45309',
+                    letterSpacing: 1,
+                  }}>YOU JUST SAVED</Text>
+                  <Text style={{
+                    fontSize: 18 * scale,
+                    fontFamily: 'PoppinsBold',
+                    color: '#92400E',
+                    fontWeight: '900',
+                  }}>£{savedAmount.toFixed(2)}</Text>
+                </View>
+              </LinearGradient>
+            )}
+
+            <View style={{ width: '100%', marginTop: 30, gap: 12 }}>
+              <TouchableOpacity
+                onPress={() => setSuccessModalVisible(false)}
+                style={{
+                  backgroundColor: '#F1F5F9',
+                  paddingVertical: 15,
+                  borderRadius: 16,
+                  alignItems: 'center',
+                }}
+              >
+                <Text style={{
+                  fontSize: 15 * scale,
+                  fontFamily: 'PoppinsBold',
+                  color: '#475569',
+                  fontWeight: '800',
+                }}>Continue Shopping</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => {
+                  setSuccessModalVisible(false);
+                  navigation.navigate("CartSummary");
+                }}
+              >
+                <LinearGradient
+                  colors={["#FF2B5C", "#E11D48"]}
+                  style={{
+                    paddingVertical: 15,
+                    borderRadius: 16,
+                    alignItems: 'center',
+                    flexDirection: 'row',
+                    justifyContent: 'center',
+                    gap: 8,
+                  }}
+                >
+                  <Ionicons name="basket" size={18} color="#FFF" />
+                  <Text style={{
+                    fontSize: 15 * scale,
+                    fontFamily: 'PoppinsBold',
+                    color: '#FFF',
+                    fontWeight: '800',
+                  }}>View My Cart</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       {/* TIMINGS MODAL */}
       <Modal visible={modalVisible} transparent animationType="fade">

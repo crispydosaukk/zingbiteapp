@@ -50,6 +50,8 @@ export default function Products({ route, navigation }) {
   const [updating, setUpdating] = useState({});
   const [pending, setPending] = useState({});
   const [noteInput, setNoteInput] = useState("");
+  const [successModalVisible, setSuccessModalVisible] = useState(false);
+  const [savedAmount, setSavedAmount] = useState(0);
   const [menuVisible, setMenuVisible] = useState(false);
   const [replaceModalVisible, setReplaceModalVisible] = useState(false);
   const [replaceAction, setReplaceAction] = useState(null);
@@ -542,8 +544,21 @@ export default function Products({ route, navigation }) {
       setPopupVisible(false);
       // clear target ids if we were in single-item flow
       setPopupTargetIds(null);
+
+      // Calculate Savings for success modal
+      if (prod) {
+        const discountValue = prod.discount_price || prod.product_discount_price || 0;
+        let saved = 0;
+        if (discountValue && Number(discountValue) > Number(prod.price)) {
+          saved = (Number(discountValue) - Number(prod.price)) * (cartItems[pid] || 1);
+        }
+        setSavedAmount(saved);
+        setSuccessModalVisible(true);
+      }
+
       // if coming from single-item add flow, don't navigate away; otherwise, go to CartSummary
       if (!popupTargetIds) {
+        setSuccessModalVisible(false); // don't show success modal if navigating to cart
         navigation.navigate("CartSummary", { cartItems, notes, user });
       }
     }
@@ -826,28 +841,47 @@ export default function Products({ route, navigation }) {
         navigation={navigation}
       />
 
-      {/* Notes popup */}
+      {/* Premium Notes/Instructions Popup */}
       <Modal visible={popupVisible} transparent animationType="fade">
         <View style={styles.popupOverlay}>
           <View style={styles.popupBox}>
+            {/* Header Gradient */}
             <LinearGradient
-              colors={["#F0FDF4", "#DCFCE7"]}
-              style={styles.popupContent}
-            >
-              {/* ICON CIRCLE */}
-              <View style={styles.addIconCircle}>
-                <Ionicons name="cart-outline" size={36 * scale} color="#16a34a" />
-              </View>
+                  colors={["#FF2B5C", "#FF6B8B"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={{ paddingVertical: 15, alignItems: 'center' }}
+                >
+                  <Text style={{
+                    color: '#FFF',
+                    fontSize: 16 * scale,
+                    fontFamily: 'PoppinsBold',
+                    fontWeight: '900',
+                    letterSpacing: 1,
+                  }}>SPECIAL INSTRUCTIONS</Text>
+            </LinearGradient>
 
-              {/* HEADER ROW */}
+            <View style={{ padding: 24, backgroundColor: '#FFF' }}>
+              {/* Header Row */}
               <View style={styles.popupHeaderRow}>
                 <View style={{ flex: 1 }}>
                   {currentProduct && (
                     <Text style={styles.popupTitle}>{currentProduct.name}</Text>
                   )}
-                  {currentProduct && (
-                    <Text style={styles.popupPrice}>£{currentProduct.price}</Text>
-                  )}
+                  <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4, gap: 8 }}>
+                    {currentProduct && (
+                      <Text style={styles.popupPrice}>£{currentProduct.price}</Text>
+                    )}
+                    {currentProduct && (currentProduct.discount_price || currentProduct.product_discount_price) && 
+                     Number(currentProduct.discount_price || currentProduct.product_discount_price) > Number(currentProduct.price) && (
+                      <Text style={{
+                        fontSize: 14 * scale,
+                        fontFamily: 'PoppinsMedium',
+                        color: '#94A3B8',
+                        textDecorationLine: 'line-through',
+                      }}>£{Number(currentProduct.discount_price || currentProduct.product_discount_price).toFixed(2)}</Text>
+                    )}
+                  </View>
                 </View>
                 <TouchableOpacity
                   onPress={() => {
@@ -856,21 +890,55 @@ export default function Products({ route, navigation }) {
                   }}
                   style={styles.popupCloseBtn}
                 >
-                  <Ionicons name="close" size={24 * scale} color="#999" />
+                  <Ionicons name="close-circle" size={28 * scale} color="#CBD5E1" />
                 </TouchableOpacity>
               </View>
 
-              <Text style={styles.popupHint}>
-                Enter any special instructions (e.g. "Spicy", "No Onion")
+              {/* Savings Badge */}
+              {currentProduct && (currentProduct.discount_price || currentProduct.product_discount_price) && 
+                Number(currentProduct.discount_price || currentProduct.product_discount_price) > Number(currentProduct.price) && (
+                <View style={{
+                  backgroundColor: '#F0FDF4',
+                  paddingHorizontal: 12,
+                  paddingVertical: 6,
+                  borderRadius: 10,
+                  alignSelf: 'flex-start',
+                  marginTop: 4,
+                  marginBottom: 12,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  borderWidth: 1,
+                  borderColor: '#DCFCE7',
+                }}>
+                  <Ionicons name="sparkles" size={14} color="#16a34a" style={{ marginRight: 6 }} />
+                  <Text style={{
+                    fontSize: 12 * scale,
+                    fontFamily: 'PoppinsBold',
+                    color: '#16a34a',
+                    fontWeight: '900',
+                  }}>
+                    YOU SAVE £{(Number(currentProduct.discount_price || currentProduct.product_discount_price) - Number(currentProduct.price)).toFixed(2)}
+                  </Text>
+                </View>
+              )}
+
+              <Text style={{
+                fontSize: 14 * scale,
+                fontFamily: 'PoppinsSemiBold',
+                color: '#475569',
+                marginTop: 10,
+                marginBottom: 8,
+              }}>
+                Any specific requests for this item?
               </Text>
 
               <TextInput
-                style={styles.popupInput}
-                placeholder="Type your instructions..."
+                style={[styles.popupInput, { marginBottom: 20 }]}
+                placeholder="e.g. Extra sauce, no onions, etc."
                 value={noteInput}
                 onChangeText={setNoteInput}
                 multiline
-                placeholderTextColor="#999999"
+                placeholderTextColor="#94A3B8"
               />
 
               {/* BUTTONS */}
@@ -889,17 +957,145 @@ export default function Products({ route, navigation }) {
                   onPress={handleNextPopup}
                 >
                   <LinearGradient
-                    colors={["#16a34a", "#15803d"]}
+                    colors={["#16a34a", "#059669"]}
                     style={styles.popupPrimaryBtn}
                   >
                     <Text style={styles.popupPrimaryText}>
-                      {popupIndex === popupIds.length - 1 ? "Add to Cart" : "Continue"}
+                      {popupIndex === popupIds.length - 1 ? "ADD TO CART" : "CONTINUE"}
                     </Text>
                   </LinearGradient>
                 </TouchableOpacity>
               </View>
-            </LinearGradient>
+            </View>
           </View>
+        </View>
+      </Modal>
+
+      {/* PREMIUM SUCCESS MODAL */}
+      <Modal visible={successModalVisible} transparent animationType="fade">
+        <View style={styles.popupOverlay}>
+          <Animated.View style={{
+            width: '85%',
+            backgroundColor: '#FFFFFF',
+            borderRadius: 32,
+            padding: 30,
+            alignItems: 'center',
+            elevation: 30,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 15 },
+            shadowOpacity: 0.4,
+            shadowRadius: 20,
+          }}>
+            <View style={{
+              width: 80 * scale,
+              height: 80 * scale,
+              borderRadius: 40 * scale,
+              backgroundColor: '#F0FDF4',
+              justifyContent: 'center',
+              alignItems: 'center',
+              marginBottom: 20,
+              borderWidth: 2,
+              borderColor: '#DCFCE7',
+            }}>
+              <Ionicons name="checkmark-circle" size={50 * scale} color="#16a34a" />
+            </View>
+
+            <Text style={{
+              fontSize: 22 * scale,
+              fontFamily: 'PoppinsBold',
+              color: '#0F172A',
+              fontWeight: '900',
+              textAlign: 'center',
+            }}>Added to Cart!</Text>
+            
+            <Text style={{
+              fontSize: 14 * scale,
+              fontFamily: 'PoppinsMedium',
+              color: '#64748B',
+              textAlign: 'center',
+              marginTop: 8,
+            }}>
+              Your item is now in the cart.
+            </Text>
+
+            {savedAmount > 0 && (
+              <LinearGradient
+                colors={["#FFFBEB", "#FEF3C7"]}
+                style={{
+                  marginTop: 20,
+                  paddingHorizontal: 20,
+                  paddingVertical: 12,
+                  borderRadius: 20,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  borderWidth: 1,
+                  borderColor: '#FDE68A',
+                }}
+              >
+                <Ionicons name="gift" size={20} color="#D97706" style={{ marginRight: 10 }} />
+                <View>
+                  <Text style={{
+                    fontSize: 11 * scale,
+                    fontFamily: 'PoppinsBold',
+                    color: '#B45309',
+                    letterSpacing: 1,
+                  }}>YOU JUST SAVED</Text>
+                  <Text style={{
+                    fontSize: 18 * scale,
+                    fontFamily: 'PoppinsBold',
+                    color: '#92400E',
+                    fontWeight: '900',
+                  }}>£{savedAmount.toFixed(2)}</Text>
+                </View>
+              </LinearGradient>
+            )}
+
+            <View style={{ width: '100%', marginTop: 30, gap: 12 }}>
+              <TouchableOpacity
+                onPress={() => setSuccessModalVisible(false)}
+                style={{
+                  backgroundColor: '#F1F5F9',
+                  paddingVertical: 15,
+                  borderRadius: 16,
+                  alignItems: 'center',
+                }}
+              >
+                <Text style={{
+                  fontSize: 15 * scale,
+                  fontFamily: 'PoppinsBold',
+                  color: '#475569',
+                  fontWeight: '800',
+                }}>Continue Shopping</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => {
+                  setSuccessModalVisible(false);
+                  navigation.navigate("CartSummary");
+                }}
+              >
+                <LinearGradient
+                  colors={["#FF2B5C", "#E11D48"]}
+                  style={{
+                    paddingVertical: 15,
+                    borderRadius: 16,
+                    alignItems: 'center',
+                    flexDirection: 'row',
+                    justifyContent: 'center',
+                    gap: 8,
+                  }}
+                >
+                  <Ionicons name="basket" size={18} color="#FFF" />
+                  <Text style={{
+                    fontSize: 15 * scale,
+                    fontFamily: 'PoppinsBold',
+                    color: '#FFF',
+                    fontWeight: '800',
+                  }}>View My Cart</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
+          </Animated.View>
         </View>
       </Modal>
 
