@@ -560,7 +560,8 @@ export default function Categories({ route, navigation }) {
             >
               <Animated.ScrollView
                 horizontal
-                pagingEnabled
+                snapToInterval={width - 28}
+                decelerationRate="fast"
                 showsHorizontalScrollIndicator={false}
                 onScroll={Animated.event(
                   [{ nativeEvent: { contentOffset: { x: bannerScrollX } } }],
@@ -600,6 +601,35 @@ export default function Categories({ route, navigation }) {
                   </TouchableOpacity>
                 ))}
               </Animated.ScrollView>
+              
+              {/* Pagination Dots */}
+              {promoOffers.length > 1 && (
+                <View style={offerStyles.dotContainer}>
+                  {promoOffers.map((_, i) => {
+                    const step = width - 28;
+                    const inputRange = [(i - 1) * step, i * step, (i + 1) * step];
+                    const dotWidth = bannerScrollX.interpolate({
+                      inputRange,
+                      outputRange: [6, 18, 6],
+                      extrapolate: 'clamp',
+                    });
+                    const bgColor = bannerScrollX.interpolate({
+                      inputRange,
+                      outputRange: ['#E2E8F0', '#FF2B5C', '#E2E8F0'],
+                      extrapolate: 'clamp',
+                    });
+                    return (
+                      <Animated.View
+                        key={`dot-${i}`}
+                        style={[
+                          offerStyles.dot,
+                          { width: dotWidth, backgroundColor: bgColor, marginHorizontal: 3 }
+                        ]}
+                      />
+                    );
+                  })}
+                </View>
+              )}
             </Animated.View>
           </View>
         )}
@@ -675,14 +705,9 @@ export default function Categories({ route, navigation }) {
                   const discountPercent = hasDiscount ? Math.round(((Number(discountValue) - Number(item.price)) / Number(discountValue)) * 100) : 0;
                   
                   return (
-                    <TouchableOpacity
+                    <View
                       key={idx}
                       style={offerStyles.premiumItemCard}
-                      activeOpacity={0.9}
-                      onPress={() => {
-                        setSelectedOffer(null);
-                        navigation.navigate("Products", { userId, productId: item.id });
-                      }}
                     >
                       <View style={offerStyles.premiumImageWrap}>
                         <Image
@@ -735,7 +760,7 @@ export default function Categories({ route, navigation }) {
                           )}
                         </TouchableOpacity>
                       </View>
-                  </TouchableOpacity>
+                  </View>
                 );
               })}
             </ScrollView>
@@ -1059,134 +1084,178 @@ export default function Categories({ route, navigation }) {
         </View>
       </Modal>
 
-      {/* RESTAURANT INFO MODAL */}
+      {/* PREMIUM RESTAURANT INFO MODAL */}
       <Modal visible={infoModalVisible} transparent animationType="fade">
-        <View style={styles.modalWrapper}>
-          <View style={styles.modalBox}>
-            <Text style={styles.modalTitle}>Restaurant Information</Text>
+        <View style={{
+          flex: 1,
+          backgroundColor: 'rgba(0,0,0,0.6)',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}>
+          <View style={{
+            width: '90%',
+            backgroundColor: '#FFF',
+            borderRadius: 32,
+            overflow: 'hidden',
+            elevation: 20,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 10 },
+            shadowOpacity: 0.3,
+            shadowRadius: 15,
+            maxHeight: '85%'
+          }}>
+            {/* Header Gradient */}
+            <LinearGradient
+              colors={["#FF2B5C", "#FF6B8B"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={{ paddingVertical: 20, alignItems: 'center', paddingHorizontal: 20 }}
+            >
+              <Text style={{
+                color: '#FFF',
+                fontSize: 18 * scale,
+                fontFamily: 'PoppinsBold',
+                fontWeight: '900',
+                letterSpacing: 0.5,
+              }}>Restaurant Information</Text>
+            </LinearGradient>
 
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.infoModalContent}>
-              {/* Basic Info */}
-              <View style={styles.infoSection}>
-                <View style={styles.contactRow}>
-                  <View style={styles.contactIconBg}>
-                    <Ionicons name="location" size={20} color="#FF2B5C" />
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 24 }}>
+              
+              {/* Contact Information Section */}
+              <View style={{ marginBottom: 20 }}>
+                <Text style={{ fontSize: 16 * scale, fontFamily: 'PoppinsBold', color: '#1E293B', marginBottom: 16 }}>Contact</Text>
+                
+                <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: 16 }}>
+                  <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#FFF0F3', alignItems: 'center', justifyContent: 'center', marginRight: 12, marginTop: 2 }}>
+                    <Ionicons name="location" size={22} color="#FF2B5C" />
                   </View>
-                  <Text style={styles.contactText}>{restaurant?.restaurant_address || 'Address not available'}</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 13 * scale, fontFamily: 'PoppinsMedium', color: '#64748B', marginBottom: 2 }}>Address</Text>
+                    <Text style={{ fontSize: 15 * scale, fontFamily: 'PoppinsSemiBold', color: '#1E293B' }}>{restaurant?.restaurant_address || 'Not available'}</Text>
+                  </View>
                 </View>
+
                 {restaurant?.restaurant_phonenumber && (
-                  <View style={styles.contactRow}>
-                    <View style={styles.contactIconBg}>
-                      <Ionicons name="call" size={18} color="#FF2B5C" />
+                  <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }} onPress={() => Linking.openURL(`tel:${restaurant.restaurant_phonenumber}`)}>
+                    <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#FFF0F3', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+                      <Ionicons name="call" size={20} color="#FF2B5C" />
                     </View>
-                    <TouchableOpacity style={{ flex: 1 }} onPress={() => Linking.openURL(`tel:${restaurant.restaurant_phonenumber}`)}>
-                      <Text style={[styles.contactText, styles.linkText]}>{restaurant.restaurant_phonenumber}</Text>
-                    </TouchableOpacity>
-                  </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ fontSize: 13 * scale, fontFamily: 'PoppinsMedium', color: '#64748B', marginBottom: 2 }}>Phone</Text>
+                      <Text style={{ fontSize: 15 * scale, fontFamily: 'PoppinsSemiBold', color: '#1E293B' }}>{restaurant.restaurant_phonenumber}</Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={16} color="#CBD5E1" />
+                  </TouchableOpacity>
                 )}
+
                 {restaurant?.restaurant_email && (
-                  <View style={styles.contactRow}>
-                    <View style={styles.contactIconBg}>
-                      <Ionicons name="mail" size={18} color="#FF2B5C" />
+                  <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }} onPress={() => Linking.openURL(`mailto:${restaurant.restaurant_email}`)}>
+                    <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#FFF0F3', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+                      <Ionicons name="mail" size={20} color="#FF2B5C" />
                     </View>
-                    <TouchableOpacity style={{ flex: 1 }} onPress={() => Linking.openURL(`mailto:${restaurant.restaurant_email}`)}>
-                      <Text style={[styles.contactText, styles.linkText]}>{restaurant.restaurant_email}</Text>
-                    </TouchableOpacity>
-                  </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ fontSize: 13 * scale, fontFamily: 'PoppinsMedium', color: '#64748B', marginBottom: 2 }}>Email</Text>
+                      <Text style={{ fontSize: 15 * scale, fontFamily: 'PoppinsSemiBold', color: '#1E293B' }}>{restaurant.restaurant_email}</Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={16} color="#CBD5E1" />
+                  </TouchableOpacity>
                 )}
+                
                 {restaurant?.website_url && (
-                  <View style={styles.contactRow}>
-                    <View style={styles.contactIconBg}>
-                      <Ionicons name="globe" size={18} color="#FF2B5C" />
+                  <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }} onPress={() => Linking.openURL(restaurant.website_url)}>
+                    <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#FFF0F3', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+                      <Ionicons name="globe" size={20} color="#FF2B5C" />
                     </View>
-                    <TouchableOpacity style={{ flex: 1 }} onPress={() => Linking.openURL(restaurant.website_url)}>
-                      <Text style={[styles.contactText, styles.linkText]}>{restaurant.website_url}</Text>
-                    </TouchableOpacity>
-                  </View>
-                )}
-                {restaurant?.google_review_link && (
-                  <View style={styles.contactRow}>
-                    <View style={styles.contactIconBg}>
-                      <Ionicons name="star" size={18} color="#FF2B5C" />
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ fontSize: 13 * scale, fontFamily: 'PoppinsMedium', color: '#64748B', marginBottom: 2 }}>Website</Text>
+                      <Text style={{ fontSize: 15 * scale, fontFamily: 'PoppinsSemiBold', color: '#FF2B5C' }}>Visit Website</Text>
                     </View>
-                    <TouchableOpacity style={{ flex: 1 }} onPress={() => Linking.openURL(restaurant.google_review_link)}>
-                      <Text style={[styles.contactText, styles.linkText]}>View Reviews</Text>
-                    </TouchableOpacity>
-                  </View>
+                    <Ionicons name="chevron-forward" size={16} color="#CBD5E1" />
+                  </TouchableOpacity>
                 )}
               </View>
 
-              <View style={styles.divider} />
+              <View style={{ height: 1, backgroundColor: '#F1F5F9', marginBottom: 20 }} />
 
-              <View style={styles.infoSection}>
-                <Text style={styles.sectionTitle}>Details</Text>
+              {/* Service Details Section */}
+              <View style={{ marginBottom: 20 }}>
+                <Text style={{ fontSize: 16 * scale, fontFamily: 'PoppinsBold', color: '#1E293B', marginBottom: 16 }}>Services & Preferences</Text>
+                
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' }}>
+                  {restaurant?.food_type && (
+                    <View style={{ width: '48%', marginBottom: 16, backgroundColor: '#F8FAFC', padding: 12, borderRadius: 16, borderWidth: 1, borderColor: '#F1F5F9' }}>
+                      <Ionicons name="restaurant" size={20} color="#FF2B5C" style={{ marginBottom: 8 }} />
+                      <Text style={{ fontSize: 12 * scale, fontFamily: 'PoppinsMedium', color: '#64748B' }}>Food Type</Text>
+                      <Text style={{ fontSize: 13 * scale, fontFamily: 'PoppinsSemiBold', color: '#1E293B', marginTop: 2 }}>{formatFoodType(restaurant.food_type)}</Text>
+                    </View>
+                  )}
+                  
+                  {restaurant?.cuisine_type && (
+                    <View style={{ width: '48%', marginBottom: 16, backgroundColor: '#F8FAFC', padding: 12, borderRadius: 16, borderWidth: 1, borderColor: '#F1F5F9' }}>
+                      <Ionicons name="pizza" size={20} color="#FF2B5C" style={{ marginBottom: 8 }} />
+                      <Text style={{ fontSize: 12 * scale, fontFamily: 'PoppinsMedium', color: '#64748B' }}>Cuisine</Text>
+                      <Text style={{ fontSize: 13 * scale, fontFamily: 'PoppinsSemiBold', color: '#1E293B', marginTop: 2 }}>{String(restaurant.cuisine_type)}</Text>
+                    </View>
+                  )}
 
-                {restaurant?.food_type && (
-                  <View style={styles.detailRow}>
-                    <Text style={styles.detailLabel}>Food Type</Text>
-                    <Text style={styles.detailValue}>{formatFoodType(restaurant.food_type)}</Text>
+                  <View style={{ width: '48%', marginBottom: 16, backgroundColor: '#F8FAFC', padding: 12, borderRadius: 16, borderWidth: 1, borderColor: '#F1F5F9' }}>
+                    <Ionicons name="leaf" size={20} color="#16a34a" style={{ marginBottom: 8 }} />
+                    <Text style={{ fontSize: 12 * scale, fontFamily: 'PoppinsMedium', color: '#64748B' }}>Halal</Text>
+                    <Text style={{ fontSize: 13 * scale, fontFamily: 'PoppinsSemiBold', color: '#1E293B', marginTop: 2 }}>{restaurant?.is_halal == 1 ? 'Yes' : 'No'}</Text>
                   </View>
-                )}
 
-                {restaurant?.cuisine_type && (
-                  <View style={styles.detailRow}>
-                    <Text style={styles.detailLabel}>Cuisine</Text>
-                    <Text style={styles.detailValue}>{String(restaurant.cuisine_type)}</Text>
-                  </View>
-                )}
+                  {(restaurant?.instore == 1) && (
+                    <View style={{ width: '48%', marginBottom: 16, backgroundColor: '#F8FAFC', padding: 12, borderRadius: 16, borderWidth: 1, borderColor: '#F1F5F9' }}>
+                      <Ionicons name="storefront" size={20} color="#FF2B5C" style={{ marginBottom: 8 }} />
+                      <Text style={{ fontSize: 12 * scale, fontFamily: 'PoppinsMedium', color: '#64748B' }}>In-store Dining</Text>
+                      <Text style={{ fontSize: 13 * scale, fontFamily: 'PoppinsSemiBold', color: '#1E293B', marginTop: 2 }}>Available</Text>
+                    </View>
+                  )}
 
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Halal</Text>
-                  <Text style={styles.detailValue}>{restaurant?.is_halal == 1 ? 'Yes' : 'No'}</Text>
+                  {(restaurant?.kerbside == 1) && (
+                    <View style={{ width: '48%', marginBottom: 16, backgroundColor: '#F8FAFC', padding: 12, borderRadius: 16, borderWidth: 1, borderColor: '#F1F5F9' }}>
+                      <Ionicons name="car-sport" size={20} color="#0284C7" style={{ marginBottom: 8 }} />
+                      <Text style={{ fontSize: 12 * scale, fontFamily: 'PoppinsMedium', color: '#64748B' }}>Kerbside Pickup</Text>
+                      <Text style={{ fontSize: 13 * scale, fontFamily: 'PoppinsSemiBold', color: '#1E293B', marginTop: 2 }}>Available</Text>
+                    </View>
+                  )}
+                  
+                  {restaurant?.parking_info && (
+                    <View style={{ width: '100%', marginBottom: 16, backgroundColor: '#F8FAFC', padding: 12, borderRadius: 16, borderWidth: 1, borderColor: '#F1F5F9' }}>
+                      <Ionicons name="business" size={20} color="#94A3B8" style={{ marginBottom: 8 }} />
+                      <Text style={{ fontSize: 12 * scale, fontFamily: 'PoppinsMedium', color: '#64748B' }}>Parking</Text>
+                      <Text style={{ fontSize: 13 * scale, fontFamily: 'PoppinsSemiBold', color: '#1E293B', marginTop: 2 }}>{restaurant.parking_info}</Text>
+                    </View>
+                  )}
                 </View>
-
-                {(restaurant?.instore == 1) && (
-                  <View style={styles.detailRow}>
-                    <Text style={styles.detailLabel}>In-store Dining</Text>
-                    <Text style={styles.detailValue}>Available</Text>
-                  </View>
-                )}
-
-                {(restaurant?.kerbside == 1) && (
-                  <View style={styles.detailRow}>
-                    <Text style={styles.detailLabel}>Kerbside Pickup</Text>
-                    <Text style={styles.detailValue}>Available</Text>
-                  </View>
-                )}
-
-                {restaurant?.parking_info && (
-                  <View style={styles.detailRow}>
-                    <Text style={styles.detailLabel}>Parking</Text>
-                    <Text style={styles.detailValue}>{restaurant.parking_info}</Text>
-                  </View>
-                )}
               </View>
 
               {/* Social Channels */}
               {(restaurant?.restaurant_facebook || restaurant?.restaurant_twitter || restaurant?.restaurant_instagram || restaurant?.restaurant_linkedin) && (
                 <>
-                  <View style={styles.divider} />
-                  <View style={styles.infoSection}>
-                    <Text style={styles.sectionTitle}>Follow Us</Text>
-                    <View style={styles.socialsContainer}>
+                  <View style={{ height: 1, backgroundColor: '#F1F5F9', marginBottom: 20 }} />
+                  <View style={{ marginBottom: 10 }}>
+                    <Text style={{ fontSize: 16 * scale, fontFamily: 'PoppinsBold', color: '#1E293B', marginBottom: 16 }}>Follow Us</Text>
+                    <View style={{ flexDirection: 'row', gap: 16 }}>
                       {restaurant?.restaurant_facebook && (
-                        <TouchableOpacity style={styles.socialIcon} onPress={() => Linking.openURL(restaurant.restaurant_facebook)}>
-                          <Ionicons name="logo-facebook" size={24} color="#1877F2" />
+                        <TouchableOpacity style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: '#F1F5F9', alignItems: 'center', justifyContent: 'center' }} onPress={() => Linking.openURL(restaurant.restaurant_facebook)}>
+                          <Ionicons name="logo-facebook" size={22} color="#1877F2" />
                         </TouchableOpacity>
                       )}
                       {restaurant?.restaurant_instagram && (
-                        <TouchableOpacity style={styles.socialIcon} onPress={() => Linking.openURL(restaurant.restaurant_instagram)}>
-                          <Ionicons name="logo-instagram" size={24} color="#E4405F" />
+                        <TouchableOpacity style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: '#F1F5F9', alignItems: 'center', justifyContent: 'center' }} onPress={() => Linking.openURL(restaurant.restaurant_instagram)}>
+                          <Ionicons name="logo-instagram" size={22} color="#E4405F" />
                         </TouchableOpacity>
                       )}
                       {restaurant?.restaurant_twitter && (
-                        <TouchableOpacity style={styles.socialIcon} onPress={() => Linking.openURL(restaurant.restaurant_twitter)}>
-                          <Ionicons name="logo-twitter" size={24} color="#1DA1F2" />
+                        <TouchableOpacity style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: '#F1F5F9', alignItems: 'center', justifyContent: 'center' }} onPress={() => Linking.openURL(restaurant.restaurant_twitter)}>
+                          <Ionicons name="logo-twitter" size={22} color="#1DA1F2" />
                         </TouchableOpacity>
                       )}
                       {restaurant?.restaurant_linkedin && (
-                        <TouchableOpacity style={styles.socialIcon} onPress={() => Linking.openURL(restaurant.restaurant_linkedin)}>
-                          <Ionicons name="logo-linkedin" size={24} color="#0A66C2" />
+                        <TouchableOpacity style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: '#F1F5F9', alignItems: 'center', justifyContent: 'center' }} onPress={() => Linking.openURL(restaurant.restaurant_linkedin)}>
+                          <Ionicons name="logo-linkedin" size={22} color="#0A66C2" />
                         </TouchableOpacity>
                       )}
                     </View>
@@ -1195,9 +1264,26 @@ export default function Categories({ route, navigation }) {
               )}
             </ScrollView>
 
-            <TouchableOpacity onPress={() => setInfoModalVisible(false)} style={styles.closeBtn}>
-              <Text style={styles.closeText}>Close</Text>
-            </TouchableOpacity>
+            <View style={{ padding: 20, paddingTop: 10 }}>
+              <TouchableOpacity onPress={() => setInfoModalVisible(false)}>
+                <LinearGradient
+                  colors={["#FF2B5C", "#E11D48"]}
+                  style={{
+                    paddingVertical: 16,
+                    borderRadius: 16,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Text style={{
+                    fontSize: 16 * scale,
+                    fontFamily: 'PoppinsBold',
+                    color: '#FFF',
+                    fontWeight: '900',
+                  }}>Close</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>
