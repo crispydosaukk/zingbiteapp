@@ -123,18 +123,12 @@ export default function LoginScreen({ navigation }) {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#ffffff" }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#B3E5FC" }}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-        <View style={styles.container}>
-
-          {/* TOP GREEN WAVE */}
-          <LinearGradient
-            colors={["#1d8f52", "#27b36a", "#41d48a"]}
-            style={styles.topWave}
-          />
+        <LinearGradient colors={["#B3E5FC", "#F7CB45"]} style={styles.container}>
 
           {/* LOGO */}
           <View style={styles.logoWrap}>
@@ -153,7 +147,7 @@ export default function LoginScreen({ navigation }) {
             <View style={styles.box}>
               <Text style={styles.label}>Email or Mobile Number</Text>
               <View style={styles.inputRow}>
-                <Ionicons name="person-outline" size={20} color="#1f4d35" />
+                <Ionicons name="person-outline" size={20} color="#1E293B" />
                 <TextInput
                   placeholder="Enter email or mobile number"
                   placeholderTextColor="#88a796"
@@ -177,7 +171,7 @@ export default function LoginScreen({ navigation }) {
                 <Ionicons
                   name="lock-closed-outline"
                   size={20}
-                  color="#1f4d35"
+                  color="#1E293B"
                 />
                 <TextInput
                   placeholder="Enter password"
@@ -196,16 +190,11 @@ export default function LoginScreen({ navigation }) {
 
             {/* LOGIN BUTTON */}
             <TouchableOpacity style={styles.loginBtn} onPress={handleLogin}>
-              <LinearGradient
-                colors={["#1a8b50", "#21a863", "#34c87c"]}
-                style={styles.loginGradient}
-              >
-                {loading ? (
-                  <ActivityIndicator size="small" color="#fff" />
-                ) : (
-                  <Text style={styles.loginText}>Login</Text>
-                )}
-              </LinearGradient>
+              {loading ? (
+                <ActivityIndicator size="small" color="#1E293B" />
+              ) : (
+                <Text style={styles.loginText}>Login</Text>
+              )}
             </TouchableOpacity>
 
             {/* Signup Link */}
@@ -220,13 +209,7 @@ export default function LoginScreen({ navigation }) {
             </Text>
           </View>
 
-          {/* BOTTOM GREEN WAVE */}
-          <LinearGradient
-            colors={["#1d8f52", "#27b36a", "#41d48a"]}
-            style={styles.bottomWave}
-          />
-
-        </View>
+        </LinearGradient>
       </KeyboardAvoidingView>
 
       {/* PREMIUM SUCCESS MODAL */}
@@ -241,7 +224,7 @@ export default function LoginScreen({ navigation }) {
             { transform: [{ scale: scaleAnim }] }
           ]}>
             <LinearGradient
-              colors={["#16a34a", "#15803d"]}
+              colors={["#E63946", "#C62828"]}
               style={styles.successGradient}
             >
               <View style={styles.checkRing}>
@@ -269,22 +252,17 @@ export default function LoginScreen({ navigation }) {
               colors={alertType === 'error' ? ["#FFF5F5", "#FFFFFF"] : ["#F0FDF4", "#FFFFFF"]}
               style={styles.alertContent}
             >
-              <View style={[styles.alertIconRing, { backgroundColor: alertType === 'error' ? '#FEE2E2' : '#DCFCE7' }]}>
+              <View style={[styles.alertIconRing, { backgroundColor: alertType === 'error' ? '#FEE2E2' : '#E0F2FE' }]}>
                 <Ionicons
                   name={alertType === 'error' ? "close-circle" : "information-circle"}
                   size={40}
-                  color={alertType === 'error' ? "#EF4444" : "#16A34A"}
+                  color={alertType === 'error' ? "#EF4444" : "#0288D1"}
                 />
               </View>
               <Text style={styles.alertTitleText}>{alertTitle}</Text>
               <Text style={styles.alertMsgText}>{alertMsg}</Text>
               <TouchableOpacity style={styles.alertBtn} onPress={hidePremiumAlert}>
-                <LinearGradient
-                  colors={alertType === 'error' ? ["#EF4444", "#DC2626"] : ["#16A34A", "#15803D"]}
-                  style={styles.alertBtnGrad}
-                >
-                  <Text style={styles.alertBtnText}>Ok</Text>
-                </LinearGradient>
+                <Text style={styles.alertBtnText}>Ok</Text>
               </TouchableOpacity>
             </LinearGradient>
           </Animated.View>
@@ -298,7 +276,7 @@ export default function LoginScreen({ navigation }) {
 /* ====================== STYLES ====================== */
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#ffffff" },
+  container: { flex: 1 },
 
   topWave: {
     height: "32%",
@@ -340,73 +318,69 @@ const styles = StyleSheet.create({
 
   title: {
     fontSize: 32,
-    fontWeight: "800",
-    color: "#1f4d35",
+    fontFamily: "PoppinsBold",
+    color: "#0F172A",
   },
-
   subtitle: {
     fontSize: 15,
-    color: "#4a7f65",
+    fontFamily: "PoppinsSemiBold",
+    color: "#475569",
     marginBottom: 30,
   },
-
   box: { marginBottom: 20 },
-
   label: {
-    color: "#1f4d35",
+    color: "#0F172A",
     marginBottom: 6,
-    fontWeight: "600",
+    fontFamily: "PoppinsSemiBold",
   },
-
   inputRow: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#e8f5ee",
+    backgroundColor: "#F1F5F9",
     borderRadius: 12,
     paddingHorizontal: 12,
   },
-
   input: {
     flex: 1,
     paddingVertical: 14,
     fontSize: 15,
+    fontFamily: "PoppinsMedium",
     color: "#000",
     marginLeft: 8,
   },
-
   helperText: {
-    color: "#4a7f65",
+    color: "#475569",
     fontSize: 13,
+    fontFamily: "PoppinsMedium",
     marginTop: 5,
   },
-
   forgotBtn: { alignSelf: "flex-end", marginTop: 4 },
-  forgotText: { color: "#1a8b50", fontWeight: "600" },
+  forgotText: { color: "#C62828", fontFamily: "PoppinsSemiBold" },
 
-  loginBtn: { marginTop: 10 },
-
-  loginGradient: {
-    paddingVertical: 15,
-    borderRadius: 12,
+  loginBtn: {
+    marginTop: 10,
+    borderWidth: 2,
+    borderColor: "#1E293B",
+    borderRadius: 14,
+    paddingVertical: 14,
+    justifyContent: "center",
     alignItems: "center",
   },
-
   loginText: {
-    color: "#fff",
+    color: "#1E293B",
     fontSize: 18,
-    fontWeight: "800",
+    fontFamily: "PoppinsSemiBold",
   },
-
   bottomText: {
     textAlign: "center",
     marginTop: 25,
-    color: "#2c6e49",
+    color: "#1E293B",
     fontSize: 15,
+    fontFamily: "PoppinsSemiBold",
   },
-
   signup: {
-    color: "#1a8b50",
-    fontWeight: "800",
+    color: "#C62828",
+    fontFamily: "PoppinsBold",
     textDecorationLine: "underline",
   },
 
@@ -526,16 +500,14 @@ const styles = StyleSheet.create({
   alertBtn: {
     width: "100%",
     borderRadius: 15,
-    overflow: "hidden",
-  },
-  alertBtnGrad: {
+    borderWidth: 2,
+    borderColor: "#1E293B",
     paddingVertical: 14,
     alignItems: "center",
   },
   alertBtnText: {
-    fontSize: 15 * scale,
-    fontFamily: "PoppinsBold",
-    color: "#FFF",
-    fontWeight: "800",
+    fontSize: 16 * scale,
+    fontFamily: "PoppinsSemiBold",
+    color: "#1E293B",
   },
 });

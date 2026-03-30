@@ -227,17 +227,12 @@ export default function SignupScreen({ navigation }) {
 
   return (
     <>
-      <View style={styles.root}>
+      <LinearGradient colors={["#B3E5FC", "#F7CB45"]} style={styles.root}>
         <StatusBar translucent backgroundColor="transparent" barStyle="dark-content" />
 
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingTop: insets.top + 20, paddingBottom: 60 }}>
 
-          <LinearGradient
-            colors={["#16a34a", "#15803d"]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.headerGradient}
-          >
+          <View style={styles.headerGradient}>
             <View style={styles.headerContent}>
               <Image source={require("../assets/logo.png")} style={styles.logo} />
               <Text style={styles.title}>Create Account</Text>
@@ -247,7 +242,7 @@ export default function SignupScreen({ navigation }) {
               {settings && animatedTexts.length > 0 && (
                 <Animated.View style={[styles.premiumOfferWrap, { opacity: fadeAnim }]}>
                   <LinearGradient
-                    colors={offers[activeIndex]?.colors || ["#FF2B5C", "#FF6B8B"]}
+                    colors={["#E63946", "#0288D1"]}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
                     style={styles.premiumOfferInner}
@@ -266,7 +261,7 @@ export default function SignupScreen({ navigation }) {
             {/* Decorative shapes */}
             <View style={styles.decor1} />
             <View style={styles.decor2} />
-          </LinearGradient>
+          </View>
 
           <View style={styles.formCard}>
 
@@ -319,7 +314,7 @@ export default function SignupScreen({ navigation }) {
 
             {/* DOB */}
             <TouchableOpacity style={styles.dobBtn} onPress={() => setShowDobPicker(true)}>
-              <Ionicons name="calendar-outline" size={20} color="#16a34a" />
+              <Ionicons name="calendar-outline" size={20} color="#1E293B" />
               <Text style={[styles.dobText, !dob && { color: "#94A3B8" }]}>
                 {dob ? dob.toDateString() : "Date of Birth"}
               </Text>
@@ -340,13 +335,13 @@ export default function SignupScreen({ navigation }) {
 
             {/* GENDER */}
             <View style={styles.pickerWrapper}>
-              <Ionicons name="transgender-outline" size={20} color="#16a34a" style={styles.pickerIcon} />
+              <Ionicons name="transgender-outline" size={20} color="#1E293B" style={styles.pickerIcon} />
               <View style={{ flex: 1 }}>
                 <Picker
                   selectedValue={gender}
                   onValueChange={setGender}
                   style={styles.picker}
-                  dropdownIconColor="#16a34a"
+                  dropdownIconColor="#1E293B"
                 >
                   <Picker.Item label="Gender (Optional)" value="" color="#94A3B8" />
                   <Picker.Item label="Male" value="male" />
@@ -359,7 +354,7 @@ export default function SignupScreen({ navigation }) {
             <InputItem icon="gift-outline" placeholder="Referral Code (Optional)" value={referralCode} onChangeText={setReferralCode} />
 
             <TouchableOpacity style={styles.termsRow} onPress={() => setTermsAccepted(!termsAccepted)}>
-              <Ionicons name={termsAccepted ? "checkbox" : "square-outline"} size={22} color={termsAccepted ? "#16a34a" : "#CBD5E1"} />
+              <Ionicons name={termsAccepted ? "checkbox" : "square-outline"} size={22} color={termsAccepted ? "#C62828" : "#CBD5E1"} />
               <Text style={styles.termsText}>
                 I agree to the <Text style={styles.link} onPress={() => navigation.navigate("TermsConditions")}>Terms</Text> & <Text style={styles.link} onPress={() => navigation.navigate("PrivacyPolicy")}>Privacy Policy</Text> <Text style={{ color: 'red' }}>*</Text>
               </Text>
@@ -369,16 +364,14 @@ export default function SignupScreen({ navigation }) {
               style={styles.mainBtn}
               onPress={handleSignup}
             >
-              <LinearGradient colors={["#16a34a", "#15803d"]} style={styles.btnGradient}>
-                {loading ? (
-                  <ActivityIndicator size="small" color="#FFF" />
-                ) : (
-                  <>
-                    <Text style={styles.btnText}>Create Account</Text>
-                    <Ionicons name="arrow-forward" size={18} color="#FFF" />
-                  </>
-                )}
-              </LinearGradient>
+              {loading ? (
+                <ActivityIndicator size="small" color="#1E293B" />
+              ) : (
+                <>
+                  <Text style={styles.btnText}>Create Account</Text>
+                  <Ionicons name="arrow-forward" size={18} color="#1E293B" />
+                </>
+              )}
             </TouchableOpacity>
 
           </View>
@@ -388,7 +381,7 @@ export default function SignupScreen({ navigation }) {
           </TouchableOpacity>
 
         </ScrollView>
-      </View>
+      </LinearGradient>
 
       {/* PREMIUM ALERT MODAL */}
       <Modal visible={alertVisible} transparent animationType="fade">
@@ -398,22 +391,17 @@ export default function SignupScreen({ navigation }) {
               colors={alertType === 'error' ? ["#FFF5F5", "#FFFFFF"] : ["#F0FDF4", "#FFFFFF"]}
               style={styles.alertContent}
             >
-              <View style={[styles.alertIconRing, { backgroundColor: alertType === 'error' ? '#FEE2E2' : '#DCFCE7' }]}>
+              <View style={[styles.alertIconRing, { backgroundColor: alertType === 'error' ? '#FEE2E2' : '#E0F2FE' }]}>
                 <Ionicons
                   name={alertType === 'error' ? "close-circle" : "information-circle"}
                   size={40}
-                  color={alertType === 'error' ? "#EF4444" : "#16A34A"}
+                  color={alertType === 'error' ? "#EF4444" : "#0288D1"}
                 />
               </View>
               <Text style={styles.alertTitleText}>{alertTitle}</Text>
               <Text style={styles.alertMsgText}>{alertMsg}</Text>
               <TouchableOpacity style={styles.alertBtn} onPress={hidePremiumAlert}>
-                <LinearGradient
-                  colors={alertType === 'error' ? ["#EF4444", "#DC2626"] : ["#16A34A", "#15803D"]}
-                  style={styles.alertBtnGrad}
-                >
-                  <Text style={styles.alertBtnText}>Ok</Text>
-                </LinearGradient>
+                <Text style={styles.alertBtnText}>Ok</Text>
               </TouchableOpacity>
             </LinearGradient>
           </Animated.View>
@@ -424,9 +412,9 @@ export default function SignupScreen({ navigation }) {
       <Modal visible={successVisible} transparent animationType="fade">
         <View style={styles.alertOverlay}>
           <Animated.View style={[styles.alertCard, { transform: [{ scale: successScale }] }]}>
-            <LinearGradient colors={["#16a34a", "#15803d"]} style={styles.alertContent}>
+            <LinearGradient colors={["#E63946", "#C62828"]} style={styles.alertContent}>
               <View style={styles.successIconRing}>
-                <Ionicons name="checkmark" size={50} color="#16a34a" />
+                <Ionicons name="checkmark" size={50} color="#C62828" />
               </View>
               <Text style={[styles.alertTitleText, { color: "#FFF" }]}>Account Created!</Text>
               <Text style={[styles.alertMsgText, { color: "#FFF", opacity: 0.9 }]}>
@@ -448,7 +436,7 @@ export default function SignupScreen({ navigation }) {
 
 const InputItem = ({ icon, ...props }) => (
   <View style={styles.inputContainer}>
-    <Ionicons name={icon} size={18} color="#16a34a" />
+    <Ionicons name={icon} size={18} color="#1E293B" />
     <TextInput
       placeholderTextColor="#475569"
       style={styles.input}
@@ -460,10 +448,8 @@ const InputItem = ({ icon, ...props }) => (
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: "#F8FAFC" },
   headerGradient: {
-    paddingTop: 30,
-    paddingBottom: 65,
-    borderBottomLeftRadius: 40,
-    borderBottomRightRadius: 40,
+    paddingTop: 0,
+    paddingBottom: 15,
     alignItems: 'center',
     position: 'relative',
     overflow: 'hidden',
@@ -472,8 +458,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     zIndex: 10,
   },
-  logo: { width: 140, height: 60, resizeMode: 'contain' },
-  title: { fontSize: 22 * scale, fontFamily: "PoppinsBold", color: "#FFF", marginTop: 2, fontWeight: '900' },
+  logo: { width: 180, height: 90, resizeMode: 'contain' },
+  title: { fontSize: 30, fontFamily: "PoppinsSemiBold", color: "#0F172A", marginTop: -15 },
 
   // REMOVED OLD BONUS STYLES: bonusBadge, bonusText, but keeping place clean.
 
@@ -489,7 +475,7 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.4)",
-    minWidth: '85%',
+    alignSelf: 'center',
   },
   premiumOfferInner: {
     flexDirection: "row",
@@ -506,7 +492,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   offerTextContainer: {
-    flex: 1,
     marginLeft: 12,
   },
   offerText: {
@@ -552,7 +537,7 @@ const styles = StyleSheet.create({
   formCard: {
     backgroundColor: "#FFF",
     marginHorizontal: 16,
-    marginTop: -45, // Moved significantly higher
+    marginTop: 5,
     borderRadius: 24,
     padding: 16,
     elevation: 20,
@@ -618,15 +603,14 @@ const styles = StyleSheet.create({
 
   termsRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 15, marginTop: 4 },
   termsText: { flex: 1, marginLeft: 10, fontSize: 12 * scale, color: "#475569", lineHeight: 18 },
-  link: { color: "#16a34a", fontFamily: "PoppinsBold" },
+  link: { color: "#C62828", fontFamily: "PoppinsBold" },
 
-  mainBtn: { borderRadius: 14, overflow: 'hidden', marginTop: 5 },
-  btnGradient: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 14 },
-  btnText: { color: "#FFF", fontSize: 16 * scale, fontFamily: "PoppinsBold", marginRight: 8 },
+  mainBtn: { borderRadius: 14, borderWidth: 2, borderColor: "#1E293B", paddingVertical: 14, flexDirection: "row", justifyContent: "center", alignItems: "center", marginTop: 5 },
+  btnText: { color: "#1E293B", fontSize: 16 * scale, fontFamily: "PoppinsSemiBold", marginRight: 8 },
 
   footer: { marginTop: 20, alignItems: 'center' },
   footerText: { fontSize: 14 * scale, color: "#64748B" },
-  footerLink: { color: "#16a34a", fontFamily: "PoppinsBold" },
+  footerLink: { color: "#C62828", fontFamily: "PoppinsBold" },
 
   /* ALERT STYLES */
   alertOverlay: {
@@ -685,16 +669,14 @@ const styles = StyleSheet.create({
   alertBtn: {
     width: "100%",
     borderRadius: 15,
-    overflow: "hidden",
-  },
-  alertBtnGrad: {
+    borderWidth: 2,
+    borderColor: "#1E293B",
     paddingVertical: 14,
     alignItems: "center",
   },
   alertBtnText: {
-    fontSize: 15 * scale,
-    fontFamily: "PoppinsBold",
-    color: "#FFF",
-    fontWeight: "800",
+    fontSize: 16 * scale,
+    fontFamily: "PoppinsSemiBold",
+    color: "#1E293B",
   },
 });

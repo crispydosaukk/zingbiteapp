@@ -27,6 +27,7 @@ const scale = width / 400; // Add scale definition since styles use it implicitl
 
 export default function HomeScreen({ navigation }) {
   const swingAnim = useRef(new Animated.Value(0)).current;
+  const pulseAnim = useRef(new Animated.Value(1)).current;
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   // Animation values for smooth cross-fade
@@ -46,9 +47,9 @@ export default function HomeScreen({ navigation }) {
   }, []);
 
   const messages = settings ? [
-    `Earn £${Number(settings.earn_per_order_amount).toFixed(2)} on every order`,
-    `Loyalty credits earn £${Number(settings.earn_per_order_amount).toFixed(2)}`,
-    `Earn £${Number(settings.signup_bonus_amount).toFixed(2)} welcome gift`,
+    { text: `Earn £${Number(settings.earn_per_order_amount).toFixed(2)} on every order`, icon: "fast-food-outline" },
+    { text: `Loyalty credits earn £${Number(settings.earn_per_order_amount).toFixed(2)}`, icon: "star-outline" },
+    { text: `Earn £${Number(settings.signup_bonus_amount).toFixed(2)} welcome gift`, icon: "gift-outline" },
   ] : [];
 
   const offers = [
@@ -117,6 +118,20 @@ export default function HomeScreen({ navigation }) {
       ])
     ).start();
 
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 1.04,
+          duration: 1500,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 1500,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
 
   }, []);
 
@@ -179,26 +194,15 @@ export default function HomeScreen({ navigation }) {
   const verticalPadding = isVerySmallScreen ? 4 : isSmallScreen ? 8 : 12;
 
   const highlightOffer = (text) => {
-    if (!settings) return <Text style={styles.offerText}>{text}</Text>;
+    if (!settings || !text) return <Text style={styles.offerText}>{text}</Text>;
     const regex = new RegExp(`(£\\s?${Number(settings.signup_bonus_amount).toFixed(2)}|£${Number(settings.signup_bonus_amount).toFixed(2)}|£\\s?${Number(settings.referral_bonus_amount).toFixed(2)}|£${Number(settings.referral_bonus_amount).toFixed(2)}|£\\s?${Number(settings.earn_per_order_amount).toFixed(2)}|£${Number(settings.earn_per_order_amount).toFixed(2)})`, 'i');
     const parts = text.split(regex);
 
     return (
-      <Text style={[styles.offerText, { color: "#1E293B" }]}>
-        {parts[0].toUpperCase()}
+      <Text style={[styles.offerText, { color: "#FFFFFF" }]}>
+        {parts[0]?.toUpperCase()}
         {parts[1] && (
-          <Text
-            style={[
-              styles.offerAmount,
-              {
-                color: "#C62828",
-                fontWeight: "900",
-                textShadowColor: 'rgba(0, 0, 0, 0.4)',
-                textShadowOffset: { width: 1, height: 1 },
-                textShadowRadius: 3,
-              },
-            ]}
-          >
+          <Text style={[styles.offerAmount, { color: "#FFDF00" }]}>
             {parts[1]}
           </Text>
         )}
@@ -235,25 +239,20 @@ export default function HomeScreen({ navigation }) {
               />
 
               <View style={styles.mainTitleWrap}>
-                <Text style={styles.mainTitleBlack}>Order UK’S Finest Quality</Text>
-                <Text
-                  style={[
-                    styles.mainTitleOrange,
-                    {
-                      color: '#C62828',
-                      fontSize: 28,
-                      marginVertical: 2
-                    }
-                  ]}
-                >
-                  TAKEAWAY FOOD
-                </Text>
-                <Text style={[styles.mainTitleBlack, { fontSize: 18 }]}>From Local Restaurants</Text>
+                <Text style={styles.mainTitleBlack}>Order UK's Finest Quality</Text>
+                <Text style={styles.mainTitleOrange}>TAKEAWAY FOOD</Text>
+                <Text style={[styles.mainTitleBlack, { fontSize: 18, marginTop: 4 }]}>From Local Restaurants</Text>
               </View>
 
               {settings && messages.length > 0 && (
                 <View style={{ width: "100%", alignItems: "center", height: imageCircleSize, justifyContent: 'center' }}>
-                  <View style={[styles.premiumOfferCard, { width: width * 0.88 }]}>
+                  <Animated.View style={[styles.premiumOfferCard, { width: width * 0.88, transform: [{ scale: pulseAnim }] }]}>
+                    <LinearGradient
+                      colors={["#E63946", "#0288D1"]}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                      style={{ ...StyleSheet.absoluteFillObject, borderRadius: 24 }}
+                    />
                     <Animated.View
                       style={[
                         {
@@ -265,16 +264,19 @@ export default function HomeScreen({ navigation }) {
                       ]}
                     >
                       <View style={styles.offerIconCircle}>
-                        <Ionicons name="gift" size={30} color="#0288D1" />
+                        <Ionicons name={messages[msgIndex]?.icon || "gift"} size={32} color="#FFFFFF" />
                       </View>
                       <View style={styles.offerTextContainer}>
-                        <Text style={styles.offerLabel}>ZINGBITE SPECIAL</Text>
-                        <Text style={[styles.offerText, { color: '#1E293B', marginLeft: 0 }]}>
-                          {highlightOffer(messages[msgIndex])}
+                        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
+                          <Ionicons name="sparkles" size={12} color="#FFDF00" style={{ marginRight: 4 }} />
+                          <Text style={styles.offerLabel}>LIMITED OFFER</Text>
+                        </View>
+                        <Text style={[styles.offerText, { color: '#FFFFFF', marginLeft: 0 }]} numberOfLines={2}>
+                          {highlightOffer(messages[msgIndex]?.text)}
                         </Text>
                       </View>
                     </Animated.View>
-                  </View>
+                  </Animated.View>
                 </View>
               )}
 
@@ -367,7 +369,6 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   offerAmount: {
     fontFamily: "PoppinsSemiBold",
-    fontWeight: "900",
   },
   mainContent: {
     flex: 1,
@@ -395,13 +396,14 @@ const styles = StyleSheet.create({
   mainTitleBlack: {
     fontSize: 22,
     fontFamily: "PoppinsSemiBold",
-    color: "#1E293B",
+    color: "#0F172A",
   },
   mainTitleOrange: {
-    fontSize: 24,
+    fontSize: 32,
     fontFamily: "PoppinsSemiBold",
     color: "#C62828",
-    marginTop: -4,
+    marginTop: -2,
+    marginBottom: -2,
   },
   imageWrapper: {
     marginTop: 4,
@@ -416,43 +418,38 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     marginTop: 6,
-    fontSize: 14,
+    fontSize: 16,
     color: "#1E293B",
     fontFamily: "PoppinsSemiBold",
   },
   premiumOfferCard: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     paddingVertical: 18,
-    borderRadius: 30,
-    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    backgroundColor: '#fff',
     elevation: 8,
-    shadowColor: "#0288D1",
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.12,
-    shadowRadius: 10,
-    borderWidth: 1,
-    borderColor: 'rgba(2, 136, 209, 0.08)',
+    shadowColor: "#E63946",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.35,
+    shadowRadius: 12,
   },
   offerIconCircle: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: 'rgba(2, 136, 209, 0.06)',
+    width: 60,
+    height: 60,
+    backgroundColor: 'transparent',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 18,
+    marginRight: 12,
   },
   offerTextContainer: {
     flex: 1,
     justifyContent: 'center',
   },
   offerLabel: {
-    fontSize: 10,
-    fontFamily: "PoppinsBold",
-    color: "#0288D1",
+    fontSize: 12,
+    fontFamily: "PoppinsSemiBold",
+    color: "#FFDF00",
     letterSpacing: 2.5,
-    marginBottom: 4,
-    fontWeight: '900',
   },
   offerPill: {
     paddingHorizontal: 16,
@@ -464,10 +461,10 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.1)',
   },
   offerText: {
-    fontSize: 13,
-    fontFamily: "PoppinsBold",
+    fontSize: 15,
+    fontFamily: "PoppinsSemiBold",
     marginLeft: 0,
-    fontWeight: 'bold',
+    color: '#F8FAFC',
   },
   buttonArea: {
     width: "100%",
@@ -556,16 +553,15 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   logoutTitle: {
-    fontSize: 22 * scale,
-    fontFamily: "PoppinsBold",
+    fontSize: 18 * scale,
+    fontFamily: "PoppinsSemiBold",
     color: "#0F172A",
-    fontWeight: "900",
     marginBottom: 10,
     textAlign: "center",
   },
   logoutMsg: {
-    fontSize: 14 * scale,
-    fontFamily: "PoppinsMedium",
+    fontSize: 16 * scale,
+    fontFamily: "PoppinsSemiBold",
     color: "#475569",
     textAlign: "center",
     marginBottom: 25,
@@ -586,8 +582,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#F3F4F6",
   },
   cancelLogoutText: {
-    fontSize: 15 * scale,
-    fontFamily: "PoppinsBold",
+    fontSize: 16 * scale,
+    fontFamily: "PoppinsSemiBold",
     color: "#4B5563",
   },
   confirmLogoutBtn: {
@@ -600,9 +596,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   alertBtnText: {
-    fontSize: 15 * scale,
-    fontFamily: "PoppinsBold",
+    fontSize: 16 * scale,
+    fontFamily: "PoppinsSemiBold",
     color: "#FFF",
-    fontWeight: "800",
   },
 });

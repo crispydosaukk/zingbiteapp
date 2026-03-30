@@ -35,6 +35,8 @@ import useRefresh from "../../hooks/useRefresh";
 import { fetchAppSettings } from "../../services/settingsService";
 import { fetchActiveOffers } from "../../services/offerService";
 // import { IMAGE_BASE_URL } from "../../config/baseURL";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { submitTableReservation } from "../../services/reservationService";
 
 
 const { width } = Dimensions.get("window");
@@ -65,6 +67,22 @@ export default function Categories({ route, navigation }) {
   const [successModalVisible, setSuccessModalVisible] = useState(false);
   const [savedAmount, setSavedAmount] = useState(0);
   const [isOffersOpen, setIsOffersOpen] = useState(false);
+  const [reservationModalVisible, setReservationModalVisible] = useState(false);
+  const [reservationForm, setReservationForm] = useState({
+    customer_name: "",
+    customer_phone: "",
+    customer_email: "",
+    party_size: "2",
+    table_number: "",
+    duration_minutes: "60",
+    reservation_date: new Date(),
+    reservation_time: new Date(),
+    special_requests: "",
+  });
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [reservationSubmitting, setReservationSubmitting] = useState(false);
+
   const offersAnim = useRef(new Animated.Value(0)).current;
 
   const toggleOffers = () => {
@@ -106,6 +124,45 @@ export default function Categories({ route, navigation }) {
   ] : [];
   const formatTime = (t) => (!t ? "" : t.slice(0, 5));
 
+  const FOOD_TYPE_MAP = { 0: '🥦 Veg', 1: '🍗 Non-Veg', 2: '🌿 Jain' };
+  const CUISINE_MAP = {
+    0: { label: 'Indian', emoji: '🍛' },
+    1: { label: 'Afghan', emoji: '🫕' },
+    2: { label: 'Pakistani', emoji: '🍲' },
+    3: { label: 'Chinese', emoji: '🥡' },
+    4: { label: 'Italian', emoji: '🍕' },
+    5: { label: 'Thai', emoji: '🍜' },
+    6: { label: 'Mexican', emoji: '🌮' },
+    7: { label: 'Fried Chicken', emoji: '🍗' },
+  };
+
+  const formatFoodType = (val) => {
+    if (!val && val !== 0) return 'Not specified';
+    const arr = Array.isArray(val)
+      ? val
+      : String(val).split(',').map(v => parseInt(v.trim(), 10)).filter(v => !isNaN(v));
+    const labels = arr.map(v => FOOD_TYPE_MAP[v]).filter(Boolean);
+    return labels.length > 0 ? labels.join(', ') : 'Not specified';
+  };
+
+  const formatCuisineType = (val) => {
+    if (!val && val !== 0) return 'Not specified';
+    const arr = Array.isArray(val)
+      ? val
+      : String(val).split(',').map(v => parseInt(v.trim(), 10)).filter(v => !isNaN(v));
+    const labels = arr.map(v => CUISINE_MAP[v]).filter(Boolean).map(c => `${c.emoji} ${c.label}`);
+    return labels.length > 0 ? labels.join('  ·  ') : 'Not specified';
+  };
+
+  const openInMaps = (address, lat, lng) => {
+    const query = lat && lng
+      ? `geo:${lat},${lng}?q=${encodeURIComponent(address)}`
+      : `https://maps.google.com/?q=${encodeURIComponent(address)}`;
+    Linking.openURL(query).catch(() =>
+      Linking.openURL(`https://maps.google.com/?q=${encodeURIComponent(address)}`)
+    );
+  };
+
   // offer text animation
   useEffect(() => {
     const animate = () => {
@@ -139,7 +196,16 @@ export default function Categories({ route, navigation }) {
   useEffect(() => {
     (async () => {
       const s = await AsyncStorage.getItem("user");
-      if (s) setUser(JSON.parse(s));
+      if (s) {
+        const u = JSON.parse(s);
+        setUser(u);
+        setReservationForm(prev => ({
+          ...prev,
+          customer_name: u.full_name || u.name || "",
+          customer_email: u.email || "",
+          customer_phone: u.mobile_number || "",
+        }));
+      }
     })();
   }, []);
 
@@ -305,6 +371,57 @@ export default function Categories({ route, navigation }) {
     }
   };
 
+  const handleReserveTable = async () => {
+    if (!user) {
+      Alert.alert("Login Required", "Please sign in to reserve a table.", [
+        { text: "Cancel" },
+        { text: "Login", onPress: () => navigation.navigate("Login") }
+      ]);
+      return;
+    }
+
+    if (!reservationForm.customer_name) {
+      Alert.alert("Error", "Please enter your name.");
+      return;
+    }
+
+    setReservationSubmitting(true);
+    try {
+      const res = await submitTableReservation({
+        user_id: userId, // restaurant owner id
+        customer_id: user.id, // customer id for notifications
+        customer_name: reservationForm.customer_name,
+        customer_phone: reservationForm.customer_phone,
+        customer_email: reservationForm.customer_email,
+        table_number: reservationForm.table_number,
+        party_size: parseInt(reservationForm.party_size) || 1,
+        reservation_date: reservationForm.reservation_date.toISOString().split('T')[0],
+        reservation_time: reservationForm.reservation_time.toTimeString().split(' ')[0],
+        duration_minutes: parseInt(reservationForm.duration_minutes) || 60,
+        special_requests: reservationForm.special_requests,
+      });
+
+      if (res.status === 1) {
+        setReservationModalVisible(false);
+        Alert.alert("Success", "Table reservation request submitted successfully! We will confirm soon.");
+        // Reset form partially
+        setReservationForm(prev => ({
+          ...prev,
+          party_size: "2",
+          table_number: "",
+          duration_minutes: "60",
+          special_requests: "",
+        }));
+      } else {
+        Alert.alert("Error", res.message || "Could not submit reservation.");
+      }
+    } catch (err) {
+      Alert.alert("Error", "An unexpected error occurred.");
+    } finally {
+      setReservationSubmitting(false);
+    }
+  };
+
   const renderCategory = ({ item, index }) => {
     const isEven = index % 2 === 0;
     
@@ -399,16 +516,7 @@ export default function Categories({ route, navigation }) {
     );
   };
 
-  const formatFoodType = (types) => {
-    if (!types) return '';
-    const mapping = {
-      '0': 'Veg',
-      '1': 'Non Veg',
-      '2': 'Vegan',
-      '3': 'Egg',
-    };
-    return String(types).split(',').map(t => mapping[t.trim()] || t).join(', ');
-  };
+
 
   return (
     // 🔧 only left/right safe insets so we don't double-pad   return (
@@ -521,6 +629,23 @@ export default function Categories({ route, navigation }) {
                 </TouchableOpacity>
               </View>
             </View>
+          )}
+
+          {restaurant && (
+            <TouchableOpacity 
+              style={styles.reserveTableBtn}
+              onPress={() => setReservationModalVisible(true)}
+            >
+              <LinearGradient
+                colors={["#FF2B5C", "#FF6B8B"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.reserveTableGradient}
+              >
+                <Ionicons name="calendar-outline" size={20 * scale} color="#FFFFFF" />
+                <Text style={styles.reserveTableBtnText}>RESERVE A TABLE</Text>
+              </LinearGradient>
+            </TouchableOpacity>
           )}
         </View>
 
@@ -660,6 +785,154 @@ export default function Categories({ route, navigation }) {
           />
         )}
       </ScrollView>
+
+      {/* Reservation Modal */}
+      <Modal visible={reservationModalVisible} transparent animationType="slide">
+        <View style={modalStyles.overlay}>
+          <View style={modalStyles.container}>
+            <View style={modalStyles.header}>
+              <Text style={modalStyles.headerTitle}>Reserve a Table</Text>
+              <TouchableOpacity onPress={() => setReservationModalVisible(false)} style={modalStyles.closeBtn}>
+                <Ionicons name="close" size={24} color="#333" />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView contentContainerStyle={modalStyles.formScroll}>
+              <View style={modalStyles.inputGroup}>
+                <Text style={modalStyles.label}>Full Name</Text>
+                <TextInput
+                  style={modalStyles.input}
+                  placeholder="Enter your name"
+                  value={reservationForm.customer_name}
+                  onChangeText={(val) => setReservationForm({...reservationForm, customer_name: val})}
+                />
+              </View>
+
+              <View style={modalStyles.row}>
+                <View style={[modalStyles.inputGroup, {flex: 1, marginRight: 8}]}>
+                  <Text style={modalStyles.label}>Phone Number</Text>
+                  <TextInput
+                    style={modalStyles.input}
+                    placeholder="Phone number"
+                    keyboardType="phone-pad"
+                    value={reservationForm.customer_phone}
+                    onChangeText={(val) => setReservationForm({...reservationForm, customer_phone: val})}
+                  />
+                </View>
+                <View style={[modalStyles.inputGroup, {flex: 1}]}>
+                  <Text style={modalStyles.label}>Party Size</Text>
+                  <TextInput
+                    style={modalStyles.input}
+                    placeholder="No. of people"
+                    keyboardType="numeric"
+                    value={reservationForm.party_size}
+                    onChangeText={(val) => setReservationForm({...reservationForm, party_size: val})}
+                  />
+                </View>
+              </View>
+
+              <View style={modalStyles.row}>
+                <View style={[modalStyles.inputGroup, {flex: 1, marginRight: 8}]}>
+                  <Text style={modalStyles.label}>Table Number (Optional)</Text>
+                  <TextInput
+                    style={modalStyles.input}
+                    placeholder="e.g. T1"
+                    value={reservationForm.table_number}
+                    onChangeText={(val) => setReservationForm({...reservationForm, table_number: val})}
+                  />
+                </View>
+                <View style={[modalStyles.inputGroup, {flex: 1}]}>
+                  <Text style={modalStyles.label}>Duration (Min)</Text>
+                  <TextInput
+                    style={modalStyles.input}
+                    placeholder="e.g. 60"
+                    keyboardType="numeric"
+                    value={reservationForm.duration_minutes}
+                    onChangeText={(val) => setReservationForm({...reservationForm, duration_minutes: val})}
+                  />
+                </View>
+              </View>
+
+              <View style={modalStyles.inputGroup}>
+                <Text style={modalStyles.label}>Email Address</Text>
+                <TextInput
+                  style={modalStyles.input}
+                  placeholder="Enter your email"
+                  keyboardType="email-address"
+                  value={reservationForm.customer_email}
+                  onChangeText={(val) => setReservationForm({...reservationForm, customer_email: val})}
+                />
+              </View>
+
+              <View style={modalStyles.row}>
+                <View style={[modalStyles.inputGroup, {flex: 1, marginRight: 8}]}>
+                  <Text style={modalStyles.label}>Date</Text>
+                  <TouchableOpacity style={modalStyles.pickerBtn} onPress={() => setShowDatePicker(true)}>
+                    <Ionicons name="calendar-outline" size={18} color="#FF2B5C" />
+                    <Text style={modalStyles.pickerText}>{reservationForm.reservation_date.toLocaleDateString()}</Text>
+                  </TouchableOpacity>
+                </View>
+                <View style={[modalStyles.inputGroup, {flex: 1}]}>
+                  <Text style={modalStyles.label}>Time</Text>
+                  <TouchableOpacity style={modalStyles.pickerBtn} onPress={() => setShowTimePicker(true)}>
+                    <Ionicons name="time-outline" size={18} color="#FF2B5C" />
+                    <Text style={modalStyles.pickerText}>{reservationForm.reservation_time.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              <View style={modalStyles.inputGroup}>
+                <Text style={modalStyles.label}>Special Requests</Text>
+                <TextInput
+                  style={[modalStyles.input, {height: 80, textAlignVertical: 'top'}]}
+                  placeholder="Any special requests or instructions?"
+                  multiline
+                  numberOfLines={4}
+                  value={reservationForm.special_requests}
+                  onChangeText={(val) => setReservationForm({...reservationForm, special_requests: val})}
+                />
+              </View>
+
+              <TouchableOpacity 
+                style={[modalStyles.submitBtn, reservationSubmitting && {opacity: 0.7}]}
+                onPress={handleReserveTable}
+                disabled={reservationSubmitting}
+              >
+                {reservationSubmitting ? (
+                  <ActivityIndicator color="#FFF" size="small" />
+                ) : (
+                  <Text style={modalStyles.submitBtnText}>CONFIRM RESERVATION</Text>
+                )}
+              </TouchableOpacity>
+            </ScrollView>
+
+            {showDatePicker && (
+              <DateTimePicker
+                value={reservationForm.reservation_date}
+                mode="date"
+                minimumDate={new Date()}
+                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                onChange={(event, date) => {
+                  setShowDatePicker(false);
+                  if (date) setReservationForm({...reservationForm, reservation_date: date});
+                }}
+              />
+            )}
+
+            {showTimePicker && (
+              <DateTimePicker
+                value={reservationForm.reservation_time}
+                mode="time"
+                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                onChange={(event, date) => {
+                  setShowTimePicker(false);
+                  if (date) setReservationForm({...reservationForm, reservation_time: date});
+                }}
+              />
+            )}
+          </View>
+        </View>
+      </Modal>
 
       {/* Voice Overlay - Modal for absolute visibility */}
 
@@ -1126,15 +1399,21 @@ export default function Categories({ route, navigation }) {
               <View style={{ marginBottom: 20 }}>
                 <Text style={{ fontSize: 16 * scale, fontFamily: 'PoppinsBold', color: '#1E293B', marginBottom: 16 }}>Contact</Text>
                 
-                <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: 16 }}>
+                <TouchableOpacity
+                  style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: 16 }}
+                  onPress={() => openInMaps(restaurant?.restaurant_address, restaurant?.latitude, restaurant?.longitude)}
+                  activeOpacity={0.7}
+                >
                   <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#FFF0F3', alignItems: 'center', justifyContent: 'center', marginRight: 12, marginTop: 2 }}>
                     <Ionicons name="location" size={22} color="#FF2B5C" />
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={{ fontSize: 13 * scale, fontFamily: 'PoppinsMedium', color: '#64748B', marginBottom: 2 }}>Address</Text>
                     <Text style={{ fontSize: 15 * scale, fontFamily: 'PoppinsSemiBold', color: '#1E293B' }}>{restaurant?.restaurant_address || 'Not available'}</Text>
+                    <Text style={{ fontSize: 12 * scale, fontFamily: 'PoppinsMedium', color: '#FF2B5C', marginTop: 2 }}>📍 Tap to open in Maps</Text>
                   </View>
-                </View>
+                  <Ionicons name="chevron-forward" size={16} color="#CBD5E1" style={{ marginTop: 10 }} />
+                </TouchableOpacity>
 
                 {restaurant?.restaurant_phonenumber && (
                   <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }} onPress={() => Linking.openURL(`tel:${restaurant.restaurant_phonenumber}`)}>
@@ -1174,6 +1453,19 @@ export default function Categories({ route, navigation }) {
                     <Ionicons name="chevron-forward" size={16} color="#CBD5E1" />
                   </TouchableOpacity>
                 )}
+
+                {restaurant?.google_review_link && (
+                  <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }} onPress={() => Linking.openURL(restaurant.google_review_link)}>
+                    <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#FFF8E1', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+                      <Ionicons name="star" size={20} color="#F59E0B" />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ fontSize: 13 * scale, fontFamily: 'PoppinsMedium', color: '#64748B', marginBottom: 2 }}>Google Reviews</Text>
+                      <Text style={{ fontSize: 15 * scale, fontFamily: 'PoppinsSemiBold', color: '#F59E0B' }}>Leave a Review ⭐</Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={16} color="#CBD5E1" />
+                  </TouchableOpacity>
+                )}
               </View>
 
               <View style={{ height: 1, backgroundColor: '#F1F5F9', marginBottom: 20 }} />
@@ -1183,19 +1475,19 @@ export default function Categories({ route, navigation }) {
                 <Text style={{ fontSize: 16 * scale, fontFamily: 'PoppinsBold', color: '#1E293B', marginBottom: 16 }}>Services & Preferences</Text>
                 
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' }}>
-                  {restaurant?.food_type && (
+                  {restaurant?.food_type != null && (
                     <View style={{ width: '48%', marginBottom: 16, backgroundColor: '#F8FAFC', padding: 12, borderRadius: 16, borderWidth: 1, borderColor: '#F1F5F9' }}>
                       <Ionicons name="restaurant" size={20} color="#FF2B5C" style={{ marginBottom: 8 }} />
                       <Text style={{ fontSize: 12 * scale, fontFamily: 'PoppinsMedium', color: '#64748B' }}>Food Type</Text>
-                      <Text style={{ fontSize: 13 * scale, fontFamily: 'PoppinsSemiBold', color: '#1E293B', marginTop: 2 }}>{formatFoodType(restaurant.food_type)}</Text>
+                      <Text style={{ fontSize: 13 * scale, fontFamily: 'PoppinsSemiBold', color: '#1E293B', marginTop: 2 }}>{formatFoodType(restaurant?.food_type)}</Text>
                     </View>
                   )}
                   
-                  {restaurant?.cuisine_type && (
-                    <View style={{ width: '48%', marginBottom: 16, backgroundColor: '#F8FAFC', padding: 12, borderRadius: 16, borderWidth: 1, borderColor: '#F1F5F9' }}>
+                  {restaurant?.cuisine_type != null && (
+                    <View style={{ width: '100%', marginBottom: 16, backgroundColor: '#F8FAFC', padding: 12, borderRadius: 16, borderWidth: 1, borderColor: '#F1F5F9' }}>
                       <Ionicons name="pizza" size={20} color="#FF2B5C" style={{ marginBottom: 8 }} />
                       <Text style={{ fontSize: 12 * scale, fontFamily: 'PoppinsMedium', color: '#64748B' }}>Cuisine</Text>
-                      <Text style={{ fontSize: 13 * scale, fontFamily: 'PoppinsSemiBold', color: '#1E293B', marginTop: 2 }}>{String(restaurant.cuisine_type)}</Text>
+                      <Text style={{ fontSize: 13 * scale, fontFamily: 'PoppinsSemiBold', color: '#1E293B', marginTop: 4, lineHeight: 22 }}>{formatCuisineType(restaurant?.cuisine_type)}</Text>
                     </View>
                   )}
 
@@ -1223,7 +1515,7 @@ export default function Categories({ route, navigation }) {
                   
                   {restaurant?.parking_info && (
                     <View style={{ width: '100%', marginBottom: 16, backgroundColor: '#F8FAFC', padding: 12, borderRadius: 16, borderWidth: 1, borderColor: '#F1F5F9' }}>
-                      <Ionicons name="business" size={20} color="#94A3B8" style={{ marginBottom: 8 }} />
+                      <Ionicons name="car" size={20} color="#0284C7" style={{ marginBottom: 8 }} />
                       <Text style={{ fontSize: 12 * scale, fontFamily: 'PoppinsMedium', color: '#64748B' }}>Parking</Text>
                       <Text style={{ fontSize: 13 * scale, fontFamily: 'PoppinsSemiBold', color: '#1E293B', marginTop: 2 }}>{restaurant.parking_info}</Text>
                     </View>
@@ -1232,7 +1524,7 @@ export default function Categories({ route, navigation }) {
               </View>
 
               {/* Social Channels */}
-              {(restaurant?.restaurant_facebook || restaurant?.restaurant_twitter || restaurant?.restaurant_instagram || restaurant?.restaurant_linkedin) && (
+              {(restaurant?.restaurant_facebook || restaurant?.restaurant_twitter || restaurant?.restaurant_instagram || restaurant?.restaurant_tiktok) && (
                 <>
                   <View style={{ height: 1, backgroundColor: '#F1F5F9', marginBottom: 20 }} />
                   <View style={{ marginBottom: 10 }}>
@@ -1253,9 +1545,9 @@ export default function Categories({ route, navigation }) {
                           <Ionicons name="logo-twitter" size={22} color="#1DA1F2" />
                         </TouchableOpacity>
                       )}
-                      {restaurant?.restaurant_linkedin && (
-                        <TouchableOpacity style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: '#F1F5F9', alignItems: 'center', justifyContent: 'center' }} onPress={() => Linking.openURL(restaurant.restaurant_linkedin)}>
-                          <Ionicons name="logo-linkedin" size={22} color="#0A66C2" />
+                      {restaurant?.restaurant_tiktok && (
+                        <TouchableOpacity style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: '#F1F5F9', alignItems: 'center', justifyContent: 'center' }} onPress={() => Linking.openURL(restaurant.restaurant_tiktok)}>
+                          <Ionicons name="logo-tiktok" size={22} color="#000000" />
                         </TouchableOpacity>
                       )}
                     </View>
@@ -1613,7 +1905,125 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 2,
     borderColor: 'rgba(255,255,255,0.2)',
-  }
+  },
+  reserveTableBtn: {
+    marginHorizontal: 16,
+    marginTop: 15,
+    borderRadius: 18,
+    overflow: 'hidden',
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+  },
+  reserveTableGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    gap: 10,
+  },
+  reserveTableBtnText: {
+    color: '#FFFFFF',
+    fontSize: 16 * scale,
+    fontFamily: 'PoppinsBold',
+    fontWeight: '900',
+    letterSpacing: 1,
+  },
+});
+
+const modalStyles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  container: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    height: '85%',
+    paddingBottom: 20,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 24,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+  },
+  headerTitle: {
+    fontSize: 20 * scale,
+    fontFamily: 'PoppinsBold',
+    color: '#0F172A',
+    fontWeight: '900',
+  },
+  closeBtn: {
+    padding: 4,
+  },
+  formScroll: {
+    padding: 24,
+  },
+  inputGroup: {
+    marginBottom: 20,
+  },
+  label: {
+    fontSize: 14 * scale,
+    fontFamily: 'PoppinsSemiBold',
+    color: '#64748B',
+    marginBottom: 8,
+    fontWeight: '600',
+  },
+  input: {
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 12,
+    padding: 14,
+    fontSize: 15 * scale,
+    fontFamily: 'PoppinsMedium',
+    color: '#0F172A',
+  },
+  row: {
+    flexDirection: 'row',
+    marginBottom: 0,
+  },
+  pickerBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 12,
+    padding: 14,
+    gap: 10,
+  },
+  pickerText: {
+    fontSize: 15 * scale,
+    fontFamily: 'PoppinsMedium',
+    color: '#0F172A',
+  },
+  submitBtn: {
+    backgroundColor: '#FF2B5C',
+    borderRadius: 16,
+    paddingVertical: 18,
+    alignItems: 'center',
+    marginTop: 10,
+    shadowColor: "#FF2B5C",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 8,
+  },
+  submitBtnText: {
+    color: '#FFFFFF',
+    fontSize: 16 * scale,
+    fontFamily: 'PoppinsBold',
+    fontWeight: '900',
+    letterSpacing: 1,
+  },
 });
 
 const cardStyles = StyleSheet.create({

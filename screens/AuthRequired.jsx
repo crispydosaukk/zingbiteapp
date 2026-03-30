@@ -8,7 +8,7 @@ export function AuthRequiredModal({ visible, onClose, onSignIn }) {
       <View style={styles.overlay}>
         <View style={styles.card}>
           <View style={styles.iconWrap}>
-            <Ionicons name="lock-closed-outline" size={36} color="#0b7a2a" />
+            <Ionicons name="lock-closed-outline" size={36} color="#0288D1" />
           </View>
           <Text style={styles.title}>Please sign in to view details</Text>
           <Text style={styles.subtitle} numberOfLines={3}>
@@ -34,7 +34,7 @@ export function AuthRequiredInline({ onSignIn, description }) {
     <View style={{ alignItems: "center", padding: 20 }}>
       <View style={styles.inlineCard}>
         <View style={styles.iconWrapInline}>
-          <Ionicons name="person-circle-outline" size={44} color="#0b7a2a" />
+          <Ionicons name="person-circle-outline" size={44} color="#0288D1" />
         </View>
         <Text style={styles.inlineTitle}>Please sign in to continue</Text>
         <Text style={styles.inlineSubtitle} numberOfLines={3}>
@@ -69,55 +69,61 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: "rgba(11,122,42,0.06)",
+    backgroundColor: "#E0F2FE",
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 12,
   },
   title: {
     fontSize: 18,
-    fontWeight: "800",
-    color: "#111",
+    fontFamily: "PoppinsBold",
+    color: "#0F172A",
     marginBottom: 8,
     textAlign: "center",
   },
   subtitle: {
     fontSize: 13,
-    color: "#6b7280",
+    fontFamily: "PoppinsMedium",
+    color: "#475569",
     textAlign: "center",
-    marginBottom: 16,
+    marginBottom: 20,
+    lineHeight: 20,
   },
   actionsRow: {
     flexDirection: "row",
   },
   primaryBtn: {
-    backgroundColor: "#0b7a2a",
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    minWidth: 110,
+    backgroundColor: "transparent",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: "#1E293B",
+    minWidth: 120,
     alignItems: "center",
     justifyContent: "center",
     marginLeft: 12,
   },
   primaryText: {
-    color: "#fff",
-    fontWeight: "800",
+    color: "#1E293B",
+    fontFamily: "PoppinsSemiBold",
+    fontSize: 15,
   },
   secondaryBtn: {
     backgroundColor: "transparent",
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-    minWidth: 110,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: "#CBD5E1",
+    minWidth: 120,
     alignItems: "center",
     justifyContent: "center",
   },
   secondaryText: {
-    color: "#374151",
-    fontWeight: "700",
+    color: "#64748B",
+    fontFamily: "PoppinsSemiBold",
+    fontSize: 15,
   },
 
   inlineCard: {
@@ -134,19 +140,24 @@ const styles = StyleSheet.create({
   },
   inlineTitle: {
     fontSize: 18,
-    fontWeight: "800",
-    color: "#111",
+    fontFamily: "PoppinsBold",
+    color: "#0F172A",
   },
   inlineSubtitle: {
     fontSize: 13,
-    color: "#6b7280",
+    fontFamily: "PoppinsMedium",
+    color: "#475569",
     textAlign: "center",
     marginVertical: 12,
+    lineHeight: 20,
   },
   primaryBtnInline: {
-    backgroundColor: "#0b7a2a",
-    paddingVertical: 10,
-    paddingHorizontal: 18,
-    borderRadius: 8,
+    backgroundColor: "transparent",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: "#1E293B",
+    marginTop: 5,
   },
 });

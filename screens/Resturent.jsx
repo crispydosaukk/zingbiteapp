@@ -548,7 +548,7 @@ export default function Resturent({ navigation }) {
       <TouchableOpacity
         activeOpacity={0.8}
         onPress={() => setSearchLocationModal(true)}
-        style={[styles.locationBar, { backgroundColor: offers[activeIndex]?.colors?.[0] || "#0288D1", paddingTop: insets.top }]}
+        style={[styles.locationBar, { backgroundColor: offers[activeIndex]?.colors?.[0] || "#0288D1", paddingTop: insets.top + 12 }]}
       >
         <View style={styles.locationContent}>
           <View style={styles.locIconBg}>
@@ -846,7 +846,8 @@ const styles = StyleSheet.create({
   },
   locationBar: {
     paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingTop: 10,
+    paddingBottom: 2,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -899,7 +900,7 @@ const styles = StyleSheet.create({
   searchWrapper: {
     paddingHorizontal: 16,
     backgroundColor: "transparent",
-    marginTop: 10,
+    marginTop: 2,
   },
   searchBox: {
     flexDirection: "row",
@@ -938,7 +939,7 @@ const styles = StyleSheet.create({
     padding: 2,
   },
   sliderContainer: {
-    marginTop: 15,
+    marginTop: 5,
     position: 'relative',
   },
   sliderPage: {
