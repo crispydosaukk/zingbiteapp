@@ -430,7 +430,7 @@ export default function SignupScreen({ navigation }) {
               </View>
               <Text style={[styles.alertTitleText, { color: "#FFF" }]}>Account Created!</Text>
               <Text style={[styles.alertMsgText, { color: "#FFF", opacity: 0.9 }]}>
-                Welcome to Crispy Dosa. Your account is ready!
+                Welcome to ZingBite. Your account is ready!
               </Text>
               {settings && (
                 <Text style={{ color: "#FFF", fontFamily: "PoppinsBold", fontSize: 13 * scale, marginTop: 10 }}>

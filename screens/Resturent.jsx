@@ -302,7 +302,7 @@ export default function Resturent({ navigation }) {
           PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
           {
             title: "Location Permission",
-            message: "Crispy Dosa needs access to your location to find the nearest restaurants.",
+            message: "ZingBite needs access to your location to find the nearest restaurants.",
             buttonNeutral: "Ask Me Later",
             buttonNegative: "Cancel",
             buttonPositive: "OK",

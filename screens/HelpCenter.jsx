@@ -15,7 +15,7 @@ import LinearGradient from "react-native-linear-gradient";
 
 export default function HelpCenter({ navigation }) {
     const supportPhone = "+44 20 1234 5678"; // UK dummy phone number
-    const supportEmail = "support@crispydosa.com";
+    const supportEmail = "support@zingbite.com";
 
     const handleCall = () => {
         Alert.alert(

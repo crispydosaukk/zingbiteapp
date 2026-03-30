@@ -18,7 +18,7 @@ export default function PrivacyPolicyScreen({ navigation }) {
 
                 <Text style={styles.sectionTitle}>1. Introduction</Text>
                 <Text style={styles.paragraph}>
-                    Welcome to Crispy Dosa UK. We respect your privacy and are committed to protecting your personal data. This privacy policy will inform you as to how we look after your personal data when you visit our application and tell you about your privacy rights and how the law protects you.
+                    Welcome to ZingBite UK. We respect your privacy and are committed to protecting your personal data. This privacy policy will inform you as to how we look after your personal data when you visit our application and tell you about your privacy rights and how the law protects you.
                 </Text>
 
                 <Text style={styles.sectionTitle}>2. Information We Collect</Text>
@@ -44,7 +44,7 @@ export default function PrivacyPolicyScreen({ navigation }) {
 
                 <Text style={styles.sectionTitle}>5. Contact Us</Text>
                 <Text style={styles.paragraph}>
-                    If you have any questions about this privacy policy or our privacy practices, please contact us at support@crispydosa.co.uk.
+                    If you have any questions about this privacy policy or our privacy practices, please contact us at support@zingbite.co.uk.
                 </Text>
 
                 <View style={{ height: 40 }} />

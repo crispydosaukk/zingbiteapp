@@ -200,7 +200,7 @@ export default function MenuModal({ visible, setVisible, user, navigation }) {
 
             {/* SIDEBAR FOOTER */}
             <View style={styles.sidebarFooter}>
-              <Text style={styles.footerBrand}>CRISPY DOSA</Text>
+              <Text style={styles.footerBrand}>ZINGBITE</Text>
               <Text style={styles.footerVersion}>v 1.0.4 Premium</Text>
             </View>
           </Animated.View>

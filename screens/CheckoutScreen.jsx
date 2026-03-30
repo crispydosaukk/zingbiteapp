@@ -274,7 +274,7 @@ export default function CheckoutScreen({ navigation }) {
         setPaymentIntent(data);
         await initPaymentSheet({
           paymentIntentClientSecret: data.clientSecret,
-          merchantDisplayName: "Crispy Dosa",
+          merchantDisplayName: "ZingBite",
         });
       }
     } catch (e) {
@@ -355,7 +355,7 @@ export default function CheckoutScreen({ navigation }) {
 
         await initPaymentSheet({
           paymentIntentClientSecret: activeIntent.clientSecret,
-          merchantDisplayName: "Crispy Dosa",
+          merchantDisplayName: "ZingBite",
         });
       }
 
@@ -639,7 +639,7 @@ export default function CheckoutScreen({ navigation }) {
             {/* SAFETY BADGE */}
             <View style={styles.premiumSafetyBar}>
               <Ionicons name="shield-checkmark" size={22} color="#16A34A" />
-              <Text style={styles.premiumSafetyText}>Crispy Dosa’s Kitchen Safety & Hygiene Assured</Text>
+              <Text style={styles.premiumSafetyText}>ZingBite’s Kitchen Safety & Hygiene Assured</Text>
             </View>
           </View>
         </ScrollView>

@@ -18,7 +18,7 @@ export default function TermsConditionsScreen({ navigation }) {
 
                 <Text style={styles.sectionTitle}>1. Introduction</Text>
                 <Text style={styles.paragraph}>
-                    These Terms and Conditions govern your use of the Crispy Dosa UK mobile application and services. By accessing or using our app, you agree to be bound by these Terms. If you disagree with any part of the terms, you may not access the service.
+                    These Terms and Conditions govern your use of the ZingBite UK mobile application and services. By accessing or using our app, you agree to be bound by these Terms. If you disagree with any part of the terms, you may not access the service.
                 </Text>
 
                 <Text style={styles.sectionTitle}>2. Use of Application</Text>
@@ -43,12 +43,12 @@ export default function TermsConditionsScreen({ navigation }) {
 
                 <Text style={styles.sectionTitle}>6. Intellectual Property</Text>
                 <Text style={styles.paragraph}>
-                    The Service and its original content, features and functionality are and will remain the exclusive property of Crispy Dosa UK and its licensors.
+                    The Service and its original content, features and functionality are and will remain the exclusive property of ZingBite UK and its licensors.
                 </Text>
 
                 <Text style={styles.sectionTitle}>7. Contact Information</Text>
                 <Text style={styles.paragraph}>
-                    Questions about the Terms should be sent to us at support@crispydosa.co.uk.
+                    Questions about the Terms should be sent to us at support@zingbite.co.uk.
                 </Text>
 
                 <View style={{ height: 40 }} />

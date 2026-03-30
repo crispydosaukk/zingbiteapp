@@ -86,8 +86,8 @@ export default function InviteFriends({ navigation }) {
 
         try {
             const result = await Share.share({
-                message: `Join me on CrispyDosa! Use my referral code ${user.referral_code} to get special offers.Download the app now!`,
-                title: "Invite Friends to CrispyDosa",
+                message: `Join me on ZingBite! Use my referral code ${user.referral_code} to get special offers. Download the app now!`,
+                title: "Invite Friends to ZingBite",
             });
             if (result.action === Share.sharedAction) {
                 console.log("Shared successfully");

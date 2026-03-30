@@ -173,7 +173,7 @@ export default function Profile({ navigation }) {
     }
     try {
       await Share.share({
-        message: `Join Crispy Dosa using my code *${profile.referral_code}* and enjoy premium rewards! 🍛🔥`,
+        message: `Join ZingBite using my code *${profile.referral_code}* and enjoy premium rewards! 🍛🔥`,
       });
     } catch (err) {
       console.log("Share error", err);
@@ -264,7 +264,7 @@ export default function Profile({ navigation }) {
                 </View>
               </View>
               <View style={styles.userInfo}>
-                <Text style={styles.userName}>{profile?.full_name || "Crispy User"}</Text>
+                <Text style={styles.userName}>{profile?.full_name || "ZingBite User"}</Text>
                 <Text style={styles.userPhone}>{profile?.country_code} {profile?.mobile_number}</Text>
                 <View style={styles.businessBadge}>
                   <Ionicons name="checkmark-circle" size={14} color="#FFF" />
@@ -343,7 +343,7 @@ export default function Profile({ navigation }) {
             </LinearGradient>
           </TouchableOpacity>
 
-          <Text style={styles.versionText}>Crispy Dosa Business v2.0.1</Text>
+          <Text style={styles.versionText}>ZingBite Business v2.0.1</Text>
 
         </Animated.View>
       </ScrollView>

@@ -99,7 +99,7 @@ export default function App() {
       try {
         // console.log("🔁 FCM TOKEN REFRESHED:", token);
 
-        await api.post("/mobile/save-fcm-token", {
+        await api.post("/save-fcm-token", {
           fcm_token: token,
           user_type: "customer",
           device_type: Platform.OS
