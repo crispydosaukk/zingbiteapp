@@ -190,11 +190,13 @@ export default function LoginScreen({ navigation }) {
 
             {/* LOGIN BUTTON */}
             <TouchableOpacity style={styles.loginBtn} onPress={handleLogin}>
-              {loading ? (
-                <ActivityIndicator size="small" color="#1E293B" />
-              ) : (
-                <Text style={styles.loginText}>Login</Text>
-              )}
+              <LinearGradient colors={["#FF2B5C", "#FF6B8B"]} style={styles.loginGradient}>
+                {loading ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <Text style={styles.loginText}>Login</Text>
+                )}
+              </LinearGradient>
             </TouchableOpacity>
 
             {/* Signup Link */}
@@ -223,12 +225,9 @@ export default function LoginScreen({ navigation }) {
             styles.successCard,
             { transform: [{ scale: scaleAnim }] }
           ]}>
-            <LinearGradient
-              colors={["#E63946", "#C62828"]}
-              style={styles.successGradient}
-            >
+            <View style={styles.successGradient}>
               <View style={styles.checkRing}>
-                <Ionicons name="checkmark" size={50 * scale} color="#FFF" />
+                <Ionicons name="checkmark-circle" size={80 * scale} color="#E63946" />
               </View>
 
               <Text style={styles.successTitle}>Logged In!</Text>
@@ -239,7 +238,7 @@ export default function LoginScreen({ navigation }) {
               <Text style={styles.enjoyText}>
                 Enjoy ordering your favorite meals 😋
               </Text>
-            </LinearGradient>
+            </View>
           </Animated.View>
         </View>
       </Modal>
@@ -262,7 +261,9 @@ export default function LoginScreen({ navigation }) {
               <Text style={styles.alertTitleText}>{alertTitle}</Text>
               <Text style={styles.alertMsgText}>{alertMsg}</Text>
               <TouchableOpacity style={styles.alertBtn} onPress={hidePremiumAlert}>
-                <Text style={styles.alertBtnText}>Ok</Text>
+                <LinearGradient colors={["#FF2B5C", "#FF6B8B"]} style={styles.alertBtnGradient}>
+                  <Text style={styles.alertBtnText}>Ok</Text>
+                </LinearGradient>
               </TouchableOpacity>
             </LinearGradient>
           </Animated.View>
@@ -359,17 +360,18 @@ const styles = StyleSheet.create({
 
   loginBtn: {
     marginTop: 10,
-    borderWidth: 2,
-    borderColor: "#1E293B",
     borderRadius: 14,
+    overflow: "hidden",
+  },
+  loginGradient: {
     paddingVertical: 14,
     justifyContent: "center",
     alignItems: "center",
   },
   loginText: {
-    color: "#1E293B",
+    color: "#FFFFFF",
     fontSize: 18,
-    fontFamily: "PoppinsSemiBold",
+    fontFamily: "PoppinsBold",
   },
   bottomText: {
     textAlign: "center",
@@ -404,29 +406,26 @@ const styles = StyleSheet.create({
   successGradient: {
     padding: 30,
     alignItems: "center",
+    backgroundColor: "#FFFFFF",
   },
   checkRing: {
-    width: 90 * (Dimensions.get("window").width / 400),
-    height: 90 * (Dimensions.get("window").width / 400),
-    borderRadius: 45 * (Dimensions.get("window").width / 400),
-    backgroundColor: "rgba(255,255,255,0.2)",
+    width: 100 * scale,
+    height: 100 * scale,
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 20,
-    borderWidth: 3,
-    borderColor: "rgba(255,255,255,0.5)",
   },
   successTitle: {
-    fontSize: 28 * (Dimensions.get("window").width / 400),
+    fontSize: 28 * scale,
     fontFamily: "PoppinsBold",
-    color: "#FFF",
+    color: "#0F172A",
     fontWeight: "900",
     marginBottom: 5,
   },
   successMsg: {
-    fontSize: 18 * (Dimensions.get("window").width / 400),
+    fontSize: 18 * scale,
     fontFamily: "PoppinsSemiBold",
-    color: "#FFF",
+    color: "#475569",
     textAlign: "center",
     opacity: 0.9,
     marginBottom: 15,
@@ -445,9 +444,9 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
   enjoyText: {
-    fontSize: 14 * (Dimensions.get("window").width / 400),
+    fontSize: 14 * scale,
     fontFamily: "PoppinsMedium",
-    color: "#FFF",
+    color: "#64748B",
     opacity: 0.8,
     textAlign: "center",
   },
@@ -498,16 +497,19 @@ const styles = StyleSheet.create({
     lineHeight: 22 * scale,
   },
   alertBtn: {
+    marginTop: 30,
     width: "100%",
-    borderRadius: 15,
-    borderWidth: 2,
-    borderColor: "#1E293B",
+    borderRadius: 14,
+    overflow: "hidden",
+  },
+  alertBtnGradient: {
     paddingVertical: 14,
     alignItems: "center",
+    justifyContent: "center",
   },
   alertBtnText: {
     fontSize: 16 * scale,
-    fontFamily: "PoppinsSemiBold",
-    color: "#1E293B",
+    fontFamily: "PoppinsBold",
+    color: "#FFFFFF",
   },
 });

@@ -275,7 +275,7 @@ export default function CartSummary({ navigation }) {
                 <View style={styles.itemRow}>
                   <View style={styles.itemInfo}>
                     <View style={styles.nameHeader}>
-                      <Ionicons name="radio-button-on" size={12} color="#16a34a" style={{ marginRight: 6, marginTop: 3 }} />
+                      <Ionicons name="radio-button-on" size={12} color="#FF2B5C" style={{ marginRight: 6, marginTop: 3 }} />
                       <Text style={styles.itemName} numberOfLines={2}>{item.product_name}</Text>
                     </View>
                     {item.textfield ? (
@@ -322,7 +322,7 @@ export default function CartSummary({ navigation }) {
                   </View>
                   <View style={styles.billRow}>
                     <Text style={styles.billLabel}>Preparation Fee</Text>
-                    <Text style={[styles.billValue, { color: '#16a34a' }]}>FREE</Text>
+                    <Text style={[styles.billValue, { color: '#FF2B5C' }]}>FREE</Text>
                   </View>
                   <View style={styles.billDivider} />
                   <View style={styles.billRow}>
@@ -334,7 +334,7 @@ export default function CartSummary({ navigation }) {
                 {/* Safety Badge */}
                 <View style={styles.safetyCard}>
                   <View style={styles.safetyIconBg}>
-                    <Ionicons name="shield-checkmark" size={24} color="#16a34a" />
+                    <Ionicons name="shield-checkmark" size={24} color="#FF2B5C" />
                   </View>
                   <View style={styles.safetyTextRow}>
                     <Text style={styles.safetyTitle}>Safety & Hygiene Guaranteed</Text>
@@ -359,7 +359,7 @@ export default function CartSummary({ navigation }) {
             onPress={() => navigation.navigate("CheckoutScreen")}
           >
             <LinearGradient
-              colors={["#16a34a", "#15803d"]}
+              colors={["#FF2B5C", "#FF6B8B"]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.stickyBtn}
@@ -425,8 +425,8 @@ const styles = StyleSheet.create({
     color: '#1C1C1C',
   },
 
-  arrivalBadge: { backgroundColor: '#FF2B5C', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
-  arrivalText: { fontSize: 10 * scale, fontFamily: 'PoppinsBold', color: '#FFF' },
+  arrivalBadge: { backgroundColor: '#FFF5F5', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, borderWidth: 1, borderColor: '#FFD1DC' },
+  arrivalText: { fontSize: 10 * scale, fontFamily: 'PoppinsBold', color: '#FF2B5C' },
 
   itemRow: { flexDirection: 'row', backgroundColor: '#FFF', marginHorizontal: 20, marginVertical: 6, borderRadius: 12, padding: 16, elevation: 2 },
   itemInfo: { flex: 1, paddingRight: 10 },
@@ -479,15 +479,15 @@ const styles = StyleSheet.create({
     fontSize: 22 * scale,      // ⬆️ premium emphasis
     fontFamily: 'PoppinsBold',
     fontWeight: '900',         // 🔥 extra bold
-    color: '#16a34a',
+    color: '#FF2B5C',
   },
 
 
-  safetyCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F0FDF4', marginTop: 12, padding: 14, borderRadius: 12, borderWidth: 1, borderColor: '#DCFCE7' },
-  safetyIconBg: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#DCFCE7', alignItems: 'center', justifyContent: 'center' },
+  safetyCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFF5F5', marginTop: 12, padding: 14, borderRadius: 12, borderWidth: 1, borderColor: '#FFD1DC' },
+  safetyIconBg: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#FFD1DC', alignItems: 'center', justifyContent: 'center' },
   safetyTextRow: { marginLeft: 12 },
-  safetyTitle: { fontSize: 13 * scale, fontFamily: 'PoppinsBold', color: '#15803d' },
-  safetySub: { fontSize: 11 * scale, fontFamily: 'PoppinsMedium', color: '#166534', opacity: 0.8 },
+  safetyTitle: { fontSize: 13 * scale, fontFamily: 'PoppinsBold', color: '#FF2B5C' },
+  safetySub: { fontSize: 11 * scale, fontFamily: 'PoppinsMedium', color: '#FF2B5C', opacity: 0.8 },
 
   stickyFooter: {
     position: 'absolute',

@@ -253,11 +253,11 @@ export default function Profile({ navigation }) {
       >
         <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
           {/* PREMIUM HEADER CARD */}
-          <LinearGradient colors={["#1D976C", "#93F9B9"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.profileHeader}>
+          <LinearGradient colors={["#FF2B5C", "#FF6B8B"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.profileHeader}>
             <View style={styles.headerContent}>
               <View style={styles.avatarContainer}>
                 <View style={styles.avatarInner}>
-                  <Ionicons name="person" size={40} color="#16a34a" />
+                  <Ionicons name="person" size={40} color="#FF2B5C" />
                 </View>
                 <View style={styles.editBadge}>
                   <Ionicons name="camera" size={12} color="#FFF" />
@@ -297,20 +297,20 @@ export default function Profile({ navigation }) {
             <LinearGradient colors={["#FFF", "#F8FAFC"]} style={styles.referralCard}>
               <View style={styles.refLeft}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 5 }}>
-                  <Ionicons name="people-circle" size={26} color="#16a34a" />
+                  <Ionicons name="people-circle" size={26} color="#FF2B5C" />
                   <Text style={[styles.refTitle, { marginLeft: 8 }]}>Refer a Friend</Text>
                 </View>
                 <Text style={styles.refDesc}>(Invite friends and earn instantly)</Text>
                 <View style={styles.codeRow}>
-                  <Text style={styles.refCodeLabel}>MY CODE:</Text>
+                  <Text style={styles.refCodeLabel}>My code:</Text>
                   <Text style={styles.refCodeText}>{profile?.referral_code || "ALPHA"}</Text>
                 </View>
               </View>
               <View style={styles.refActions}>
                 <TouchableOpacity style={[styles.iconBtn, { marginBottom: 10 }]} onPress={copyReferralCode}>
-                  <Ionicons name="copy" size={20} color="#16a34a" />
+                  <Ionicons name="copy" size={20} color="#FF2B5C" />
                 </TouchableOpacity>
-                <TouchableOpacity style={[styles.iconBtn, { backgroundColor: '#16a34a' }]} onPress={shareReferral}>
+                <TouchableOpacity style={[styles.iconBtn, { backgroundColor: '#FF2B5C' }]} onPress={shareReferral}>
                   <Ionicons name="share-social" size={20} color="#FFF" />
                 </TouchableOpacity>
               </View>
@@ -319,27 +319,27 @@ export default function Profile({ navigation }) {
 
           {/* MAIN MENU SECTIONS */}
           <View style={styles.section}>
-            <Text style={styles.sectionLabel}>ACCOUNT MANAGEMENT</Text>
+            <Text style={styles.sectionLabel}>Account management</Text>
             <View style={styles.menuGroup}>
-              <MenuItem icon="receipt" label="My Orders" sub="View history & tracking" color="#F97316" onPress={() => navigation.navigate("Orders")} />
-              <MenuItem icon="wallet" label="Credits & Wallet" sub="Balance & statement" color="#0EA5E9" onPress={() => navigation.navigate("Credits")} />
-              <MenuItem icon="person-circle" label="Edit Profile" sub="Update personal info" color="#8B5CF6" onPress={() => navigation.navigate("EditProfile")} />
+              <MenuItem icon="receipt" label="My Orders" sub="View history & tracking" color="#FF2B5C" onPress={() => navigation.navigate("Orders")} />
+              <MenuItem icon="wallet" label="Credits & Wallet" sub="Balance & statement" color="#FF2B5C" onPress={() => navigation.navigate("Credits")} />
+              <MenuItem icon="person-circle" label="Edit Profile" sub="Update personal info" color="#FF2B5C" onPress={() => navigation.navigate("EditProfile")} />
             </View>
           </View>
 
           <View style={styles.section}>
-            <Text style={styles.sectionLabel}>RESOURCES & LEGAL</Text>
+            <Text style={styles.sectionLabel}>Resources & legal</Text>
             <View style={styles.menuGroup}>
-              <MenuItem icon="help-buoy" label="Support Center" sub="FAQs & live chat" color="#10B981" onPress={() => navigation.navigate("HelpCenter")} />
+              <MenuItem icon="help-buoy" label="Support Center" sub="FAQs & live chat" color="#FF2B5C" onPress={() => navigation.navigate("HelpCenter")} />
               <MenuItem icon="shield-checkmark" label="Privacy Policy" sub="How we use your data" color="#64748B" onPress={() => navigation.navigate("PrivacyPolicy")} />
               <MenuItem icon="document-text" label="Terms of Service" sub="App usage guidelines" color="#64748B" onPress={() => navigation.navigate("TermsConditions")} />
             </View>
           </View>
 
           <TouchableOpacity style={styles.logoutBtn} onPress={logout}>
-            <LinearGradient colors={["#FEF2F2", "#FFF"]} style={styles.logoutInner}>
-              <Ionicons name="log-out" size={22} color="#EF4444" />
-              <Text style={styles.logoutText}>Sign Out Account</Text>
+            <LinearGradient colors={["#FF2B5C", "#FF6B8B"]} style={styles.logoutInner}>
+              <Ionicons name="log-out" size={22} color="#FFFFFF" />
+              <Text style={[styles.logoutText, { color: "#FFFFFF" }]}>Sign Out Account</Text>
             </LinearGradient>
           </TouchableOpacity>
 
@@ -356,12 +356,12 @@ export default function Profile({ navigation }) {
         <View style={styles.alertOverlay}>
           <Animated.View style={[styles.alertCard, { transform: [{ scale: alertScale }] }]}>
             <LinearGradient
-              colors={alertType === 'error' ? ["#FFF5F5", "#FFFFFF"] : ["#F0FDF4", "#FFFFFF"]}
+              colors={alertType === 'error' ? ["#FFF5F5", "#FFFFFF"] : ["#FFF5F5", "#FFFFFF"]}
               style={styles.alertContent}
             >
               <View style={[
                 styles.alertIconRing,
-                { backgroundColor: alertType === 'error' ? '#FEE2E2' : '#DCFCE7' }
+                { backgroundColor: alertType === 'error' ? '#FEE2E2' : '#FFD1DC' }
               ]}>
                 <Ionicons
                   name={
@@ -370,14 +370,14 @@ export default function Profile({ navigation }) {
                         : "information-circle"
                   }
                   size={40}
-                  color={alertType === 'error' ? "#EF4444" : "#16A34A"}
+                  color={alertType === 'error' ? "#EF4444" : "#FF2B5C"}
                 />
               </View>
               <Text style={styles.alertTitleText}>{alertTitle}</Text>
               <Text style={styles.alertMsgText}>{alertMsg}</Text>
               <TouchableOpacity style={styles.alertBtn} onPress={hidePremiumAlert}>
                 <LinearGradient
-                  colors={alertType === 'error' ? ["#EF4444", "#DC2626"] : ["#16A34A", "#15803D"]}
+                  colors={["#FF2B5C", "#FF6B8B"]}
                   style={styles.alertBtnGrad}
                 >
                   <Text style={styles.alertBtnText}>Ok</Text>
@@ -393,8 +393,8 @@ export default function Profile({ navigation }) {
         <View style={styles.alertOverlay}>
           <Animated.View style={[styles.alertCard, { transform: [{ scale: logoutScaleAnim }] }]}>
             <LinearGradient colors={["#FFFFFF", "#FFF5F5"]} style={styles.alertContent}>
-              <View style={[styles.alertIconRing, { backgroundColor: 'rgba(239, 68, 68, 0.1)' }]}>
-                <Ionicons name="log-out" size={40} color="#EF4444" />
+              <View style={[styles.alertIconRing, { backgroundColor: 'rgba(255, 43, 92, 0.1)' }]}>
+                <Ionicons name="log-out" size={40} color="#FF2B5C" />
               </View>
               <Text style={styles.alertTitleText}>Sign Out?</Text>
               <Text style={styles.alertMsgText}>Are you sure you want to sign out from your account?</Text>
@@ -404,8 +404,8 @@ export default function Profile({ navigation }) {
                   <Text style={styles.cancelLogoutText}>Stay</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.confirmLogoutBtn} onPress={confirmLogout}>
-                  <LinearGradient colors={["#EF4444", "#DC2626"]} style={styles.alertBtnGrad}>
-                    <Text style={styles.alertBtnText}>Sign Out</Text>
+                  <LinearGradient colors={["#FF2B5C", "#FF6B8B"]} style={styles.alertBtnGrad}>
+                    <Text style={styles.alertBtnText}>Sign out</Text>
                   </LinearGradient>
                 </TouchableOpacity>
               </View>
@@ -436,7 +436,7 @@ const MenuItem = ({ icon, label, sub, color, onPress }) => (
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: "#F8FAFC" },
   loaderContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FFF' },
-  loaderText: { marginTop: 15, fontFamily: 'PoppinsMedium', color: '#16a34a' },
+  loaderText: { marginTop: 15, fontFamily: 'PoppinsMedium', color: '#FF2B5C' },
   authContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
 
   profileHeader: {
@@ -445,14 +445,14 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 35,
     borderBottomRightRadius: 35,
     elevation: 20,
-    shadowColor: '#16a34a',
+    shadowColor: '#FF2B5C',
     shadowOpacity: 0.3,
     shadowRadius: 20,
   },
   headerContent: { flexDirection: 'row', alignItems: 'center' },
   avatarContainer: { position: 'relative' },
   avatarInner: { width: 85, height: 85, borderRadius: 45, backgroundColor: '#FFF', alignItems: 'center', justifyContent: 'center', borderWidth: 3, borderColor: 'rgba(255,255,255,0.4)' },
-  editBadge: { position: 'absolute', bottom: 0, right: 0, backgroundColor: '#EA580C', padding: 6, borderRadius: 12, borderWidth: 2, borderColor: '#FFF' },
+  editBadge: { position: 'absolute', bottom: 0, right: 0, backgroundColor: '#FF2B5C', padding: 6, borderRadius: 12, borderWidth: 2, borderColor: '#FFF' },
 
   userInfo: { marginLeft: 20, flex: 1 },
   userName: { fontSize: 24 * scale, fontFamily: "PoppinsBold", color: "#FFF", fontWeight: '900' },
@@ -475,10 +475,10 @@ const styles = StyleSheet.create({
   refDesc: { fontSize: 12 * scale, fontFamily: "PoppinsMedium", color: "#64748B", marginTop: 2 },
   codeRow: { flexDirection: 'row', alignItems: 'center', marginTop: 12 },
   refCodeLabel: { fontSize: 10 * scale, fontFamily: "PoppinsBold", color: "#94A3B8" },
-  refCodeText: { fontSize: 16 * scale, fontFamily: "PoppinsBold", color: "#16a34a", marginLeft: 8, letterSpacing: 2 },
+  refCodeText: { fontSize: 16 * scale, fontFamily: "PoppinsBold", color: "#FF2B5C", marginLeft: 8, letterSpacing: 2 },
 
   refActions: {},
-  iconBtn: { width: 45, height: 45, borderRadius: 15, backgroundColor: '#F0FDF4', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#DCFCE7' },
+  iconBtn: { width: 45, height: 45, borderRadius: 15, backgroundColor: '#FFF5F5', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#FFD1DC' },
 
   menuGroup: { backgroundColor: '#FFF', borderRadius: 22, padding: 10, elevation: 4, shadowColor: '#000', shadowOpacity: 0.03, borderWidth: 1, borderColor: '#F1F5F9' },
   menuItem: { flexDirection: 'row', alignItems: 'center', padding: 15 },
@@ -489,8 +489,8 @@ const styles = StyleSheet.create({
   chevron: { opacity: 0.5 },
 
   logoutBtn: { marginHorizontal: 20, marginTop: 30, borderRadius: 20, overflow: 'hidden', elevation: 2 },
-  logoutInner: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 18, borderDash: [5, 5], borderWidth: 1, borderColor: '#FEE2E2' },
-  logoutText: { fontSize: 16 * scale, fontFamily: "PoppinsBold", color: "#EF4444", marginLeft: 10 },
+  logoutInner: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 18, borderDash: [5, 5], borderWidth: 1, borderColor: '#FFD1DC' },
+  logoutText: { fontSize: 16 * scale, fontFamily: "PoppinsBold", color: "#FFFFFF", marginLeft: 10 },
 
   versionText: { textAlign: 'center', marginTop: 30, fontSize: 12 * scale, fontFamily: "PoppinsMedium", color: "#CBD5E1" },
 

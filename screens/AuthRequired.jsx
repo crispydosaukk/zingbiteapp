@@ -1,6 +1,8 @@
 import React from "react";
 import { View, Text, Modal, TouchableOpacity, StyleSheet } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
+import LinearGradient from "react-native-linear-gradient";
+import { useNavigation } from "@react-navigation/native";
 
 export function AuthRequiredModal({ visible, onClose, onSignIn }) {
   return (
@@ -11,7 +13,7 @@ export function AuthRequiredModal({ visible, onClose, onSignIn }) {
             <Ionicons name="lock-closed-outline" size={36} color="#0288D1" />
           </View>
           <Text style={styles.title}>Please sign in to view details</Text>
-          <Text style={styles.subtitle} numberOfLines={3}>
+          <Text style={styles.subtitle}>
             Sign in to access your orders, wallet and credits. Enjoy a secure, personalized and premium experience.
           </Text>
 
@@ -19,8 +21,10 @@ export function AuthRequiredModal({ visible, onClose, onSignIn }) {
             <TouchableOpacity style={styles.secondaryBtn} onPress={onClose}>
               <Text style={styles.secondaryText}>Maybe later</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.primaryBtn} onPress={onSignIn}>
-              <Text style={styles.primaryText}>Sign in</Text>
+            <TouchableOpacity style={styles.primaryWrapModal} onPress={onSignIn}>
+              <LinearGradient colors={["#FF2B5C", "#FF6B8B"]} start={{x: 0, y: 0}} end={{x: 1, y: 0}} style={styles.primaryBtnGradient}>
+                <Text style={styles.primaryTextWhite}>Sign in</Text>
+              </LinearGradient>
             </TouchableOpacity>
           </View>
         </View>
@@ -29,20 +33,30 @@ export function AuthRequiredModal({ visible, onClose, onSignIn }) {
   );
 }
 
-export function AuthRequiredInline({ onSignIn, description }) {
+export function AuthRequiredInline({ onSignIn }) {
+  const navigation = useNavigation();
+
   return (
-    <View style={{ alignItems: "center", padding: 20 }}>
-      <View style={styles.inlineCard}>
-        <View style={styles.iconWrapInline}>
-          <Ionicons name="person-circle-outline" size={44} color="#0288D1" />
+    <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 20 }}>
+      <View style={styles.card}>
+        <View style={styles.iconWrap}>
+          <Ionicons name="lock-closed-outline" size={36} color="#0288D1" />
         </View>
-        <Text style={styles.inlineTitle}>Please sign in to continue</Text>
-        <Text style={styles.inlineSubtitle} numberOfLines={3}>
-          {description || "Sign in to access your orders, wallet and credits."}
+        <Text style={styles.title}>Please sign in to view details</Text>
+        <Text style={styles.subtitle}>
+          Sign in to access your orders, wallet and credits. Enjoy a secure, personalized and premium experience.
         </Text>
-        <TouchableOpacity style={styles.primaryBtnInline} onPress={onSignIn}>
-          <Text style={styles.primaryText}>Sign in</Text>
-        </TouchableOpacity>
+
+        <View style={styles.actionsRow}>
+          <TouchableOpacity style={styles.secondaryBtn} onPress={() => navigation.navigate("Home")}>
+            <Text style={styles.secondaryText}>Maybe later</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.primaryWrapModal} onPress={onSignIn}>
+            <LinearGradient colors={["#FF2B5C", "#FF6B8B"]} start={{x: 0, y: 0}} end={{x: 1, y: 0}} style={styles.primaryBtnGradient}>
+              <Text style={styles.primaryTextWhite}>Sign in</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -125,39 +139,36 @@ const styles = StyleSheet.create({
     fontFamily: "PoppinsSemiBold",
     fontSize: 15,
   },
-
-  inlineCard: {
-    width: "100%",
-    maxWidth: 560,
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 20,
-    alignItems: "center",
-    elevation: 4,
-  },
-  iconWrapInline: {
-    marginBottom: 12,
-  },
-  inlineTitle: {
-    fontSize: 18,
-    fontFamily: "PoppinsBold",
-    color: "#0F172A",
-  },
-  inlineSubtitle: {
-    fontSize: 13,
-    fontFamily: "PoppinsMedium",
-    color: "#475569",
-    textAlign: "center",
-    marginVertical: 12,
-    lineHeight: 20,
-  },
-  primaryBtnInline: {
-    backgroundColor: "transparent",
-    paddingVertical: 12,
-    paddingHorizontal: 24,
+  primaryWrapModal: {
     borderRadius: 14,
-    borderWidth: 2,
-    borderColor: "#1E293B",
-    marginTop: 5,
+    marginLeft: 12,
+    overflow: 'hidden',
+    elevation: 4,
+    shadowColor: "#FF2B5C",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+  },
+  primaryWrapInline: {
+    borderRadius: 14,
+    marginTop: 10,
+    overflow: 'hidden',
+    elevation: 4,
+    shadowColor: "#FF2B5C",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+  },
+  primaryBtnGradient: {
+    paddingVertical: 14,
+    paddingHorizontal: 28,
+    alignItems: "center",
+    justifyContent: "center",
+    minWidth: 120,
+  },
+  primaryTextWhite: {
+    color: "#FFFFFF",
+    fontFamily: "PoppinsSemiBold",
+    fontSize: 15,
   },
 });

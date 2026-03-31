@@ -107,7 +107,7 @@ export default function AppHeader({ user, onMenuPress, navigation, cartItems, tr
   return (
     <>
       <StatusBar
-        backgroundColor={statusColor || (transparent ? "#FFF9E0" : "#FFFFFF")}
+        backgroundColor={statusColor || (transparent ? "#FFFFFF" : "#FFFFFF")}
         barStyle={barStyle || (statusColor ? "light-content" : "dark-content")}
       />
 
@@ -210,7 +210,7 @@ const PremiumAnimatedBadge = ({ balance, loading }) => {
   return (
     <View style={styles.premiumBadge}>
       <View style={styles.goldTextRow}>
-        <Text style={styles.goldSmallText}>WALLET</Text>
+        <Text style={styles.goldSmallText}>Wallet</Text>
       </View>
       {loading ? (
         <ActivityIndicator size="small" color="#D4AF37" />
@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
     width: 36 * scale,
     height: 36 * scale,
     borderRadius: 18 * scale,
-    backgroundColor: "#C62828", // Match HomeScreen theme
+    backgroundColor: "#FF2B5C", // Pink Identity
     justifyContent: "center",
     alignItems: "center",
     marginRight: 10,

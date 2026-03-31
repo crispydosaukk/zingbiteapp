@@ -105,7 +105,7 @@ export default function HelpCenter({ navigation }) {
 
     return (
         <SafeAreaView style={styles.container} edges={["top"]}>
-            <LinearGradient colors={["#d7f7df", "#ffffff"]} style={styles.header}>
+            <LinearGradient colors={["#FFF5F5", "#FFFFFF"]} style={styles.header}>
                 <TouchableOpacity
                     onPress={() => navigation.goBack()}
                     style={styles.backBtn}
@@ -120,7 +120,7 @@ export default function HelpCenter({ navigation }) {
                 {/* Hero Section */}
                 <View style={styles.heroCard}>
                     <LinearGradient
-                        colors={["#0b7a2a", "#16a34a"]}
+                        colors={["#FF2B5C", "#FF6B8B"]}
                         style={styles.heroGradient}
                     >
                         <Ionicons name="headset" size={64} color="#ffffff" />
@@ -335,7 +335,7 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "space-between",
-        backgroundColor: "#0b7a2a",
+        backgroundColor: "#FF2B5C",
         borderRadius: 16,
         padding: 18,
         marginBottom: 16,

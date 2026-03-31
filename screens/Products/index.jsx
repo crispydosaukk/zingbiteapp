@@ -11,12 +11,13 @@ import {
   TouchableOpacity,
   Modal,
   Animated,
-  Alert,
+  PermissionsAndroid,
+  Platform,
+  ScrollView,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Ionicons from "react-native-vector-icons/Ionicons";
-import { PermissionsAndroid, Platform } from "react-native";
 import { RefreshControl } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import useRefresh from "../../hooks/useRefresh";
@@ -72,7 +73,7 @@ export default function Products({ route, navigation }) {
   const [textIndex, setTextIndex] = useState(0);
   const offers = [
     { colors: ["#FF416C", "#FF4B2B"], textColor: "#FFFFFF", icon: "flash" },
-    { colors: ["#1D976C", "#93F9B9"], textColor: "#004D40", icon: "leaf" },
+    { colors: ["#FF2B5C", "#FF6B8B"], textColor: "#FFFFFF", icon: "leaf" },
     { colors: ["#F2994A", "#F2C94C"], textColor: "#5D4037", icon: "wallet" },
   ];
   const [activeIndex, setActiveIndex] = useState(0);
@@ -587,35 +588,28 @@ export default function Products({ route, navigation }) {
     return (
       <View style={styles.card}>
         <LinearGradient
-          colors={isEven ? ["#FFF", "#FDF2F8"] : ["#FFF", "#F0FDF4"]}
+          colors={isEven ? ["#FFF", "#FDF2F8"] : ["#FFF", "#FFF5F5"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={styles.cardContent}
         >
-          <Image
-            source={
-              item.image
-                ? { uri: item.image }
-                : require("../../assets/restaurant.png")
-            }
-            style={styles.cardImg}
-          />
+          {/* LEFT: Info */}
           <View style={styles.cardBody}>
-            <Text style={styles.cardTitle} numberOfLines={1}>
+            <Text style={styles.cardTitle} numberOfLines={2}>
               {item.name}
             </Text>
 
             {!!item.description && (
-              <Text style={styles.cardDesc} numberOfLines={2}>
+              <Text style={styles.cardDesc} numberOfLines={3}>
                 {item.description}
               </Text>
             )}
+
             {Array.isArray(item.contains) && item.contains.length > 0 && (
               <View style={styles.containsRow}>
                 {item.contains.map((c, index) => {
                   const rawKey = String(c).trim();
                   const key = rawKey.toLowerCase();
-
                   const ICON_MAP = {
                     dairy: CONTAINS_ICONS.Dairy,
                     gluten: CONTAINS_ICONS.Gluten,
@@ -625,20 +619,14 @@ export default function Products({ route, navigation }) {
                     vegan: CONTAINS_ICONS.Vegan,
                     vegetarian: CONTAINS_ICONS.Vegetarian,
                   };
-
                   const iconSource = ICON_MAP[key];
-
                   if (iconSource) {
                     return (
-                      <Image
-                        key={index}
-                        source={iconSource}
-                        style={styles.containsIcon}
-                      />
+                      <View key={index} style={styles.iconCircle}>
+                        <Image source={iconSource} style={styles.containsIconSmall} />
+                      </View>
                     );
                   }
-
-                  // Fallback: Display text if icon is missing
                   return (
                     <Text key={index} style={{ fontSize: 10, color: '#555', marginRight: 4 }}>{rawKey}</Text>
                   );
@@ -646,58 +634,73 @@ export default function Products({ route, navigation }) {
               </View>
             )}
 
-            <View style={styles.priceRow}>
-              <View style={{ flexDirection: 'column' }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <Text style={styles.price}>£{item.price}</Text>
-                  {(item.discount_price && Number(item.discount_price) > Number(item.price)) && (
-                    <Text style={styles.originalPrice}>£{item.discount_price}</Text>
-                  )}
-                </View>
+            <View style={{ marginTop: 12 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <Text style={styles.price}>£{item.price}</Text>
                 {(item.discount_price && Number(item.discount_price) > Number(item.price)) && (
-                  <View style={styles.discountBadgeSmall}>
-                    <Text style={styles.discountBadgeTextSmall}>
-                      SAVE {Math.round(((Number(item.discount_price) - Number(item.price)) / Number(item.discount_price)) * 100)}%
-                    </Text>
-                  </View>
+                  <Text style={styles.originalPrice}>£{item.discount_price}</Text>
                 )}
               </View>
+              {(item.discount_price && Number(item.discount_price) > Number(item.price)) && (
+                <View style={[styles.discountBadgeSmall, { marginTop: 4 }]}>
+                  <Text style={styles.discountBadgeTextSmall}>
+                    SAVE {Math.round(((Number(item.discount_price) - Number(item.price)) / Number(item.discount_price)) * 100)}%
+                  </Text>
+                </View>
+              )}
+            </View>
+          </View>
 
+          {/* RIGHT: Image & Action */}
+          <View style={styles.imageActionContainer}>
+            <View style={styles.imageWrapper}>
+              <Image
+                source={
+                  item.image
+                    ? { uri: item.image }
+                    : require("../../assets/restaurant.png")
+                }
+                style={styles.cardImg}
+              />
+            </View>
+
+            {/* ACTION BUTTONS (Zomato Style) */}
+            <View style={styles.actionOverlay}>
               {qty > 0 ? (
-                <View style={styles.qtyRow}>
+                <View style={styles.qtyRowVertical}>
                   <TouchableOpacity
-                    style={styles.qtyBtn}
+                    style={styles.qtyBtnCircular}
                     onPress={() => decrement(item.id)}
                     disabled={!!updating[item.id]}
                   >
                     {updating[item.id] ? (
-                      <ActivityIndicator size="small" />
+                      <ActivityIndicator size="small" color="#FFF" />
                     ) : (
-                      <Ionicons name="remove-outline" size={18 * scale} color="#000" />
+                      <Ionicons name="remove" size={16 * scale} color="#FFF" />
                     )}
                   </TouchableOpacity>
 
-                  <Text style={styles.qtyText}>{qty}</Text>
+                  <Text style={styles.qtyTextPremium}>{qty}</Text>
 
                   <TouchableOpacity
-                    style={styles.qtyBtn}
+                    style={styles.qtyBtnCircular}
                     onPress={() => increment(item.id)}
                     disabled={!!updating[item.id]}
                   >
                     {updating[item.id] ? (
-                      <ActivityIndicator size="small" />
+                      <ActivityIndicator size="small" color="#FFF" />
                     ) : (
-                      <Ionicons name="add-outline" size={18 * scale} color="#000" />
+                      <Ionicons name="add" size={16 * scale} color="#FFF" />
                     )}
                   </TouchableOpacity>
                 </View>
               ) : (
                 <TouchableOpacity
-                  style={styles.addBtn}
+                  style={styles.addBtnPremium}
                   onPress={() => addAndOpenPopup(item.id)}
                 >
-                  <Ionicons name="add-outline" size={20 * scale} color="#fff" />
-                  <Text style={styles.addText}>ADD</Text>
+                  <Text style={styles.addTextPremium}>ADD</Text>
+                  <Ionicons name="add" size={12 * scale} color="#FF2B5C" style={{ position: 'absolute', right: 5, top: 3 }} />
                 </TouchableOpacity>
               )}
             </View>
@@ -708,53 +711,33 @@ export default function Products({ route, navigation }) {
   };
 
   return (
-    <View style={styles.safe}>
-      <View style={styles.brandSection}>
-        <LinearGradient
-          colors={["#FF2B5C", "#FF6B8B"]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={StyleSheet.absoluteFill}
-        />
-
-        <AppHeader
-          user={user}
-          navigation={navigation}
-          onMenuPress={() => setMenuVisible(true)}
-          cartItems={cartItems}
-          transparent
-          textColor="#FFFFFF"
-          barStyle="light-content"
-          statusColor="#FF2B5C"
-        />
-
-        {/* DYNAMIC COLOR OFFER PILL */}
-        {settings && animatedTexts.length > 0 && (
-          <Animated.View style={[styles.premiumOfferWrap, { opacity: fadeAnim }]}>
-            <LinearGradient
-              colors={offers[activeIndex]?.colors || ["#FF2B5C", "#FF6B8B"]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.premiumOfferInner}
-            >
-              <View style={styles.offerIconBadge}>
-                <Ionicons
-                  name={offers[activeIndex]?.icon || "gift"}
-                  size={16 * scale}
-                  color="#FFFFFF"
-                />
-
-              </View>
-              <View style={styles.offerTextContainer}>
-                {highlightAmount(animatedTexts[textIndex])}
-              </View>
-              <View style={[styles.glowingDot, { backgroundColor: '#FFFFFF' }]} />
-            </LinearGradient>
-          </Animated.View>
-        )}
+    <SafeAreaView
+      style={styles.safe}
+      edges={["left", "right", "bottom"]}
+    >
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 100 }}
+        stickyHeaderIndices={[0]}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        <View style={{ backgroundColor: '#FFFFFF' }}>
+          <AppHeader
+            user={user}
+            navigation={navigation}
+            onMenuPress={() => setMenuVisible(true)}
+            cartItems={cartItems}
+            transparent={false}
+            textColor="#1C1C1B"
+            barStyle="dark-content"
+            statusColor="#FFFFFF"
+          />
+        </View>
 
         {/* SEARCH BOX */}
-        <View style={styles.searchBoxPremium}>
+        <View style={[styles.searchBoxPremium, { marginTop: 15, marginBottom: 10 }]}>
           <Ionicons name="search-outline" size={18 * scale} color="#777" />
           <TextInput
             style={styles.searchInput}
@@ -764,32 +747,23 @@ export default function Products({ route, navigation }) {
             placeholderTextColor="#aaaaaa"
           />
         </View>
-      </View>
 
-      {/* Voice Overlay - Modal for absolute visibility */}
-
-      {/* List */}
-      {loading ? (
-        <ActivityIndicator size="large" style={{ marginTop: 24 }} />
-      ) : (
-        <View style={{ flex: 1 }}>
-          <FlatList
-            data={filteredProducts}
-            renderItem={renderItem}
-            keyExtractor={(i) => i.id.toString()}
-            ListHeaderComponent={() => (
-              <View style={styles.listHeaderComp}>
-                <Text style={styles.listHeaderTitle}>Discover Our Menu</Text>
-                <View style={styles.listHeaderLine} />
+        {loading ? (
+          <ActivityIndicator size="large" style={{ marginTop: 24 }} />
+        ) : (
+          <View style={{ flex: 1 }}>
+            <View style={styles.listHeaderComp}>
+              <Text style={styles.listHeaderTitle}>Discover Our Menu</Text>
+              <View style={styles.listHeaderLine} />
+            </View>
+            {filteredProducts.map((item, index) => (
+              <View key={item.id.toString()}>
+                {renderItem({ item, index })}
               </View>
-            )}
-            contentContainerStyle={{ paddingBottom: 100 }}
-            refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-            }
-          />
-        </View>
-      )}
+            ))}
+          </View>
+        )}
+      </ScrollView>
 
       {/* FLYING ANIMATION OBJECT */}
       <Animated.View style={[
@@ -821,7 +795,7 @@ export default function Products({ route, navigation }) {
               onPress={() => navigation.navigate("CartSummary", { cartItems, notes, user })}
             >
               <LinearGradient
-                colors={["#16a34a", "#15803d"]}
+                colors={["#FF2B5C", "#FF6B8B"]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 style={styles.checkoutGradient}
@@ -847,18 +821,18 @@ export default function Products({ route, navigation }) {
           <View style={styles.popupBox}>
             {/* Header Gradient */}
             <LinearGradient
-                  colors={["#FF2B5C", "#FF6B8B"]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                  style={{ paddingVertical: 15, alignItems: 'center' }}
-                >
-                  <Text style={{
-                    color: '#FFF',
-                    fontSize: 16 * scale,
-                    fontFamily: 'PoppinsBold',
-                    fontWeight: '900',
-                    letterSpacing: 1,
-                  }}>SPECIAL INSTRUCTIONS</Text>
+              colors={["#FF2B5C", "#FF6B8B"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={{ paddingVertical: 15, alignItems: 'center' }}
+            >
+              <Text style={{
+                color: '#FFF',
+                fontSize: 16 * scale,
+                fontFamily: 'PoppinsBold',
+                fontWeight: '900',
+                letterSpacing: 1,
+              }}>SPECIAL INSTRUCTIONS</Text>
             </LinearGradient>
 
             <View style={{ padding: 24, backgroundColor: '#FFF' }}>
@@ -872,15 +846,15 @@ export default function Products({ route, navigation }) {
                     {currentProduct && (
                       <Text style={styles.popupPrice}>£{currentProduct.price}</Text>
                     )}
-                    {currentProduct && (currentProduct.discount_price || currentProduct.product_discount_price) && 
-                     Number(currentProduct.discount_price || currentProduct.product_discount_price) > Number(currentProduct.price) && (
-                      <Text style={{
-                        fontSize: 14 * scale,
-                        fontFamily: 'PoppinsMedium',
-                        color: '#94A3B8',
-                        textDecorationLine: 'line-through',
-                      }}>£{Number(currentProduct.discount_price || currentProduct.product_discount_price).toFixed(2)}</Text>
-                    )}
+                    {currentProduct && (currentProduct.discount_price || currentProduct.product_discount_price) &&
+                      Number(currentProduct.discount_price || currentProduct.product_discount_price) > Number(currentProduct.price) && (
+                        <Text style={{
+                          fontSize: 14 * scale,
+                          fontFamily: 'PoppinsMedium',
+                          color: '#94A3B8',
+                          textDecorationLine: 'line-through',
+                        }}>£{Number(currentProduct.discount_price || currentProduct.product_discount_price).toFixed(2)}</Text>
+                      )}
                   </View>
                 </View>
                 <TouchableOpacity
@@ -895,32 +869,32 @@ export default function Products({ route, navigation }) {
               </View>
 
               {/* Savings Badge */}
-              {currentProduct && (currentProduct.discount_price || currentProduct.product_discount_price) && 
+              {currentProduct && (currentProduct.discount_price || currentProduct.product_discount_price) &&
                 Number(currentProduct.discount_price || currentProduct.product_discount_price) > Number(currentProduct.price) && (
-                <View style={{
-                  backgroundColor: '#F0FDF4',
-                  paddingHorizontal: 12,
-                  paddingVertical: 6,
-                  borderRadius: 10,
-                  alignSelf: 'flex-start',
-                  marginTop: 4,
-                  marginBottom: 12,
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  borderWidth: 1,
-                  borderColor: '#DCFCE7',
-                }}>
-                  <Ionicons name="sparkles" size={14} color="#16a34a" style={{ marginRight: 6 }} />
-                  <Text style={{
-                    fontSize: 12 * scale,
-                    fontFamily: 'PoppinsBold',
-                    color: '#16a34a',
-                    fontWeight: '900',
+                  <View style={{
+                    backgroundColor: '#F0FDF4',
+                    paddingHorizontal: 12,
+                    paddingVertical: 6,
+                    borderRadius: 10,
+                    alignSelf: 'flex-start',
+                    marginTop: 4,
+                    marginBottom: 12,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    borderWidth: 1,
+                    borderColor: '#DCFCE7',
                   }}>
-                    YOU SAVE £{(Number(currentProduct.discount_price || currentProduct.product_discount_price) - Number(currentProduct.price)).toFixed(2)}
-                  </Text>
-                </View>
-              )}
+                    <Ionicons name="sparkles" size={14} color="#16a34a" style={{ marginRight: 6 }} />
+                    <Text style={{
+                      fontSize: 12 * scale,
+                      fontFamily: 'PoppinsBold',
+                      color: '#16a34a',
+                      fontWeight: '900',
+                    }}>
+                      YOU SAVE £{(Number(currentProduct.discount_price || currentProduct.product_discount_price) - Number(currentProduct.price)).toFixed(2)}
+                    </Text>
+                  </View>
+                )}
 
               <Text style={{
                 fontSize: 14 * scale,
@@ -957,7 +931,7 @@ export default function Products({ route, navigation }) {
                   onPress={handleNextPopup}
                 >
                   <LinearGradient
-                    colors={["#16a34a", "#059669"]}
+                    colors={["#FF2B5C", "#FF6B8B"]}
                     style={styles.popupPrimaryBtn}
                   >
                     <Text style={styles.popupPrimaryText}>
@@ -990,14 +964,14 @@ export default function Products({ route, navigation }) {
               width: 80 * scale,
               height: 80 * scale,
               borderRadius: 40 * scale,
-              backgroundColor: '#F0FDF4',
+              backgroundColor: '#FFF5F5',
               justifyContent: 'center',
               alignItems: 'center',
               marginBottom: 20,
               borderWidth: 2,
-              borderColor: '#DCFCE7',
+              borderColor: '#FFD1DC',
             }}>
-              <Ionicons name="checkmark-circle" size={50 * scale} color="#16a34a" />
+              <Ionicons name="checkmark-circle" size={50 * scale} color="#FF2B5C" />
             </View>
 
             <Text style={{
@@ -1007,7 +981,7 @@ export default function Products({ route, navigation }) {
               fontWeight: '900',
               textAlign: 'center',
             }}>Added to Cart!</Text>
-            
+
             <Text style={{
               fontSize: 14 * scale,
               fontFamily: 'PoppinsMedium',
@@ -1054,16 +1028,18 @@ export default function Products({ route, navigation }) {
               <TouchableOpacity
                 onPress={() => setSuccessModalVisible(false)}
                 style={{
-                  backgroundColor: '#F1F5F9',
+                  backgroundColor: '#FFFFFF',
                   paddingVertical: 15,
                   borderRadius: 16,
                   alignItems: 'center',
+                  borderWidth: 2,
+                  borderColor: '#FF2B5C',
                 }}
               >
                 <Text style={{
                   fontSize: 15 * scale,
                   fontFamily: 'PoppinsBold',
-                  color: '#475569',
+                  color: '#FF2B5C',
                   fontWeight: '800',
                 }}>Continue Shopping</Text>
               </TouchableOpacity>
@@ -1075,7 +1051,7 @@ export default function Products({ route, navigation }) {
                 }}
               >
                 <LinearGradient
-                  colors={["#FF2B5C", "#E11D48"]}
+                  colors={["#FF2B5C", "#FF6B8B"]}
                   style={{
                     paddingVertical: 15,
                     borderRadius: 16,
@@ -1128,7 +1104,7 @@ export default function Products({ route, navigation }) {
                   onPress={() => { setReplaceModalVisible(false); if (replaceAction) replaceAction(); }}
                 >
                   <LinearGradient
-                    colors={["#EF4444", "#DC2626"]}
+                    colors={["#FF2B5C", "#FF6B8B"]}
                     style={styles.popupPrimaryBtn}
                   >
                     <Text style={styles.popupPrimaryText}>Replace</Text>
@@ -1141,7 +1117,7 @@ export default function Products({ route, navigation }) {
       </Modal>
 
       <BottomBar navigation={navigation} />
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -1311,25 +1287,107 @@ const styles = StyleSheet.create({
   },
   cardContent: {
     flexDirection: "row",
-    padding: 12,
+    padding: 16,
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   cardImg: {
-    width: 100 * scale,
-    height: 100 * scale,
-    backgroundColor: "#fff",
-    borderRadius: 15,
+    width: 120 * scale,
+    height: 120 * scale,
+    borderRadius: 20,
+    resizeMode: "cover",
+  },
+  imageActionContainer: {
+    width: 130 * scale,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  imageWrapper: {
+    borderRadius: 20,
+    overflow: 'hidden',
+    elevation: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    backgroundColor: '#fff',
+  },
+  actionOverlay: {
+    position: 'absolute',
+    bottom: -15,
+    width: '100%',
+    alignItems: 'center',
+  },
+  addBtnPremium: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: '#FF2B5C',
+    paddingVertical: 8,
+    paddingHorizontal: 25,
+    borderRadius: 10,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    minWidth: 90 * scale,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  addTextPremium: {
+    color: "#FF2B5C",
+    fontFamily: "PoppinsBold",
+    fontSize: 14 * scale,
+    fontWeight: "900",
+  },
+  qtyRowVertical: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FF2B5C",
+    borderRadius: 10,
+    padding: 6,
+    elevation: 4,
+    minWidth: 90 * scale,
+    justifyContent: 'space-between',
+  },
+  qtyBtnCircular: {
+    width: 24 * scale,
+    height: 24 * scale,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  qtyTextPremium: {
+    fontSize: 14 * scale,
+    fontFamily: "PoppinsBold",
+    color: "#FFFFFF",
+    fontWeight: '900',
+  },
+  iconCircle: {
+    width: 24 * scale,
+    height: 24 * scale,
+    borderRadius: 12 * scale,
+    backgroundColor: '#F1F5F9',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 6,
+  },
+  containsIconSmall: {
+    width: 14 * scale,
+    height: 14 * scale,
     resizeMode: "contain",
   },
   cardBody: {
     flex: 1,
-    marginLeft: 15,
-    justifyContent: 'center',
+    marginRight: 15,
+    paddingVertical: 4,
   },
   cardTitle: {
-    fontSize: 17.5 * scale,    // ⬆️ slight bump
+    fontSize: 16 * scale,
     fontFamily: "PoppinsBold",
     fontWeight: "800",
     color: "#1C1C1C",
+    lineHeight: 22 * scale,
   },
 
   cardDesc: {
@@ -1358,7 +1416,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   discountBadgeSmall: {
-    backgroundColor: 'rgba(22, 163, 74, 0.1)',
+    backgroundColor: 'rgba(255, 43, 92, 0.1)',
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
@@ -1368,7 +1426,7 @@ const styles = StyleSheet.create({
   discountBadgeTextSmall: {
     fontSize: 9 * scale,
     fontFamily: 'PoppinsBold',
-    color: '#166534',
+    color: '#FF2B5C',
     fontWeight: '900',
   },
 
@@ -1436,6 +1494,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 16,
+    backgroundColor: '#FF2B5C',
   },
   checkoutText: {
     color: "#ffffff",
@@ -1531,12 +1590,12 @@ const styles = StyleSheet.create({
     width: 70 * scale,
     height: 70 * scale,
     borderRadius: 35 * scale,
-    backgroundColor: "rgba(22, 163, 74, 0.1)",
+    backgroundColor: "rgba(255, 43, 92, 0.1)",
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: "rgba(22, 163, 74, 0.2)",
+    borderColor: "rgba(255, 43, 92, 0.2)",
   },
 
   /* HEADERS */
@@ -1573,7 +1632,7 @@ const styles = StyleSheet.create({
     fontSize: 18 * scale,
     fontFamily: "PoppinsBold",
     fontWeight: "900",
-    color: "#16a34a",
+    color: "#FF2B5C",
   },
   popupCloseBtn: {
     padding: 4,

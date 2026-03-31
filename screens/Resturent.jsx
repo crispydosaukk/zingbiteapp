@@ -85,8 +85,8 @@ function RestaurantCard({ name, address, photo, onPress, instore, kerbside, dist
           <View style={cardStyles.foodBadgeRow}>
             {isVeg && (
               <View style={cardStyles.vegBadgeCompact}>
-                <Ionicons name="leaf" size={12 * scale} color="#16a34a" />
-                <Text style={[cardStyles.dietText, { color: '#16a34a' }]}>PURE VEG</Text>
+                <Ionicons name="leaf" size={12 * scale} color="#FF2B5C" />
+                <Text style={[cardStyles.dietText, { color: '#FF2B5C' }]}>Pure veg</Text>
               </View>
             )}
             {isNonVeg && (
@@ -95,14 +95,14 @@ function RestaurantCard({ name, address, photo, onPress, instore, kerbside, dist
                   <View style={[cardStyles.dietInner, { backgroundColor: '#C62828' }]} />
                 </View>
                 <Text style={[cardStyles.dietText, { color: '#C62828' }]}>
-                  NON-VEG{isHalalValue ? " (HALAL)" : ""}
+                  Non-veg{isHalalValue ? " (Halal)" : ""}
                 </Text>
               </View>
             )}
             {isJain && (
               <View style={cardStyles.vegBadgeCompact}>
                 <Ionicons name="flower" size={12 * scale} color="#DB2777" />
-                <Text style={[cardStyles.dietText, { color: '#DB2777' }]}>JAIN</Text>
+                <Text style={[cardStyles.dietText, { color: '#DB2777' }]}>Jain</Text>
               </View>
             )}
           </View>
@@ -118,14 +118,14 @@ function RestaurantCard({ name, address, photo, onPress, instore, kerbside, dist
             <View style={cardStyles.serviceGroup}>
               {instore && (
                 <View style={cardStyles.serviceItem}>
-                  <Ionicons name="storefront" size={14 * scale} color="#C62828" />
-                  <Text style={cardStyles.serviceText}>In-store</Text>
+                  <Ionicons name="storefront" size={14 * scale} color="#FF2B5C" />
+                  <Text style={[cardStyles.serviceText, { color: '#FF2B5C' }]}>In-store</Text>
                 </View>
               )}
               {kerbside && (
                 <View style={cardStyles.serviceItem}>
-                  <Ionicons name="car" size={14 * scale} color="#16a34a" />
-                  <Text style={[cardStyles.serviceText, { color: '#16a34a' }]}>Kerbside</Text>
+                  <Ionicons name="car-sport" size={16 * scale} color="#FF2B5C" />
+                  <Text style={[cardStyles.serviceText, { color: '#FF2B5C' }]}>Kerbside</Text>
                 </View>
               )}
             </View>
@@ -175,8 +175,8 @@ export default function Resturent({ navigation }) {
 
   const offers = settings ? [
     {
-      title: "SIGNUP BONUS",
-      subtitle: `EARN £${Number(settings?.signup_bonus_amount || 0).toFixed(2)} COMPLETELY FREE`,
+      title: "Signup bonus",
+      subtitle: `Earn £${Number(settings?.signup_bonus_amount || 0).toFixed(2)} completely free`,
       desc: "Register now and get instant credit in your wallet.",
       icon: "gift",
       colors: ["#0288D1", "#03A9F4"], // Brand Blue
@@ -184,8 +184,8 @@ export default function Resturent({ navigation }) {
       badgeColor: "rgba(255,255,255,0.2)",
     },
     {
-      title: "LOYALTY REWARDS",
-      subtitle: `EARN £${Number(settings?.earn_per_order_amount || 0).toFixed(2)} ON EVERY ORDER`,
+      title: "Loyalty rewards",
+      subtitle: `Earn £${Number(settings?.earn_per_order_amount || 0).toFixed(2)} on every order`,
       desc: "Order your favorite food and get cashback every time.",
       icon: "ribbon",
       colors: ["#F7CB45", "#FBC02D"], // Brand Yellow
@@ -193,8 +193,8 @@ export default function Resturent({ navigation }) {
       badgeColor: "rgba(0,0,0,0.08)",
     },
     {
-      title: "REFER & EARN",
-      subtitle: `EARN £${Number(settings?.referral_bonus_amount || 0).toFixed(2)} PER FRIEND`,
+      title: "Refer & earn",
+      subtitle: `Earn £${Number(settings?.referral_bonus_amount || 0).toFixed(2)} per friend`,
       desc: "Invite your friends and earn rewards when they join.",
       icon: "people",
       colors: ["#1E293B", "#334155"], // Dark Premium
@@ -592,7 +592,7 @@ export default function Resturent({ navigation }) {
             <Ionicons
               name="search"
               size={20 * scale}
-              color="#C62828"
+              color="#FF2B5C"
             />
             <TextInput
               placeholder="Search restaurants, cuisines..."
@@ -739,7 +739,7 @@ export default function Resturent({ navigation }) {
               <Ionicons name="arrow-back" size={24 * scale} color="#1c1c1c" />
             </TouchableOpacity>
             <View style={styles.searchLocInputBox}>
-              <Ionicons name="search" size={20 * scale} color="#E23744" />
+              <Ionicons name="search" size={20 * scale} color="#FF2B5C" />
               <TextInput
                 placeholder="Search for area, street name..."
                 placeholderTextColor="#999"
@@ -767,7 +767,7 @@ export default function Resturent({ navigation }) {
                 loadAllData(true);
               }}
             >
-              <Ionicons name="locate" size={20 * scale} color="#E23744" />
+              <Ionicons name="locate" size={20 * scale} color="#FF2B5C" />
               <View style={{ marginLeft: 12 }}>
                 <Text style={styles.useCurrentLocText}>Use current location</Text>
                 <Text style={{ fontSize: 11 * scale, color: '#999', fontFamily: 'PoppinsMedium' }}>Reset to automatic GPS detection</Text>
@@ -800,12 +800,12 @@ export default function Resturent({ navigation }) {
         <View style={styles.alertOverlay}>
           <Animated.View style={[styles.alertCard, { transform: [{ scale: alertScale }] }]}>
             <LinearGradient
-              colors={alertType === 'error' ? ["#FFF5F5", "#FFFFFF"] : ["#F0FDF4", "#FFFFFF"]}
+              colors={alertType === 'error' ? ["#FFF5F5", "#FFFFFF"] : ["#FFF5F5", "#FFFFFF"]}
               style={styles.alertContent}
             >
               <View style={[
                 styles.alertIconRing,
-                { backgroundColor: alertType === 'error' ? '#FEE2E2' : '#DCFCE7' }
+                { backgroundColor: alertType === 'error' ? '#FEE2E2' : '#FFD1DC' }
               ]}>
                 <Ionicons
                   name={
@@ -814,14 +814,14 @@ export default function Resturent({ navigation }) {
                         : "information-circle"
                   }
                   size={40}
-                  color={alertType === 'error' ? "#EF4444" : "#16A34A"}
+                  color={alertType === 'error' ? "#EF4444" : "#FF2B5C"}
                 />
               </View>
               <Text style={styles.alertTitleText}>{alertTitle}</Text>
               <Text style={styles.alertMsgText}>{alertMsg}</Text>
               <TouchableOpacity style={styles.alertBtn} onPress={hidePremiumAlert}>
                 <LinearGradient
-                  colors={alertType === 'error' ? ["#EF4444", "#DC2626"] : ["#16A34A", "#15803D"]}
+                  colors={["#FF2B5C", "#FF6B8B"]}
                   style={styles.alertBtnGrad}
                 >
                   <Text style={styles.alertBtnText}>Ok</Text>
@@ -1272,7 +1272,7 @@ const styles = StyleSheet.create({
     marginLeft: 12,
     fontSize: 15 * scale,
     fontFamily: 'PoppinsSemiBold',
-    color: '#C62828',
+    color: '#FF2B5C',
   },
   suggestionList: {
     paddingHorizontal: 16,

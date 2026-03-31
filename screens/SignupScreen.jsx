@@ -360,18 +360,17 @@ export default function SignupScreen({ navigation }) {
               </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.mainBtn}
-              onPress={handleSignup}
-            >
-              {loading ? (
-                <ActivityIndicator size="small" color="#1E293B" />
-              ) : (
-                <>
-                  <Text style={styles.btnText}>Create Account</Text>
-                  <Ionicons name="arrow-forward" size={18} color="#1E293B" />
-                </>
-              )}
+            <TouchableOpacity style={styles.mainBtn} onPress={handleSignup}>
+              <LinearGradient colors={["#FF2B5C", "#FF6B8B"]} style={styles.mainBtnGradient}>
+                {loading ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <>
+                    <Text style={styles.btnText}>Create Account</Text>
+                    <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
+                  </>
+                )}
+              </LinearGradient>
             </TouchableOpacity>
 
           </View>
@@ -401,7 +400,9 @@ export default function SignupScreen({ navigation }) {
               <Text style={styles.alertTitleText}>{alertTitle}</Text>
               <Text style={styles.alertMsgText}>{alertMsg}</Text>
               <TouchableOpacity style={styles.alertBtn} onPress={hidePremiumAlert}>
-                <Text style={styles.alertBtnText}>Ok</Text>
+                <LinearGradient colors={["#FF2B5C", "#FF6B8B"]} style={styles.alertBtnGradient}>
+                  <Text style={styles.alertBtnText}>Ok</Text>
+                </LinearGradient>
               </TouchableOpacity>
             </LinearGradient>
           </Animated.View>
@@ -412,20 +413,23 @@ export default function SignupScreen({ navigation }) {
       <Modal visible={successVisible} transparent animationType="fade">
         <View style={styles.alertOverlay}>
           <Animated.View style={[styles.alertCard, { transform: [{ scale: successScale }] }]}>
-            <LinearGradient colors={["#E63946", "#C62828"]} style={styles.alertContent}>
-              <View style={styles.successIconRing}>
-                <Ionicons name="checkmark" size={50} color="#C62828" />
+            <View style={[styles.alertContent, { backgroundColor: "#FFFFFF" }]}>
+              <View style={[styles.successIconRing, { backgroundColor: '#F0FDF4', borderWidth: 2, borderColor: '#DCFCE7' }]}>
+                <Ionicons name="checkmark-circle" size={80 * scale} color="#16a34a" />
               </View>
-              <Text style={[styles.alertTitleText, { color: "#FFF" }]}>Account Created!</Text>
-              <Text style={[styles.alertMsgText, { color: "#FFF", opacity: 0.9 }]}>
+              <Text style={styles.alertTitleText}>Account Created!</Text>
+              <Text style={styles.alertMsgText}>
                 Welcome to ZingBite. Your account is ready!
               </Text>
               {settings && (
-                <Text style={{ color: "#FFF", fontFamily: "PoppinsBold", fontSize: 13 * scale, marginTop: 10 }}>
-                  Enjoy your £${Number(settings.signup_bonus_amount).toFixed(2)} Signup Bonus 🎁
-                </Text>
+                <View style={styles.bonusPill}>
+                  <Ionicons name="gift" size={18 * scale} color="#B45309" style={{ marginRight: 8 }} />
+                  <Text style={{ color: "#B45309", fontFamily: "PoppinsBold", fontSize: 13 * scale }}>
+                    Enjoy your £{Number(settings.signup_bonus_amount).toFixed(2)} Signup Bonus 🎁
+                  </Text>
+                </View>
               )}
-            </LinearGradient>
+            </View>
           </Animated.View>
         </View>
       </Modal>
@@ -605,8 +609,23 @@ const styles = StyleSheet.create({
   termsText: { flex: 1, marginLeft: 10, fontSize: 12 * scale, color: "#475569", lineHeight: 18 },
   link: { color: "#C62828", fontFamily: "PoppinsBold" },
 
-  mainBtn: { borderRadius: 14, borderWidth: 2, borderColor: "#1E293B", paddingVertical: 14, flexDirection: "row", justifyContent: "center", alignItems: "center", marginTop: 5 },
-  btnText: { color: "#1E293B", fontSize: 16 * scale, fontFamily: "PoppinsSemiBold", marginRight: 8 },
+  mainBtn: {
+    borderRadius: 14,
+    overflow: "hidden",
+    marginTop: 5,
+  },
+  mainBtnGradient: {
+    paddingVertical: 14,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  btnText: {
+    color: "#FFFFFF",
+    fontSize: 16 * scale,
+    fontFamily: "PoppinsBold",
+    marginRight: 8,
+  },
 
   footer: { marginTop: 20, alignItems: 'center' },
   footerText: { fontSize: 14 * scale, color: "#64748B" },
@@ -642,10 +661,8 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   successIconRing: {
-    width: 90 * scale,
-    height: 90 * scale,
-    borderRadius: 45 * scale,
-    backgroundColor: "#FFF",
+    width: 100 * scale,
+    height: 100 * scale,
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 20,
@@ -667,16 +684,30 @@ const styles = StyleSheet.create({
     lineHeight: 22 * scale,
   },
   alertBtn: {
+    marginTop: 30,
     width: "100%",
-    borderRadius: 15,
-    borderWidth: 2,
-    borderColor: "#1E293B",
+    borderRadius: 14,
+    overflow: "hidden",
+  },
+  alertBtnGradient: {
     paddingVertical: 14,
     alignItems: "center",
+    justifyContent: "center",
   },
   alertBtnText: {
     fontSize: 16 * scale,
-    fontFamily: "PoppinsSemiBold",
-    color: "#1E293B",
+    fontFamily: "PoppinsBold",
+    color: "#FFFFFF",
+  },
+  bonusPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFBEB',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 15,
+    borderWidth: 1,
+    borderColor: '#FEF3C7',
+    marginTop: 10,
   },
 });

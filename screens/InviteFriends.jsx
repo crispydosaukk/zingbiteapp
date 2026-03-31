@@ -99,7 +99,7 @@ export default function InviteFriends({ navigation }) {
 
     return (
         <SafeAreaView style={styles.container} edges={["top"]}>
-            <LinearGradient colors={["#d7f7df", "#ffffff"]} style={styles.header}>
+            <LinearGradient colors={["#FFF5F5", "#FFFFFF"]} style={styles.header}>
                 <TouchableOpacity
                     onPress={() => navigation.goBack()}
                     style={styles.backBtn}
@@ -112,7 +112,7 @@ export default function InviteFriends({ navigation }) {
 
             <ScrollView style={styles.content}>
                 <View style={styles.heroCard}>
-                    <Ionicons name="gift" size={64} color="#0b7a2a" />
+                    <Ionicons name="gift" size={64} color="#FF2B5C" />
                     <Text style={styles.heroTitle}>Share the Love!</Text>
                     <Text style={styles.heroSubtitle}>
                         Invite your friends and earn {settings ? `£${Number(settings.referral_bonus_amount).toFixed(2)}` : "rewards"} when they make their first order
@@ -129,14 +129,21 @@ export default function InviteFriends({ navigation }) {
                             selectTextOnFocus
                         />
                         <TouchableOpacity style={styles.copyBtn} onPress={handleCopy}>
-                            <Ionicons name="copy-outline" size={20} color="#0b7a2a" />
+                            <Ionicons name="copy-outline" size={20} color="#FF2B5C" />
                         </TouchableOpacity>
                     </View>
                 </View>
 
                 <TouchableOpacity style={styles.shareBtn} onPress={handleShare}>
-                    <Ionicons name="share-social" size={24} color="#ffffff" />
-                    <Text style={styles.shareBtnText}>Share with Friends</Text>
+                    <LinearGradient
+                        colors={["#FF2B5C", "#FF6B8B"]}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 0 }}
+                        style={styles.shareBtnGrad}
+                    >
+                        <Ionicons name="share-social" size={24} color="#ffffff" />
+                        <Text style={styles.shareBtnText}>Share with Friends</Text>
+                    </LinearGradient>
                 </TouchableOpacity>
 
                 <View style={styles.benefitsSection}>
@@ -194,7 +201,7 @@ export default function InviteFriends({ navigation }) {
                             <Text style={styles.alertMsgText}>{alertMsg}</Text>
                             <TouchableOpacity style={styles.alertBtn} onPress={hidePremiumAlert}>
                                 <LinearGradient
-                                    colors={alertType === 'error' ? ["#EF4444", "#DC2626"] : ["#16A34A", "#15803D"]}
+                                    colors={["#FF2B5C", "#FF6B8B"]}
                                     style={styles.alertBtnGrad}
                                 >
                                     <Text style={styles.alertBtnText}>Ok</Text>
@@ -234,7 +241,7 @@ const styles = StyleSheet.create({
     },
     heroCard: {
         alignItems: "center",
-        backgroundColor: "#e8f5e9",
+        backgroundColor: "#FFF5F5",
         borderRadius: 16,
         padding: 32,
         marginTop: 20,
@@ -271,14 +278,14 @@ const styles = StyleSheet.create({
         backgroundColor: "#ffffff",
         borderRadius: 8,
         borderWidth: 2,
-        borderColor: "#0b7a2a",
+        borderColor: "#FF2B5C",
         paddingHorizontal: 12,
     },
     codeText: {
         flex: 1,
         fontSize: 20,
         fontWeight: "700",
-        color: "#0b7a2a",
+        color: "#FF2B5C",
         letterSpacing: 2,
         paddingVertical: 12,
     },
@@ -286,13 +293,15 @@ const styles = StyleSheet.create({
         padding: 8,
     },
     shareBtn: {
+        borderRadius: 12,
+        overflow: 'hidden',
+        marginBottom: 32,
+    },
+    shareBtnGrad: {
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor: "#0b7a2a",
-        borderRadius: 12,
         paddingVertical: 16,
-        marginBottom: 32,
     },
     shareBtnText: {
         fontSize: 16,
@@ -318,7 +327,7 @@ const styles = StyleSheet.create({
         width: 40,
         height: 40,
         borderRadius: 20,
-        backgroundColor: "#0b7a2a",
+        backgroundColor: "#FF2B5C",
         justifyContent: "center",
         alignItems: "center",
         marginRight: 12,

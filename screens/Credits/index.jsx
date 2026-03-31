@@ -26,6 +26,7 @@ import { getCart } from "../../services/cartService";
 import { RefreshControl } from "react-native";
 import Clipboard from "@react-native-clipboard/clipboard";
 import { Share } from "react-native";
+import LinearGradient from "react-native-linear-gradient";
 
 export default function CreditsScreen({ navigation }) {
   const isFocused = useIsFocused();
@@ -282,9 +283,9 @@ export default function CreditsScreen({ navigation }) {
 
           <View style={styles.column}>
             {/* LOYALTY CARD */}
-            <View style={[styles.card, { borderLeftWidth: 4, borderLeftColor: "#3b82f6" }]}>
+            <View style={[styles.card, { borderLeftWidth: 4, borderLeftColor: "#FF2B5C" }]}>
               <View style={styles.cardHeader}>
-                <Ionicons name="gift-outline" size={22} color="#3b82f6" />
+                <Ionicons name="gift-outline" size={22} color="#FF2B5C" />
                 <Text style={styles.cardLabel}>Loyalty Credits</Text>
               </View>
 
@@ -407,9 +408,9 @@ export default function CreditsScreen({ navigation }) {
             </View>
 
             {/* WALLET CARD */}
-            <View style={[styles.card, { marginTop: 16, borderLeftWidth: 4, borderLeftColor: "#10b981" }]}>
+            <View style={[styles.card, { marginTop: 16, borderLeftWidth: 4, borderLeftColor: "#FF2B5C" }]}>
               <View style={styles.cardHeader}>
-                <Ionicons name="wallet-outline" size={22} color="#10b981" />
+                <Ionicons name="wallet-outline" size={22} color="#FF2B5C" />
                 <View style={{ flex: 1, marginLeft: 10 }}>
                   <Text style={styles.cardLabel}>Referral and Signup Amount</Text>
                   <Text style={styles.cardSubLabel}>(Friend Invites & Joining)</Text>
@@ -425,9 +426,9 @@ export default function CreditsScreen({ navigation }) {
           </View>
 
           {/* CONSOLIDATED REFERRAL CARD */}
-          <View style={[styles.card, { borderLeftWidth: 4, borderLeftColor: "#8b5cf6" }]}>
+          <View style={[styles.card, { borderLeftWidth: 4, borderLeftColor: "#FF2B5C" }]}>
             <View style={styles.cardHeader}>
-              <Ionicons name="people-outline" size={24} color="#8b5cf6" />
+              <Ionicons name="people-outline" size={24} color="#FF2B5C" />
               <Text style={[styles.cardLabel, { fontSize: 14 }]}>Referrals & Rewards</Text>
             </View>
 
@@ -437,7 +438,7 @@ export default function CreditsScreen({ navigation }) {
                 <Text style={styles.statLabel}>Friends Referred</Text>
               </View>
               <View style={[styles.statBox, { borderLeftWidth: 1, borderLeftColor: "#f3f4f6" }]}>
-                <Text style={[styles.statValue, { color: "#10b981" }]}>£{Number(referralCredits).toFixed(2)}</Text>
+                <Text style={[styles.statValue, { color: "#FF2B5C" }]}>£{Number(referralCredits).toFixed(2)}</Text>
                 <Text style={styles.statLabel}>Total Earned</Text>
               </View>
             </View>
@@ -447,7 +448,7 @@ export default function CreditsScreen({ navigation }) {
               <View style={styles.codeContainer}>
                 <Text style={styles.referCodeText}>{user?.referral_code || "—"}</Text>
                 <TouchableOpacity onPress={copyReferralCode} style={styles.inlineCopyBtn}>
-                  <Ionicons name="copy-outline" size={18} color="#8b5cf6" />
+                  <Ionicons name="copy-outline" size={18} color="#FF2B5C" />
                 </TouchableOpacity>
               </View>
               <Text style={styles.referHint}>
@@ -461,8 +462,14 @@ export default function CreditsScreen({ navigation }) {
                 onPress={shareReferralCode}
                 style={styles.premiumShareBtn}
               >
-                <Ionicons name="share-social-outline" size={18} color="#fff" style={{ marginRight: 8 }} />
-                <Text style={styles.premiumShareText}>Share with Friends</Text>
+                <LinearGradient
+                  colors={["#FF2B5C", "#FF6B8B"]}
+                  start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+                  style={styles.premiumShareBtnGrad}
+                >
+                  <Ionicons name="share-social-outline" size={18} color="#fff" style={{ marginRight: 8 }} />
+                  <Text style={styles.premiumShareText}>Share with Friends</Text>
+                </LinearGradient>
               </TouchableOpacity>
             </View>
           </View>
@@ -636,17 +643,19 @@ const styles = StyleSheet.create({
 
   referActionRow: { marginTop: 8 },
   premiumShareBtn: {
-    backgroundColor: "#16a34a",
+    borderRadius: 12,
+    overflow: 'hidden',
+    elevation: 4,
+    shadowColor: "#FF2B5C",
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+  },
+  premiumShareBtnGrad: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 14,
-    borderRadius: 12,
-    shadowColor: "#16a34a",
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 4,
   },
   premiumShareText: { color: "#fff", fontSize: 14, fontWeight: "700" },
 
@@ -669,6 +678,6 @@ const styles = StyleSheet.create({
   historyDesc: { fontSize: 12, color: "#6b7280", marginTop: 2 },
   historyDate: { fontSize: 11, color: "#9ca3af", marginTop: 4 },
   historyAmount: { fontSize: 14, fontWeight: "800", marginLeft: 8 },
-  positive: { color: "#10b981" },
+  positive: { color: "#FF2B5C" },
   negative: { color: "#ef4444" },
 });

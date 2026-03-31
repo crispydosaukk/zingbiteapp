@@ -75,9 +75,9 @@ export default function MenuModal({ visible, setVisible, user, navigation }) {
 
   const menuItems = [
     { id: "home", label: "Home", icon: "grid-outline", screen: "Home", color: "#FF2B5C" },
-    { id: "faq", label: "FAQ Support", icon: "help-buoy-outline", screen: "FAQ", color: "#3B82F6" },
-    { id: "invite", label: "Refer & Earn", icon: "gift-outline", screen: "InviteFriends", color: "#10B981" },
-    { id: "personal", label: "My Profile", icon: "person-outline", screen: "Profile", color: "#8B5CF6" },
+    { id: "faq", label: "FAQ Support", icon: "help-buoy-outline", screen: "FAQ", color: "#FF2B5C" },
+    { id: "invite", label: "Refer & Earn", icon: "gift-outline", screen: "InviteFriends", color: "#FF2B5C" },
+    { id: "personal", label: "My Profile", icon: "person-outline", screen: "Profile", color: "#FF2B5C" },
   ];
 
   return (
@@ -200,7 +200,7 @@ export default function MenuModal({ visible, setVisible, user, navigation }) {
 
             {/* SIDEBAR FOOTER */}
             <View style={styles.sidebarFooter}>
-              <Text style={styles.footerBrand}>ZINGBITE</Text>
+              <Text style={styles.footerBrand}>ZingBite</Text>
               <Text style={styles.footerVersion}>v 1.0.4 Premium</Text>
             </View>
           </Animated.View>
@@ -222,8 +222,8 @@ export default function MenuModal({ visible, setVisible, user, navigation }) {
               colors={["#FFFFFF", "#FFF5F5"]}
               style={styles.logoutContent}
             >
-              <View style={styles.logoutIconCircle}>
-                <Ionicons name="log-out" size={36 * scale} color="#EF4444" />
+              <View style={[styles.logoutIconCircle, { backgroundColor: 'rgba(255, 43, 92, 0.1)', borderColor: 'rgba(255, 43, 92, 0.2)' }]}>
+                <Ionicons name="log-out" size={36 * scale} color="#FF2B5C" />
               </View>
 
               <Text style={styles.logoutTitle}>Sign Out?</Text>
@@ -244,10 +244,10 @@ export default function MenuModal({ visible, setVisible, user, navigation }) {
                   onPress={confirmLogout}
                 >
                   <LinearGradient
-                    colors={["#EF4444", "#DC2626"]}
+                    colors={["#FF2B5C", "#FF6B8B"]}
                     style={styles.confirmLogoutGrad}
                   >
-                    <Text style={styles.confirmLogoutText}>Sign Out</Text>
+                    <Text style={styles.confirmLogoutText}>Sign out</Text>
                   </LinearGradient>
                 </TouchableOpacity>
               </View>

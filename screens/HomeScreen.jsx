@@ -54,7 +54,7 @@ export default function HomeScreen({ navigation }) {
 
   const offers = [
     { colors: ["#FF416C", "#FF4B2B"], textColor: "#FFFFFF" },
-    { colors: ["#1D976C", "#93F9B9"], textColor: "#004D40" },
+    { colors: ["#FF2B5C", "#FF6B8B"], textColor: "#FFFFFF" },
     { colors: ["#F2994A", "#F2C94C"], textColor: "#5D4037" },
   ];
 
@@ -240,7 +240,7 @@ export default function HomeScreen({ navigation }) {
 
               <View style={styles.mainTitleWrap}>
                 <Text style={styles.mainTitleBlack}>Order UK's Finest Quality</Text>
-                <Text style={styles.mainTitleOrange}>TAKEAWAY FOOD</Text>
+                <Text style={styles.mainTitleOrange}>Takeaway food</Text>
                 <Text style={[styles.mainTitleBlack, { fontSize: 18, marginTop: 4 }]}>From Local Restaurants</Text>
               </View>
 
@@ -269,7 +269,7 @@ export default function HomeScreen({ navigation }) {
                       <View style={styles.offerTextContainer}>
                         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
                           <Ionicons name="sparkles" size={12} color="#FFDF00" style={{ marginRight: 4 }} />
-                          <Text style={styles.offerLabel}>LIMITED OFFER</Text>
+                          <Text style={styles.offerLabel}>Limited offer</Text>
                         </View>
                         <Text style={[styles.offerText, { color: '#FFFFFF', marginLeft: 0 }]} numberOfLines={2}>
                           {highlightOffer(messages[msgIndex]?.text)}
@@ -317,7 +317,7 @@ export default function HomeScreen({ navigation }) {
                     style={styles.btnIcon}
                   />
                   <Text style={styles.secondaryBtnText}>
-                    {isLoggedIn ? "Sign Out" : "Sign In"}
+                    {isLoggedIn ? "Sign out" : "Sign in"}
                   </Text>
                 </TouchableOpacity>
 
@@ -340,24 +340,24 @@ export default function HomeScreen({ navigation }) {
       <Modal visible={logoutModalVisible} transparent animationType="fade">
         <View style={styles.logoutOverlay}>
           <Animated.View style={[styles.logoutCard, { transform: [{ scale: logoutScaleAnim }] }]}>
-            <LinearGradient colors={["#FFFFFF", "#FFF5F5"]} style={styles.logoutContent}>
-              <View style={[styles.logoutIconRing, { backgroundColor: 'rgba(239, 68, 68, 0.1)' }]}>
-                <Ionicons name="log-out" size={40} color="#EF4444" />
+            <View style={styles.logoutContent}>
+              <View style={styles.logoutIconRing}>
+                <Ionicons name="log-out-outline" size={60 * scale} color="#E63946" />
               </View>
               <Text style={styles.logoutTitle}>Sign Out?</Text>
               <Text style={styles.logoutMsg}>Are you sure you want to sign out from your account?</Text>
 
               <View style={styles.logoutActionRow}>
                 <TouchableOpacity style={styles.cancelLogoutBtn} onPress={cancelLogout}>
-                  <Text style={styles.cancelLogoutText}>Stay</Text>
+                  <Text style={styles.logoutBtnText}>Stay</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.confirmLogoutBtn} onPress={confirmLogout}>
-                  <LinearGradient colors={["#EF4444", "#DC2626"]} style={styles.alertBtnGrad}>
-                    <Text style={styles.alertBtnText}>Sign Out</Text>
+                  <LinearGradient colors={["#FF2B5C", "#FF6B8B"]} style={styles.logoutBtnGradient}>
+                    <Text style={[styles.logoutBtnText, { color: "#FFFFFF" }]}>Sign out</Text>
                   </LinearGradient>
                 </TouchableOpacity>
               </View>
-            </LinearGradient>
+            </View>
           </Animated.View>
         </View>
       </Modal>
@@ -514,12 +514,12 @@ const styles = StyleSheet.create({
   linkText: {
     fontFamily: "PoppinsSemiBold",
     textDecorationLine: "underline",
-    color: "#C62828",
+    color: "#FF2B5C",
   },
   rope: {
     width: 2,
     height: 28,
-    backgroundColor: "#1D976C",
+    backgroundColor: "#FF2B5C",
     marginBottom: 6,
   },
 
@@ -543,61 +543,62 @@ const styles = StyleSheet.create({
   logoutContent: {
     padding: 30,
     alignItems: "center",
+    backgroundColor: "#FFFFFF",
   },
   logoutIconRing: {
-    width: 80 * scale,
-    height: 80 * scale,
-    borderRadius: 40 * scale,
+    width: 100 * scale,
+    height: 100 * scale,
+    borderRadius: 50 * scale,
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 20,
   },
   logoutTitle: {
-    fontSize: 18 * scale,
-    fontFamily: "PoppinsSemiBold",
+    fontSize: 28 * scale,
+    fontFamily: "PoppinsBold",
     color: "#0F172A",
-    marginBottom: 10,
+    fontWeight: "900",
+    marginBottom: 5,
     textAlign: "center",
   },
   logoutMsg: {
-    fontSize: 16 * scale,
+    fontSize: 18 * scale,
     fontFamily: "PoppinsSemiBold",
     color: "#475569",
     textAlign: "center",
+    opacity: 0.9,
     marginBottom: 25,
-    lineHeight: 22 * scale,
+    lineHeight: 24 * scale,
   },
   logoutActionRow: {
     flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
+    gap: 12,
     width: "100%",
   },
   cancelLogoutBtn: {
     flex: 1,
     paddingVertical: 14,
-    alignItems: "center",
-    marginRight: 10,
     borderRadius: 15,
-    backgroundColor: "#F3F4F6",
-  },
-  cancelLogoutText: {
-    fontSize: 16 * scale,
-    fontFamily: "PoppinsSemiBold",
-    color: "#4B5563",
+    borderWidth: 2,
+    borderColor: "#E2E8F0",
+    backgroundColor: "#FFFFFF",
+    alignItems: "center",
+    justifyContent: "center",
   },
   confirmLogoutBtn: {
     flex: 1,
     borderRadius: 15,
     overflow: "hidden",
   },
-  alertBtnGrad: {
+  logoutBtnGradient: {
+    flex: 1,
     paddingVertical: 14,
     alignItems: "center",
+    justifyContent: "center",
   },
-  alertBtnText: {
+  logoutBtnText: {
     fontSize: 16 * scale,
-    fontFamily: "PoppinsSemiBold",
-    color: "#FFF",
+    fontFamily: "PoppinsBold",
+    color: "#1E293B",
   },
 });

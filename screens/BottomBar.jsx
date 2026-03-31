@@ -11,40 +11,40 @@ export default function BottomBar({ navigation }) {
 
   return (
     <View style={styles.bottomBarContainer}>
-      <TouchableOpacity 
-        style={styles.tabItem} 
+      <TouchableOpacity
+        style={styles.tabItem}
         onPress={() => navigation.navigate("Home")}
         activeOpacity={0.6}
       >
         <Ionicons name="home-outline" size={24 * scale} color="#334155" />
-        <Text style={styles.tabLabel}>HOME</Text>
+        <Text style={styles.tabLabel}>Home</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity 
-        style={styles.tabItem} 
+      <TouchableOpacity
+        style={styles.tabItem}
         onPress={() => navigation.navigate("Orders")}
         activeOpacity={0.6}
       >
         <Ionicons name="receipt-outline" size={24 * scale} color="#334155" />
-        <Text style={styles.tabLabel}>ORDERS</Text>
+        <Text style={styles.tabLabel}>Orders</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity 
-        style={styles.tabItem} 
+      <TouchableOpacity
+        style={styles.tabItem}
         onPress={() => navigation.navigate("Credits")}
         activeOpacity={0.6}
       >
         <Ionicons name="wallet-outline" size={24 * scale} color="#334155" />
-        <Text style={styles.tabLabel}>CREDITS</Text>
+        <Text style={styles.tabLabel}>Credits</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity 
-        style={styles.tabItem} 
+      <TouchableOpacity
+        style={styles.tabItem}
         onPress={() => navigation.navigate("Profile")}
         activeOpacity={0.6}
       >
         <Ionicons name="person-outline" size={24 * scale} color="#334155" />
-        <Text style={styles.tabLabel}>PROFILE</Text>
+        <Text style={styles.tabLabel}>Profile</Text>
       </TouchableOpacity>
     </View>
   );

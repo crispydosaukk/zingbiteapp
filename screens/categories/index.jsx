@@ -82,6 +82,8 @@ export default function Categories({ route, navigation }) {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [reservationSubmitting, setReservationSubmitting] = useState(false);
+  const [reservationSuccessVisible, setReservationSuccessVisible] = useState(false);
+  const reservationScaleAnim = useRef(new Animated.Value(0)).current;
 
   const offersAnim = useRef(new Animated.Value(0)).current;
 
@@ -101,8 +103,8 @@ export default function Categories({ route, navigation }) {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const [textIndex, setTextIndex] = useState(0);
   const offers = [
-    { colors: ["#FF416C", "#FF4B2B"], textColor: "#FFFFFF", icon: "flash" },
-    { colors: ["#1D976C", "#93F9B9"], textColor: "#004D40", icon: "leaf" },
+    { colors: ["#FF2B5C", "#FF6B8B"], textColor: "#FFFFFF", icon: "flash" },
+    { colors: ["#FF416C", "#FF4B2B"], textColor: "#FFFFFF", icon: "leaf" },
     { colors: ["#F2994A", "#F2C94C"], textColor: "#5D4037", icon: "wallet" },
   ];
   const [activeIndex, setActiveIndex] = useState(0);
@@ -334,7 +336,7 @@ export default function Categories({ route, navigation }) {
       const currentQty = cartItems[item.id] || 0;
       const res = await addToCart({
         customer_id: user.id ?? user.customer_id,
-        user_id: item.user_id || userId, 
+        user_id: item.user_id || userId,
         product_id: item.id,
         product_name: item.name,
         product_price: item.price,
@@ -352,9 +354,9 @@ export default function Categories({ route, navigation }) {
         const discountValue = item.discount_price || item.product_discount_price || 0;
         let saved = 0;
         if (discountValue && Number(discountValue) > Number(item.price)) {
-           saved = Number(discountValue) - Number(item.price);
+          saved = Number(discountValue) - Number(item.price);
         }
-        
+
         setSavedAmount(saved);
         setInstructionPopupVisible(false);
         setSuccessModalVisible(true);
@@ -403,7 +405,15 @@ export default function Categories({ route, navigation }) {
 
       if (res.status === 1) {
         setReservationModalVisible(false);
-        Alert.alert("Success", "Table reservation request submitted successfully! We will confirm soon.");
+        // Show custom success modal
+        setReservationSuccessVisible(true);
+        Animated.spring(reservationScaleAnim, {
+          toValue: 1,
+          tension: 50,
+          friction: 7,
+          useNativeDriver: true,
+        }).start();
+
         // Reset form partially
         setReservationForm(prev => ({
           ...prev,
@@ -424,9 +434,9 @@ export default function Categories({ route, navigation }) {
 
   const renderCategory = ({ item, index }) => {
     const isEven = index % 2 === 0;
-    
+
     // Check if this category has an active offer
-    const hasOffer = (promoOffers || []).some(o => 
+    const hasOffer = (promoOffers || []).some(o =>
       o.targets?.some(t => t.type === 'category' && t.id === item.id)
     );
 
@@ -439,7 +449,7 @@ export default function Categories({ route, navigation }) {
         }
       >
         <LinearGradient
-          colors={isEven ? ["#FFF", "#FDF2F8"] : ["#FFF", "#F0FDF4"]}
+          colors={isEven ? ["#FFF", "#FDF2F8"] : ["#FFF", "#FFF5F5"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={cardStyles.cardGradient}
@@ -453,7 +463,7 @@ export default function Categories({ route, navigation }) {
                 style={cardStyles.offerBadgeRibbon}
               >
                 <Ionicons name="flash" size={10} color="#FFF" />
-                <Text style={cardStyles.offerBadgeText}>OFFER</Text>
+                <Text style={cardStyles.offerBadgeText}>Offer</Text>
               </LinearGradient>
             </View>
           )}
@@ -462,18 +472,21 @@ export default function Categories({ route, navigation }) {
             <Text style={cardStyles.categoryName}>{item?.name}</Text>
             <View style={cardStyles.exploreRow}>
               <LinearGradient
-                colors={isEven ? ["#FEF2F2", "#FFE4E6"] : ["#F0FDF4", "#DCFCE7"]}
+                colors={["#FFF5F5", "#FFE4E6"]}
                 style={cardStyles.exploreBadge}
               >
-                <Text style={[cardStyles.exploreText, { color: isEven ? '#E11D48' : '#166534' }]}>
-                  EXPLORE MENU
-                </Text>
+                <View style={cardStyles.exploreContent}>
+                  <Ionicons name="restaurant-outline" size={13 * scale} color="#FF2B5C" style={{ marginRight: 6 }} />
+                  <Text style={[cardStyles.exploreText, { color: '#FF2B5C' }]}>
+                    Explore menu
+                  </Text>
+                </View>
               </LinearGradient>
             </View>
           </View>
 
           <View style={cardStyles.floatingImageContainer}>
-            <View style={[cardStyles.imageShadow, { shadowColor: isEven ? '#FF2B5C' : '#22C55E' }]}>
+            <View style={[cardStyles.imageShadow, { shadowColor: '#FF2B5C' }]}>
               <Image
                 source={
                   item?.image
@@ -528,11 +541,12 @@ export default function Categories({ route, navigation }) {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 100 }}
         style={styles.mainScroll}
+        stickyHeaderIndices={[0]}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        <View style={styles.brandSectionScrolling}>
+        <View style={{ backgroundColor: '#FFFFFF' }}>
           <AppHeader
             user={user}
             navigation={navigation}
@@ -543,7 +557,9 @@ export default function Categories({ route, navigation }) {
             barStyle="dark-content"
             statusColor="#FFFFFF"
           />
+        </View>
 
+        <View style={styles.brandSectionScrolling}>
           {/* DYNAMIC COLOR OFFER PILL */}
           {settings && animatedTexts.length > 0 && (
             <Animated.View style={[styles.premiumOfferWrap, { opacity: fadeAnim }]}>
@@ -598,13 +614,13 @@ export default function Categories({ route, navigation }) {
                     {restaurant.instore && (
                       <View style={styles.serviceChipMinimal}>
                         <Ionicons name="storefront" size={14 * scale} color="#FF2B5C" />
-                        <Text style={styles.serviceChipTextMinimal}>In-store</Text>
+                        <Text style={[styles.serviceChipTextMinimal, { color: '#FF2B5C' }]}>In-store</Text>
                       </View>
                     )}
                     {restaurant.kerbside && (
                       <View style={styles.serviceChipMinimal}>
-                        <Ionicons name="car-sport" size={16 * scale} color="#16a34a" />
-                        <Text style={[styles.serviceChipTextMinimal, { color: '#166534' }]}>Kerbside</Text>
+                        <Ionicons name="car-sport" size={16 * scale} color="#FF2B5C" />
+                        <Text style={[styles.serviceChipTextMinimal, { color: '#FF2B5C' }]}>Kerbside</Text>
                       </View>
                     )}
                   </View>
@@ -632,7 +648,7 @@ export default function Categories({ route, navigation }) {
           )}
 
           {restaurant && (
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.reserveTableBtn}
               onPress={() => setReservationModalVisible(true)}
             >
@@ -642,8 +658,8 @@ export default function Categories({ route, navigation }) {
                 end={{ x: 1, y: 0 }}
                 style={styles.reserveTableGradient}
               >
-                <Ionicons name="calendar-outline" size={20 * scale} color="#FFFFFF" />
-                <Text style={styles.reserveTableBtnText}>RESERVE A TABLE</Text>
+                <Ionicons name="calendar-outline" size={20 * scale} color="#FFFFFF" style={{ marginRight: 8 }} />
+                <Text style={styles.reserveTableBtnText}>Reserve A Table</Text>
               </LinearGradient>
             </TouchableOpacity>
           )}
@@ -658,7 +674,7 @@ export default function Categories({ route, navigation }) {
               onPress={toggleOffers}
             >
               <View style={offerStyles.offerHeaderRow}>
-                <View style={offerStyles.offerTitleBadge}>
+                <View style={[offerStyles.offerTitleBadge, { backgroundColor: '#FFF5F5', borderColor: '#FFD1DC', borderWidth: 1, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, flexDirection: 'row', alignItems: 'center' }]}>
                   <Ionicons name="pricetag" size={16 * scale} color="#FF2B5C" />
                   <Text style={offerStyles.offerSectionTitle}>Current Special Offers</Text>
                 </View>
@@ -726,7 +742,7 @@ export default function Categories({ route, navigation }) {
                   </TouchableOpacity>
                 ))}
               </Animated.ScrollView>
-              
+
               {/* Pagination Dots */}
               {promoOffers.length > 1 && (
                 <View style={offerStyles.dotContainer}>
@@ -804,51 +820,51 @@ export default function Categories({ route, navigation }) {
                   style={modalStyles.input}
                   placeholder="Enter your name"
                   value={reservationForm.customer_name}
-                  onChangeText={(val) => setReservationForm({...reservationForm, customer_name: val})}
+                  onChangeText={(val) => setReservationForm({ ...reservationForm, customer_name: val })}
                 />
               </View>
 
               <View style={modalStyles.row}>
-                <View style={[modalStyles.inputGroup, {flex: 1, marginRight: 8}]}>
+                <View style={[modalStyles.inputGroup, { flex: 1, marginRight: 8 }]}>
                   <Text style={modalStyles.label}>Phone Number</Text>
                   <TextInput
                     style={modalStyles.input}
                     placeholder="Phone number"
                     keyboardType="phone-pad"
                     value={reservationForm.customer_phone}
-                    onChangeText={(val) => setReservationForm({...reservationForm, customer_phone: val})}
+                    onChangeText={(val) => setReservationForm({ ...reservationForm, customer_phone: val })}
                   />
                 </View>
-                <View style={[modalStyles.inputGroup, {flex: 1}]}>
+                <View style={[modalStyles.inputGroup, { flex: 1 }]}>
                   <Text style={modalStyles.label}>Party Size</Text>
                   <TextInput
                     style={modalStyles.input}
                     placeholder="No. of people"
                     keyboardType="numeric"
                     value={reservationForm.party_size}
-                    onChangeText={(val) => setReservationForm({...reservationForm, party_size: val})}
+                    onChangeText={(val) => setReservationForm({ ...reservationForm, party_size: val })}
                   />
                 </View>
               </View>
 
               <View style={modalStyles.row}>
-                <View style={[modalStyles.inputGroup, {flex: 1, marginRight: 8}]}>
+                <View style={[modalStyles.inputGroup, { flex: 1, marginRight: 8 }]}>
                   <Text style={modalStyles.label}>Table Number (Optional)</Text>
                   <TextInput
                     style={modalStyles.input}
                     placeholder="e.g. T1"
                     value={reservationForm.table_number}
-                    onChangeText={(val) => setReservationForm({...reservationForm, table_number: val})}
+                    onChangeText={(val) => setReservationForm({ ...reservationForm, table_number: val })}
                   />
                 </View>
-                <View style={[modalStyles.inputGroup, {flex: 1}]}>
+                <View style={[modalStyles.inputGroup, { flex: 1 }]}>
                   <Text style={modalStyles.label}>Duration (Min)</Text>
                   <TextInput
                     style={modalStyles.input}
                     placeholder="e.g. 60"
                     keyboardType="numeric"
                     value={reservationForm.duration_minutes}
-                    onChangeText={(val) => setReservationForm({...reservationForm, duration_minutes: val})}
+                    onChangeText={(val) => setReservationForm({ ...reservationForm, duration_minutes: val })}
                   />
                 </View>
               </View>
@@ -860,23 +876,23 @@ export default function Categories({ route, navigation }) {
                   placeholder="Enter your email"
                   keyboardType="email-address"
                   value={reservationForm.customer_email}
-                  onChangeText={(val) => setReservationForm({...reservationForm, customer_email: val})}
+                  onChangeText={(val) => setReservationForm({ ...reservationForm, customer_email: val })}
                 />
               </View>
 
               <View style={modalStyles.row}>
-                <View style={[modalStyles.inputGroup, {flex: 1, marginRight: 8}]}>
+                <View style={[modalStyles.inputGroup, { flex: 1, marginRight: 8 }]}>
                   <Text style={modalStyles.label}>Date</Text>
                   <TouchableOpacity style={modalStyles.pickerBtn} onPress={() => setShowDatePicker(true)}>
                     <Ionicons name="calendar-outline" size={18} color="#FF2B5C" />
                     <Text style={modalStyles.pickerText}>{reservationForm.reservation_date.toLocaleDateString()}</Text>
                   </TouchableOpacity>
                 </View>
-                <View style={[modalStyles.inputGroup, {flex: 1}]}>
+                <View style={[modalStyles.inputGroup, { flex: 1 }]}>
                   <Text style={modalStyles.label}>Time</Text>
                   <TouchableOpacity style={modalStyles.pickerBtn} onPress={() => setShowTimePicker(true)}>
                     <Ionicons name="time-outline" size={18} color="#FF2B5C" />
-                    <Text style={modalStyles.pickerText}>{reservationForm.reservation_time.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</Text>
+                    <Text style={modalStyles.pickerText}>{reservationForm.reservation_time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -884,24 +900,24 @@ export default function Categories({ route, navigation }) {
               <View style={modalStyles.inputGroup}>
                 <Text style={modalStyles.label}>Special Requests</Text>
                 <TextInput
-                  style={[modalStyles.input, {height: 80, textAlignVertical: 'top'}]}
+                  style={[modalStyles.input, { height: 80, textAlignVertical: 'top' }]}
                   placeholder="Any special requests or instructions?"
                   multiline
                   numberOfLines={4}
                   value={reservationForm.special_requests}
-                  onChangeText={(val) => setReservationForm({...reservationForm, special_requests: val})}
+                  onChangeText={(val) => setReservationForm({ ...reservationForm, special_requests: val })}
                 />
               </View>
 
-              <TouchableOpacity 
-                style={[modalStyles.submitBtn, reservationSubmitting && {opacity: 0.7}]}
+              <TouchableOpacity
+                style={[modalStyles.submitBtn, reservationSubmitting && { opacity: 0.7 }]}
                 onPress={handleReserveTable}
                 disabled={reservationSubmitting}
               >
                 {reservationSubmitting ? (
                   <ActivityIndicator color="#FFF" size="small" />
                 ) : (
-                  <Text style={modalStyles.submitBtnText}>CONFIRM RESERVATION</Text>
+                  <Text style={modalStyles.submitBtnText}>Confirm Reservation</Text>
                 )}
               </TouchableOpacity>
             </ScrollView>
@@ -914,7 +930,7 @@ export default function Categories({ route, navigation }) {
                 display={Platform.OS === 'ios' ? 'spinner' : 'default'}
                 onChange={(event, date) => {
                   setShowDatePicker(false);
-                  if (date) setReservationForm({...reservationForm, reservation_date: date});
+                  if (date) setReservationForm({ ...reservationForm, reservation_date: date });
                 }}
               />
             )}
@@ -926,7 +942,7 @@ export default function Categories({ route, navigation }) {
                 display={Platform.OS === 'ios' ? 'spinner' : 'default'}
                 onChange={(event, date) => {
                   setShowTimePicker(false);
-                  if (date) setReservationForm({...reservationForm, reservation_time: date});
+                  if (date) setReservationForm({ ...reservationForm, reservation_time: date });
                 }}
               />
             )}
@@ -949,9 +965,9 @@ export default function Categories({ route, navigation }) {
           <View style={styles.modalWrapper}>
             <Animated.View style={[styles.modalBox, { maxHeight: '85%', padding: 0, overflow: 'hidden', backgroundColor: '#F8FAFC' }]}>
               {/* Premium Header */}
-              <LinearGradient 
-                colors={['#FF2B5C', '#FF6B8B']} 
-                start={{x: 0, y: 0}} end={{x: 1, y: 1}}
+              <LinearGradient
+                colors={['#FF2B5C', '#FF6B8B']}
+                start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
                 style={offerStyles.premiumModalHeader}
               >
                 <View style={{ flex: 1 }}>
@@ -976,7 +992,7 @@ export default function Categories({ route, navigation }) {
                   const discountValue = item.discount_price || item.product_discount_price;
                   const hasDiscount = discountValue && Number(discountValue) > Number(item.price);
                   const discountPercent = hasDiscount ? Math.round(((Number(discountValue) - Number(item.price)) / Number(discountValue)) * 100) : 0;
-                  
+
                   return (
                     <View
                       key={idx}
@@ -988,7 +1004,7 @@ export default function Categories({ route, navigation }) {
                           style={offerStyles.premiumItemImage}
                         />
                         {hasDiscount && (
-                          <LinearGradient colors={['#FFB800', '#FF8A00']} start={{x:0,y:0}} end={{x:1,y:0}} style={offerStyles.premiumDiscountBadge}>
+                          <LinearGradient colors={['#FFB800', '#FF8A00']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={offerStyles.premiumDiscountBadge}>
                             <Text style={offerStyles.premiumDiscountText}>{discountPercent}% OFF</Text>
                           </LinearGradient>
                         )}
@@ -996,32 +1012,32 @@ export default function Categories({ route, navigation }) {
 
                       <View style={offerStyles.premiumItemInfo}>
                         <Text style={offerStyles.premiumItemName} numberOfLines={2}>{item.name}</Text>
-                        
+
                         <View style={offerStyles.premiumPriceActionRow}>
-                           <View style={{ flexDirection: 'column', justifyContent: 'center', flex: 1 }}>
-                              <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap' }}>
-                                <Text style={offerStyles.premiumActualPrice}>£{Number(item.price || 0).toFixed(2)}</Text>
-                               {hasDiscount && (
+                          <View style={{ flexDirection: 'column', justifyContent: 'center', flex: 1 }}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap' }}>
+                              <Text style={offerStyles.premiumActualPrice}>£{Number(item.price || 0).toFixed(2)}</Text>
+                              {hasDiscount && (
                                 <Text style={[offerStyles.premiumOriginalPrice, { marginLeft: 8 }]}>£{Number(discountValue).toFixed(2)}</Text>
                               )}
                             </View>
                             {hasDiscount && (
-                               <View style={offerStyles.discountBadgeSmall}>
-                                 <Text style={offerStyles.discountBadgeTextSmall}>
-                                   SAVE {discountPercent}%
-                                 </Text>
-                               </View>
+                              <View style={offerStyles.discountBadgeSmall}>
+                                <Text style={offerStyles.discountBadgeTextSmall}>
+                                  SAVE {discountPercent}%
+                                </Text>
+                              </View>
                             )}
-                           </View>
+                          </View>
                         </View>
-                        
-                        <TouchableOpacity 
-                           style={[offerStyles.addCircleBtn, { marginTop: 12, justifyContent: 'center' }]} 
-                           onPress={(e) => {
-                             e.stopPropagation();
-                             handleAddItem(item);
-                           }}
-                           disabled={!!updating[item.id]}
+
+                        <TouchableOpacity
+                          style={[offerStyles.addCircleBtn, { marginTop: 12, justifyContent: 'center' }]}
+                          onPress={(e) => {
+                            e.stopPropagation();
+                            handleAddItem(item);
+                          }}
+                          disabled={!!updating[item.id]}
                         >
                           {updating[item.id] ? (
                             <ActivityIndicator size="small" color="#FFF" />
@@ -1033,13 +1049,13 @@ export default function Categories({ route, navigation }) {
                           )}
                         </TouchableOpacity>
                       </View>
-                  </View>
-                );
-              })}
-            </ScrollView>
-          </Animated.View>
-        </View>
-      </Modal>
+                    </View>
+                  );
+                })}
+              </ScrollView>
+            </Animated.View>
+          </View>
+        </Modal>
       )}
 
       {/* Premium Notes/Instructions Popup */}
@@ -1063,18 +1079,18 @@ export default function Categories({ route, navigation }) {
           }}>
             {/* Header Gradient */}
             <LinearGradient
-                  colors={["#FF2B5C", "#FF6B8B"]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                  style={{ paddingVertical: 18, alignItems: 'center' }}
-                >
-                  <Text style={{
-                    color: '#FFF',
-                    fontSize: 16 * scale,
-                    fontFamily: 'PoppinsBold',
-                    fontWeight: '900',
-                    letterSpacing: 1.2,
-                  }}>SPECIAL INSTRUCTIONS</Text>
+              colors={["#FF2B5C", "#FF6B8B"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={{ paddingVertical: 18, alignItems: 'center' }}
+            >
+              <Text style={{
+                color: '#FFF',
+                fontSize: 16 * scale,
+                fontFamily: 'PoppinsBold',
+                fontWeight: '900',
+                letterSpacing: 1.2,
+              }}>SPECIAL INSTRUCTIONS</Text>
             </LinearGradient>
 
             <View style={{ padding: 24 }}>
@@ -1088,19 +1104,19 @@ export default function Categories({ route, navigation }) {
                   )}
                   <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4, gap: 8 }}>
                     {instructionPopupTarget && (
-                      <Text style={{ fontSize: 18 * scale, fontFamily: 'PoppinsBold', color: '#16a34a', fontWeight: '900' }}>
+                      <Text style={{ fontSize: 18 * scale, fontFamily: 'PoppinsBold', color: '#FF2B5C', fontWeight: '900' }}>
                         £{Number(instructionPopupTarget.price || 0).toFixed(2)}
                       </Text>
                     )}
-                    {instructionPopupTarget && (instructionPopupTarget.discount_price || instructionPopupTarget.product_discount_price) && 
-                     Number(instructionPopupTarget.discount_price || instructionPopupTarget.product_discount_price) > Number(instructionPopupTarget.price) && (
-                      <Text style={{
-                        fontSize: 14 * scale,
-                        fontFamily: 'PoppinsMedium',
-                        color: '#94A3B8',
-                        textDecorationLine: 'line-through',
-                      }}>£{Number(instructionPopupTarget.discount_price || instructionPopupTarget.product_discount_price).toFixed(2)}</Text>
-                    )}
+                    {instructionPopupTarget && (instructionPopupTarget.discount_price || instructionPopupTarget.product_discount_price) &&
+                      Number(instructionPopupTarget.discount_price || instructionPopupTarget.product_discount_price) > Number(instructionPopupTarget.price) && (
+                        <Text style={{
+                          fontSize: 14 * scale,
+                          fontFamily: 'PoppinsMedium',
+                          color: '#94A3B8',
+                          textDecorationLine: 'line-through',
+                        }}>£{Number(instructionPopupTarget.discount_price || instructionPopupTarget.product_discount_price).toFixed(2)}</Text>
+                      )}
                   </View>
                 </View>
                 <TouchableOpacity
@@ -1112,32 +1128,32 @@ export default function Categories({ route, navigation }) {
               </View>
 
               {/* Savings Badge */}
-              {instructionPopupTarget && (instructionPopupTarget.discount_price || instructionPopupTarget.product_discount_price) && 
+              {instructionPopupTarget && (instructionPopupTarget.discount_price || instructionPopupTarget.product_discount_price) &&
                 Number(instructionPopupTarget.discount_price || instructionPopupTarget.product_discount_price) > Number(instructionPopupTarget.price) && (
-                <View style={{
-                  backgroundColor: '#F0FDF4',
-                  paddingHorizontal: 12,
-                  paddingVertical: 6,
-                  borderRadius: 10,
-                  alignSelf: 'flex-start',
-                  marginTop: 4,
-                  marginBottom: 16,
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  borderWidth: 1,
-                  borderColor: '#DCFCE7',
-                }}>
-                  <Ionicons name="sparkles" size={14} color="#16a34a" style={{ marginRight: 6 }} />
-                  <Text style={{
-                    fontSize: 12 * scale,
-                    fontFamily: 'PoppinsBold',
-                    color: '#16a34a',
-                    fontWeight: '900',
+                  <View style={{
+                    backgroundColor: '#FFF5F5',
+                    paddingHorizontal: 12,
+                    paddingVertical: 6,
+                    borderRadius: 10,
+                    alignSelf: 'flex-start',
+                    marginTop: 4,
+                    marginBottom: 16,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    borderWidth: 1,
+                    borderColor: '#FFD1DC',
                   }}>
-                    YOU SAVE £{(Number(instructionPopupTarget.discount_price || instructionPopupTarget.product_discount_price) - Number(instructionPopupTarget.price)).toFixed(2)}
-                  </Text>
-                </View>
-              )}
+                    <Ionicons name="sparkles" size={14} color="#FF2B5C" style={{ marginRight: 6 }} />
+                    <Text style={{
+                      fontSize: 12 * scale,
+                      fontFamily: 'PoppinsBold',
+                      color: '#FF2B5C',
+                      fontWeight: '900',
+                    }}>
+                      YOU SAVE £{(Number(instructionPopupTarget.discount_price || instructionPopupTarget.product_discount_price) - Number(instructionPopupTarget.price)).toFixed(2)}
+                    </Text>
+                  </View>
+                )}
 
               <Text style={{
                 fontSize: 14 * scale,
@@ -1176,7 +1192,7 @@ export default function Categories({ route, navigation }) {
                 style={{ borderRadius: 16, overflow: 'hidden' }}
               >
                 <LinearGradient
-                  colors={["#16a34a", "#059669"]}
+                  colors={["#FF2B5C", "#FF6B8B"]}
                   style={{ paddingVertical: 16, alignItems: 'center' }}
                 >
                   <Text style={{ fontSize: 16 * scale, fontFamily: 'PoppinsBold', color: '#FFF', fontWeight: '900', letterSpacing: 1 }}>
@@ -1213,14 +1229,14 @@ export default function Categories({ route, navigation }) {
               width: 80 * scale,
               height: 80 * scale,
               borderRadius: 40 * scale,
-              backgroundColor: '#F0FDF4',
+              backgroundColor: '#FFF5F5',
               justifyContent: 'center',
               alignItems: 'center',
               marginBottom: 20,
               borderWidth: 2,
-              borderColor: '#DCFCE7',
+              borderColor: '#FFD1DC',
             }}>
-              <Ionicons name="checkmark-circle" size={50 * scale} color="#16a34a" />
+              <Ionicons name="checkmark-circle" size={50 * scale} color="#FF2B5C" />
             </View>
 
             <Text style={{
@@ -1230,7 +1246,7 @@ export default function Categories({ route, navigation }) {
               fontWeight: '900',
               textAlign: 'center',
             }}>Added to Cart!</Text>
-            
+
             <Text style={{
               fontSize: 14 * scale,
               fontFamily: 'PoppinsMedium',
@@ -1298,7 +1314,7 @@ export default function Categories({ route, navigation }) {
                 }}
               >
                 <LinearGradient
-                  colors={["#FF2B5C", "#E11D48"]}
+                  colors={["#FF2B5C", "#FF6B8B"]}
                   style={{
                     paddingVertical: 15,
                     borderRadius: 16,
@@ -1394,11 +1410,11 @@ export default function Categories({ route, navigation }) {
             </LinearGradient>
 
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 24 }}>
-              
+
               {/* Contact Information Section */}
               <View style={{ marginBottom: 20 }}>
                 <Text style={{ fontSize: 16 * scale, fontFamily: 'PoppinsBold', color: '#1E293B', marginBottom: 16 }}>Contact</Text>
-                
+
                 <TouchableOpacity
                   style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: 16 }}
                   onPress={() => openInMaps(restaurant?.restaurant_address, restaurant?.latitude, restaurant?.longitude)}
@@ -1440,7 +1456,7 @@ export default function Categories({ route, navigation }) {
                     <Ionicons name="chevron-forward" size={16} color="#CBD5E1" />
                   </TouchableOpacity>
                 )}
-                
+
                 {restaurant?.website_url && (
                   <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }} onPress={() => Linking.openURL(restaurant.website_url)}>
                     <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#FFF0F3', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
@@ -1473,7 +1489,7 @@ export default function Categories({ route, navigation }) {
               {/* Service Details Section */}
               <View style={{ marginBottom: 20 }}>
                 <Text style={{ fontSize: 16 * scale, fontFamily: 'PoppinsBold', color: '#1E293B', marginBottom: 16 }}>Services & Preferences</Text>
-                
+
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' }}>
                   {restaurant?.food_type != null && (
                     <View style={{ width: '48%', marginBottom: 16, backgroundColor: '#F8FAFC', padding: 12, borderRadius: 16, borderWidth: 1, borderColor: '#F1F5F9' }}>
@@ -1482,7 +1498,7 @@ export default function Categories({ route, navigation }) {
                       <Text style={{ fontSize: 13 * scale, fontFamily: 'PoppinsSemiBold', color: '#1E293B', marginTop: 2 }}>{formatFoodType(restaurant?.food_type)}</Text>
                     </View>
                   )}
-                  
+
                   {restaurant?.cuisine_type != null && (
                     <View style={{ width: '100%', marginBottom: 16, backgroundColor: '#F8FAFC', padding: 12, borderRadius: 16, borderWidth: 1, borderColor: '#F1F5F9' }}>
                       <Ionicons name="pizza" size={20} color="#FF2B5C" style={{ marginBottom: 8 }} />
@@ -1512,7 +1528,7 @@ export default function Categories({ route, navigation }) {
                       <Text style={{ fontSize: 13 * scale, fontFamily: 'PoppinsSemiBold', color: '#1E293B', marginTop: 2 }}>Available</Text>
                     </View>
                   )}
-                  
+
                   {restaurant?.parking_info && (
                     <View style={{ width: '100%', marginBottom: 16, backgroundColor: '#F8FAFC', padding: 12, borderRadius: 16, borderWidth: 1, borderColor: '#F1F5F9' }}>
                       <Ionicons name="car" size={20} color="#0284C7" style={{ marginBottom: 8 }} />
@@ -1557,12 +1573,17 @@ export default function Categories({ route, navigation }) {
             </ScrollView>
 
             <View style={{ padding: 20, paddingTop: 10 }}>
-              <TouchableOpacity onPress={() => setInfoModalVisible(false)}>
+              <TouchableOpacity
+                onPress={() => setInfoModalVisible(false)}
+                style={{
+                  borderRadius: 16,
+                  overflow: 'hidden',
+                }}
+              >
                 <LinearGradient
-                  colors={["#FF2B5C", "#E11D48"]}
+                  colors={["#FF2B5C", "#FF6B8B"]}
                   style={{
                     paddingVertical: 16,
-                    borderRadius: 16,
                     alignItems: 'center',
                     justifyContent: 'center',
                   }}
@@ -1577,6 +1598,50 @@ export default function Categories({ route, navigation }) {
               </TouchableOpacity>
             </View>
           </View>
+        </View>
+      </Modal>
+
+      {/* RESERVATION SUCCESS MODAL */}
+      <Modal
+        visible={reservationSuccessVisible}
+        transparent
+        animationType="fade"
+      >
+        <View style={styles.modalOverlay}>
+          <Animated.View style={[
+            styles.successCard,
+            { transform: [{ scale: reservationScaleAnim }] }
+          ]}>
+            <View style={styles.successGradient}>
+              <View style={styles.checkRing}>
+                <Ionicons name="checkmark-circle" size={80 * scale} color="#FF2B5C" />
+              </View>
+
+              <Text style={styles.successTitle}>Success!</Text>
+              <Text style={styles.successMsg}>
+                Table reservation request submitted successfully!
+              </Text>
+
+              <Text style={styles.enjoyText}>
+                We will confirm your reservation soon.
+              </Text>
+
+              <TouchableOpacity
+                onPress={() => {
+                  Animated.timing(reservationScaleAnim, {
+                    toValue: 0,
+                    duration: 200,
+                    useNativeDriver: true,
+                  }).start(() => setReservationSuccessVisible(false));
+                }}
+                style={styles.successCloseBtn}
+              >
+                <LinearGradient colors={["#FF2B5C", "#FF6B8B"]} style={styles.successCloseBtnGradient}>
+                  <Text style={styles.successCloseText}>OK</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
+          </Animated.View>
         </View>
       </Modal>
 
@@ -1931,6 +1996,75 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     letterSpacing: 1,
   },
+
+  /* SUCCESS MODAL STYLES */
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.7)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  successCard: {
+    width: "85%",
+    borderRadius: 30,
+    overflow: "hidden",
+    elevation: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    backgroundColor: "#FFF",
+  },
+  successGradient: {
+    padding: 30,
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+  },
+  checkRing: {
+    width: 100 * scale,
+    height: 100 * scale,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  successTitle: {
+    fontSize: 28 * scale,
+    fontFamily: "PoppinsBold",
+    color: "#0F172A",
+    fontWeight: "900",
+    marginBottom: 5,
+  },
+  successMsg: {
+    fontSize: 18 * scale,
+    fontFamily: "PoppinsSemiBold",
+    color: "#475569",
+    textAlign: "center",
+    opacity: 0.9,
+    marginBottom: 10,
+  },
+  enjoyText: {
+    fontSize: 14 * scale,
+    fontFamily: "PoppinsMedium",
+    color: "#64748B",
+    opacity: 0.8,
+    textAlign: "center",
+    marginBottom: 25,
+  },
+  successCloseBtn: {
+    width: "100%",
+    borderRadius: 15,
+    overflow: "hidden",
+  },
+  successCloseBtnGradient: {
+    paddingVertical: 14,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  successCloseText: {
+    fontSize: 16 * scale,
+    fontFamily: "PoppinsBold",
+    color: "#FFFFFF",
+  },
 });
 
 const modalStyles = StyleSheet.create({
@@ -2097,15 +2231,29 @@ const cardStyles = StyleSheet.create({
     marginTop: 8,
   },
   exploreBadge: {
+    borderRadius: 14,
+    alignSelf: 'flex-start',
+    marginTop: 8,
+    overflow: 'hidden',
+    elevation: 2,
+    shadowColor: '#FF2B5C',
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+  },
+  exploreContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: 8,
+    paddingVertical: 8,
   },
   exploreText: {
-    fontSize: 11 * scale,
+    fontSize: 12.5 * scale,
     fontFamily: 'PoppinsBold',
+    color: '#FF2B5C',
     fontWeight: '900',
-    letterSpacing: 0.5,
+    includeFontPadding: false,
+    textAlignVertical: 'center',
   },
   offerBadgeWrapper: {
     position: 'absolute',
@@ -2240,7 +2388,7 @@ const cardStyles = StyleSheet.create({
     marginLeft: 12,
     flex: 1,
   },
-  
+
   /* POPUP MATCHING PRODUCTS STYLE */
   popupOverlay: {
     flex: 1,
@@ -2257,7 +2405,7 @@ const cardStyles = StyleSheet.create({
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.2,
     shadowRadius: 15,
-    backgroundColor: '#fff' 
+    backgroundColor: '#fff'
   },
   popupContent: {
     padding: 24,
@@ -2267,12 +2415,12 @@ const cardStyles = StyleSheet.create({
     width: 70 * scale,
     height: 70 * scale,
     borderRadius: 35 * scale,
-    backgroundColor: "rgba(22, 163, 74, 0.1)",
+    backgroundColor: "rgba(255, 43, 92, 0.1)",
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: "rgba(22, 163, 74, 0.2)",
+    borderColor: "rgba(255, 43, 92, 0.2)",
   },
   popupHeaderRow: {
     flexDirection: 'row',
@@ -2291,7 +2439,7 @@ const cardStyles = StyleSheet.create({
     fontSize: 18 * scale,
     fontFamily: "PoppinsBold",
     fontWeight: "900",
-    color: "#16a34a",
+    color: "#FF2B5C",
   },
   popupCloseBtn: {
     padding: 4,
@@ -2332,7 +2480,7 @@ const cardStyles = StyleSheet.create({
     flex: 1,
     borderRadius: 14,
     overflow: "hidden",
-    shadowColor: "#16a34a",
+    shadowColor: "#FF2B5C",
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.3,
     shadowRadius: 10,
@@ -2467,13 +2615,16 @@ const offerStyles = StyleSheet.create({
     marginBottom: 12,
   },
   offerTitleBadge: {
+    borderRadius: 14,
+    overflow: 'hidden',
+    alignSelf: 'flex-start',
+  },
+  offerBadgeGradient: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFF0F3',
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: 20,
-    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    gap: 8,
   },
   offerSectionTitle: {
     fontSize: 13 * scale,
@@ -2567,9 +2718,10 @@ const offerStyles = StyleSheet.create({
     gap: 4,
   },
   offerBadgeText: {
-    fontSize: 9 * scale,
+    fontSize: 12 * scale,
     fontFamily: 'PoppinsBold',
-    color: '#FF2B5C',
+    color: '#FFFFFF',
+    textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   offerCardTitle: {
@@ -2745,9 +2897,9 @@ const offerStyles = StyleSheet.create({
     color: '#FFF',
     fontWeight: '900',
   },
-  
+
   discountBadgeSmall: {
-    backgroundColor: 'rgba(22, 163, 74, 0.1)',
+    backgroundColor: 'rgba(255, 43, 92, 0.1)',
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
@@ -2757,10 +2909,10 @@ const offerStyles = StyleSheet.create({
   discountBadgeTextSmall: {
     fontSize: 9 * scale,
     fontFamily: 'PoppinsBold',
-    color: '#166534',
+    color: '#FF2B5C',
     fontWeight: '900',
   },
-  
+
   // PREMIUM MODAL STYLES ADDED
   premiumModalHeader: {
     flexDirection: 'row',

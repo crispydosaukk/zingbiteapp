@@ -96,7 +96,7 @@ export default function EditProfile({ navigation }) {
   if (loading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color="#16a34a" />
+        <ActivityIndicator size="large" color="#FF2B5C" />
       </View>
     );
   }
@@ -105,7 +105,7 @@ export default function EditProfile({ navigation }) {
     <View style={{ flex: 1, backgroundColor: "#f6f7fb" }}>
       {/* HEADER */}
       <LinearGradient
-        colors={["#16a34a", "#43c76f"]}
+        colors={["#FF2B5C", "#FF6B8B"]}
         style={[styles.header, { paddingTop: insets.top + 16 }]}
       >
         <TouchableOpacity onPress={() => navigation.goBack()}>
@@ -312,7 +312,7 @@ const styles = StyleSheet.create({
   },
 
   saveBtn: {
-    backgroundColor: "#16a34a",
+    backgroundColor: "#FF2B5C",
     height: 52,
     borderRadius: 16,
     justifyContent: "center",
@@ -323,6 +323,6 @@ const styles = StyleSheet.create({
   saveText: {
     color: "#fff",
     fontSize: 16,
-    fontWeight: "700",
+    fontFamily: "PoppinsBold",
   },
 });
