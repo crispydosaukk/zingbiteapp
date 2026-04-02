@@ -36,7 +36,7 @@ import { fetchAppSettings } from "../../services/settingsService";
 import { fetchActiveOffers } from "../../services/offerService";
 // import { IMAGE_BASE_URL } from "../../config/baseURL";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { submitTableReservation } from "../../services/reservationService";
+import { submitTableReservation, fetchTableReservationSettings } from "../../services/reservationService";
 
 
 const { width } = Dimensions.get("window");
@@ -83,6 +83,7 @@ export default function Categories({ route, navigation }) {
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [reservationSubmitting, setReservationSubmitting] = useState(false);
   const [reservationSuccessVisible, setReservationSuccessVisible] = useState(false);
+  const [resSettings, setResSettings] = useState(null);
   const reservationScaleAnim = useRef(new Animated.Value(0)).current;
 
   const offersAnim = useRef(new Animated.Value(0)).current;
@@ -218,6 +219,14 @@ export default function Categories({ route, navigation }) {
       const d = await fetchRestaurantDetails(userId);
       setRestaurant(d);
     })();
+    
+    // fetch reservation settings
+    (async () => {
+      const res = await fetchTableReservationSettings(userId);
+      if (res?.status === 1) {
+        setResSettings(res.data);
+      }
+    })();
   }, [userId]);
 
   // categories
@@ -289,6 +298,10 @@ export default function Categories({ route, navigation }) {
     // Reload restaurant
     const d = await fetchRestaurantDetails(userId);
     setRestaurant(d);
+    
+    // Refresh reservation settings
+    const res = await fetchTableReservationSettings(userId);
+    if (res?.status === 1) setResSettings(res.data);
 
     // Reload categories
     const c = await fetchCategories(userId);
@@ -647,7 +660,7 @@ export default function Categories({ route, navigation }) {
             </View>
           )}
 
-          {restaurant && (
+          {restaurant && resSettings?.is_enabled && resSettings?.[new Date().toLocaleString("en-US", { weekday: "long" }).toLowerCase()] && (
             <TouchableOpacity
               style={styles.reserveTableBtn}
               onPress={() => setReservationModalVisible(true)}
@@ -659,7 +672,7 @@ export default function Categories({ route, navigation }) {
                 style={styles.reserveTableGradient}
               >
                 <Ionicons name="calendar-outline" size={20 * scale} color="#FFFFFF" style={{ marginRight: 8 }} />
-                <Text style={styles.reserveTableBtnText}>Reserve A Table</Text>
+                <Text style={styles.reserveTableBtnText}>Reserve a table</Text>
               </LinearGradient>
             </TouchableOpacity>
           )}
@@ -694,7 +707,7 @@ export default function Categories({ route, navigation }) {
               style={{
                 height: offersAnim.interpolate({
                   inputRange: [0, 1],
-                  outputRange: [0, 260 * scale] // Content height
+                  outputRange: [0, 290 * scale] // Content height
                 }),
                 overflow: 'hidden'
               }}
@@ -836,10 +849,10 @@ export default function Categories({ route, navigation }) {
                   />
                 </View>
                 <View style={[modalStyles.inputGroup, { flex: 1 }]}>
-                  <Text style={modalStyles.label}>Party Size</Text>
+                  <Text style={modalStyles.label}>No. of people</Text>
                   <TextInput
                     style={modalStyles.input}
-                    placeholder="No. of people"
+                    placeholder="e.g. 2"
                     keyboardType="numeric"
                     value={reservationForm.party_size}
                     onChangeText={(val) => setReservationForm({ ...reservationForm, party_size: val })}
@@ -847,27 +860,7 @@ export default function Categories({ route, navigation }) {
                 </View>
               </View>
 
-              <View style={modalStyles.row}>
-                <View style={[modalStyles.inputGroup, { flex: 1, marginRight: 8 }]}>
-                  <Text style={modalStyles.label}>Table Number (Optional)</Text>
-                  <TextInput
-                    style={modalStyles.input}
-                    placeholder="e.g. T1"
-                    value={reservationForm.table_number}
-                    onChangeText={(val) => setReservationForm({ ...reservationForm, table_number: val })}
-                  />
-                </View>
-                <View style={[modalStyles.inputGroup, { flex: 1 }]}>
-                  <Text style={modalStyles.label}>Duration (Min)</Text>
-                  <TextInput
-                    style={modalStyles.input}
-                    placeholder="e.g. 60"
-                    keyboardType="numeric"
-                    value={reservationForm.duration_minutes}
-                    onChangeText={(val) => setReservationForm({ ...reservationForm, duration_minutes: val })}
-                  />
-                </View>
-              </View>
+              {/* HIDDEN IN UI - Table Number / Duration */}
 
               <View style={modalStyles.inputGroup}>
                 <Text style={modalStyles.label}>Email Address</Text>
@@ -2588,11 +2581,11 @@ const offerStyles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     borderWidth: 1,
     borderColor: '#F1F5F9',
-    height: 220 * scale,
+    height: 250 * scale,
   },
   offerBannerImgSmall: {
     width: '100%',
-    height: 110 * scale,
+    height: 140 * scale, // Increased height to prevent heavy vertical cropping
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -2718,11 +2711,11 @@ const offerStyles = StyleSheet.create({
     gap: 4,
   },
   offerBadgeText: {
-    fontSize: 12 * scale,
+    fontSize: 10 * scale,
     fontFamily: 'PoppinsBold',
-    color: '#FFFFFF',
+    color: '#FF2B5C',
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 0.8,
   },
   offerCardTitle: {
     fontSize: 16 * scale,

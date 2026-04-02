@@ -490,7 +490,7 @@ const styles = StyleSheet.create({
 
   logoutBtn: { marginHorizontal: 20, marginTop: 30, borderRadius: 20, overflow: 'hidden', elevation: 2 },
   logoutInner: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 18, borderDash: [5, 5], borderWidth: 1, borderColor: '#FFD1DC' },
-  logoutText: { fontSize: 16 * scale, fontFamily: "PoppinsBold", color: "#FFFFFF", marginLeft: 10 },
+  logoutText: { fontSize: 16 * scale, fontFamily: "PoppinsSemiBold", color: "#FFFFFF", marginLeft: 10 },
 
   versionText: { textAlign: 'center', marginTop: 30, fontSize: 12 * scale, fontFamily: "PoppinsMedium", color: "#CBD5E1" },
 

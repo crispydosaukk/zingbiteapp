@@ -75,10 +75,10 @@ function RestaurantCard({ name, address, photo, onPress, instore, kerbside, dist
 
         <View style={cardStyles.info}>
           <View style={cardStyles.headerRow}>
-            <Text style={cardStyles.name} numberOfLines={1}>
+            <Text style={cardStyles.name}>
               {name}
             </Text>
-            <Ionicons name="chevron-forward" size={18 * scale} color="#CBD5E1" />
+            <Ionicons name="chevron-forward" size={18 * scale} color="#CBD5E1" style={{ marginTop: 2 }} />
           </View>
 
           {/* DYNAMIC FOOD TYPE ROW */}
@@ -117,15 +117,15 @@ function RestaurantCard({ name, address, photo, onPress, instore, kerbside, dist
           <View style={cardStyles.bottomRow}>
             <View style={cardStyles.serviceGroup}>
               {instore && (
-                <View style={cardStyles.serviceItem}>
-                  <Ionicons name="storefront" size={14 * scale} color="#FF2B5C" />
-                  <Text style={[cardStyles.serviceText, { color: '#FF2B5C' }]}>In-store</Text>
+                <View style={[cardStyles.serviceItem, { marginLeft: 0 }]}>
+                  <Ionicons name="storefront" size={14 * scale} color="#475569" />
+                  <Text style={cardStyles.serviceText}>In-store</Text>
                 </View>
               )}
               {kerbside && (
                 <View style={cardStyles.serviceItem}>
-                  <Ionicons name="car-sport" size={16 * scale} color="#FF2B5C" />
-                  <Text style={[cardStyles.serviceText, { color: '#FF2B5C' }]}>Kerbside</Text>
+                  <Ionicons name="car-sport" size={15 * scale} color="#475569" />
+                  <Text style={cardStyles.serviceText}>Kerbside</Text>
                 </View>
               )}
             </View>
@@ -381,9 +381,14 @@ export default function Resturent({ navigation }) {
 
   const loadAllData = async (forceRefreshAuto = false) => {
     setLocationLoading(true);
+    let useBackgroundFetch = false;
 
     try {
-      // CHECK FOR PERSISTED MANUAL LOCATION
+      const cachedData = await AsyncStorage.getItem("cached_restaurants_data");
+      if (cachedData) {
+        setRestaurants(JSON.parse(cachedData));
+      }
+
       if (!forceRefreshAuto) {
         const storedLoc = await AsyncStorage.getItem("user_manual_location");
         if (storedLoc) {
@@ -391,8 +396,16 @@ export default function Resturent({ navigation }) {
           setCurrentLocationName(loc.name);
           const data = await fetchRestaurants(loc.coords.latitude, loc.coords.longitude);
           setRestaurants(data);
+          await AsyncStorage.setItem("cached_restaurants_data", JSON.stringify(data));
           setLocationLoading(false);
           return;
+        }
+
+        const lastAuto = await AsyncStorage.getItem("last_auto_location");
+        if (lastAuto) {
+          const parsed = JSON.parse(lastAuto);
+          setCurrentLocationName(parsed.name);
+          useBackgroundFetch = true;
         }
       } else {
         await AsyncStorage.removeItem("user_manual_location");
@@ -401,27 +414,33 @@ export default function Resturent({ navigation }) {
       console.log("AsyncStorage load error:", e);
     }
 
-    setCurrentLocationName("Updating location...");
+    if (!useBackgroundFetch) {
+      setCurrentLocationName("Locating...");
+    }
 
-    // Request permission again if not granted
     const hasPermission = await requestLocationPermission();
     let coords = null;
 
     if (hasPermission) {
       coords = await getCurrentLocation();
-    } else {
-      Alert.alert("Permission Denied", "Location permission is required to find nearest restaurants.");
+    } else if (!useBackgroundFetch) {
+      Alert.alert("Permission Denied", "Location access is recommended to find the best local restaurants.");
     }
 
     if (coords) {
       const address = await fetchAddressFromCoords(coords.latitude, coords.longitude);
       setCurrentLocationName(address);
-    } else {
-      setCurrentLocationName("Location not available");
+      const data = await fetchRestaurants(coords.latitude, coords.longitude);
+      setRestaurants(data);
+      
+      await AsyncStorage.setItem("last_auto_location", JSON.stringify({ name: address, coords }));
+      await AsyncStorage.setItem("cached_restaurants_data", JSON.stringify(data));
+    } else if (!useBackgroundFetch) {
+      setCurrentLocationName("Set Location manually");
+      const data = await fetchRestaurants(null, null);
+      setRestaurants(data);
     }
 
-    const data = await fetchRestaurants(coords?.latitude, coords?.longitude);
-    setRestaurants(data);
     setLocationLoading(false);
   };
 
@@ -471,7 +490,8 @@ export default function Resturent({ navigation }) {
       let next = activeIndex + 1;
       if (next >= offers.length) next = 0;
       scrollRef.current?.scrollTo({ x: next * width, animated: true });
-      setActiveIndex(next);
+      // Delay state update so the heavy color re-renders happen AFTER the physical scroll snap finishes
+      setTimeout(() => setActiveIndex(next), 400);
     }, 4000);
 
     return () => clearInterval(timer);
@@ -544,34 +564,6 @@ export default function Resturent({ navigation }) {
         barStyle={offers[activeIndex]?.textColor === "#FFFFFF" ? "light-content" : "dark-content"}
       />
 
-      {/* Top Location Bar */}
-      <TouchableOpacity
-        activeOpacity={0.8}
-        onPress={() => setSearchLocationModal(true)}
-        style={[styles.locationBar, { backgroundColor: offers[activeIndex]?.colors?.[0] || "#0288D1", paddingTop: insets.top + 12 }]}
-      >
-        <View style={styles.locationContent}>
-          <View style={styles.locIconBg}>
-            <Ionicons name="location" size={14 * scale} color={offers[activeIndex]?.textColor || "#FFFFFF"} />
-          </View>
-          <View style={styles.locationTextContainer}>
-            <Text style={[styles.deliveringTo, { color: offers[activeIndex]?.textColor || "#FFFFFF", opacity: 0.8 }]}>
-              YOUR CURRENT LOCATION
-            </Text>
-            <View style={styles.locationRow}>
-              <Text style={[styles.currentLocationText, { color: offers[activeIndex]?.textColor || "#FFFFFF" }]} numberOfLines={1}>
-                {currentLocationName}
-              </Text>
-            </View>
-          </View>
-        </View>
-        <Ionicons
-          name={locationLoading ? "sync" : "chevron-down"}
-          size={16 * scale}
-          color={offers[activeIndex]?.textColor || "#FFFFFF"}
-        />
-      </TouchableOpacity>
-
       {/* Top Zomato-style Unified Section - Clean Unified Background */}
       <View style={[styles.topSection, { backgroundColor: offers[activeIndex]?.colors?.[0] || "#FFFFFF" }]}>
         <AppHeader
@@ -583,7 +575,9 @@ export default function Resturent({ navigation }) {
           statusColor={offers[activeIndex]?.colors?.[0] || "#0288D1"}
           textColor={offers[activeIndex]?.textColor || "#FFFFFF"}
           barStyle={offers[activeIndex]?.textColor === "#FFFFFF" ? "light-content" : "dark-content"}
-          disableSafeArea
+          currentLocationName={currentLocationName}
+          onLocationPress={() => setSearchLocationModal(true)}
+          locationLoading={locationLoading}
         />
 
         {/* Search Bar */}
@@ -608,18 +602,18 @@ export default function Resturent({ navigation }) {
         <View style={styles.sliderContainer}>
           <Animated.ScrollView
             horizontal
-            pagingEnabled
+            pagingEnabled={Platform.OS === 'ios'}
+            snapToInterval={Platform.OS === 'android' ? width : undefined}
+            snapToAlignment="start"
+            decelerationRate="fast"
+            disableIntervalMomentum={true}
             showsHorizontalScrollIndicator={false}
             ref={scrollRef}
             onScroll={Animated.event(
               [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-              {
-                useNativeDriver: false,
-                listener: (e) => {
-                  setActiveIndex(Math.round(e.nativeEvent.contentOffset.x / width));
-                }
-              }
+              { useNativeDriver: false }
             )}
+            onMomentumScrollEnd={(e) => setActiveIndex(Math.round(e.nativeEvent.contentOffset.x / width))}
             scrollEventThrottle={16}
           >
             {offers.map((offer, i) => (
@@ -906,14 +900,14 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#ffffff",
-    borderRadius: 16,
+    borderRadius: 12,
     paddingHorizontal: 16,
-    paddingVertical: Platform.OS === "ios" ? 14 : 4,
+    paddingVertical: Platform.OS === "ios" ? 10 : 0,
     shadowColor: "#1E293B",
-    shadowOffset: { width: 0, height: 10 },
+    shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.1,
-    shadowRadius: 20,
-    elevation: 10,
+    shadowRadius: 10,
+    elevation: 8,
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.8)",
   },
@@ -924,10 +918,11 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    fontSize: 14 * scale,
+    fontSize: 13 * scale,
     color: "#222",
     fontFamily: "PoppinsMedium",
     marginLeft: 10,
+    paddingVertical: Platform.OS === "android" ? 10 : 0,
   },
   searchDivider: {
     width: 1,
@@ -1347,7 +1342,7 @@ const cardStyles = StyleSheet.create({
   headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
   },
   name: {
     fontSize: 15 * scale,
@@ -1415,13 +1410,18 @@ const cardStyles = StyleSheet.create({
   serviceItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginLeft: 12,
+    marginLeft: 8,
+    backgroundColor: '#F1F5F9', // Gray background card
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 8,
   },
   serviceText: {
     fontSize: 12 * scale,
-    fontFamily: 'PoppinsBold',
-    marginLeft: 4,
-    color: '#C62828',
+    fontFamily: 'PoppinsSemiBold', // Semibold requested
+    marginLeft: 5,
+    color: '#334155', // Dark gray text to match the pill style
+    marginTop: 1,
   },
   card: {
     marginHorizontal: 16,
@@ -1501,7 +1501,7 @@ const cardStyles = StyleSheet.create({
     borderRadius: 3 * scale,
   },
   dietText: {
-    fontSize: 10 * scale,
+    fontSize: 11.5 * scale, // Increased text size by ~1.5px
     fontFamily: 'PoppinsBold',
     marginLeft: 5,
     letterSpacing: 0.5,

@@ -194,12 +194,28 @@ export default function HomeScreen({ navigation }) {
   const verticalPadding = isVerySmallScreen ? 4 : isSmallScreen ? 8 : 12;
 
   const highlightOffer = (text) => {
-    if (!settings || !text) return <Text style={styles.offerText}>{text}</Text>;
+    if (!settings || !text) {
+      return (
+        <Text 
+          style={[styles.offerText, { color: "#FFFFFF", marginLeft: 0 }]}
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={0.5}
+        >
+          {text}
+        </Text>
+      );
+    }
     const regex = new RegExp(`(£\\s?${Number(settings.signup_bonus_amount).toFixed(2)}|£${Number(settings.signup_bonus_amount).toFixed(2)}|£\\s?${Number(settings.referral_bonus_amount).toFixed(2)}|£${Number(settings.referral_bonus_amount).toFixed(2)}|£\\s?${Number(settings.earn_per_order_amount).toFixed(2)}|£${Number(settings.earn_per_order_amount).toFixed(2)})`, 'i');
     const parts = text.split(regex);
 
     return (
-      <Text style={[styles.offerText, { color: "#FFFFFF" }]}>
+      <Text 
+        style={[styles.offerText, { color: "#FFFFFF", marginLeft: 0 }]}
+        numberOfLines={1}
+        adjustsFontSizeToFit
+        minimumFontScale={0.5}
+      >
         {parts[0]?.toUpperCase()}
         {parts[1] && (
           <Text style={[styles.offerAmount, { color: "#FFDF00" }]}>
@@ -246,7 +262,7 @@ export default function HomeScreen({ navigation }) {
 
               {settings && messages.length > 0 && (
                 <View style={{ width: "100%", alignItems: "center", height: imageCircleSize, justifyContent: 'center' }}>
-                  <Animated.View style={[styles.premiumOfferCard, { width: width * 0.88, transform: [{ scale: pulseAnim }] }]}>
+                  <Animated.View style={[styles.premiumOfferCard, { width: width * 0.85, alignSelf: "center", transform: [{ scale: pulseAnim }] }]}>
                     <LinearGradient
                       colors={["#E63946", "#0288D1"]}
                       start={{ x: 0, y: 0 }}
@@ -264,16 +280,14 @@ export default function HomeScreen({ navigation }) {
                       ]}
                     >
                       <View style={styles.offerIconCircle}>
-                        <Ionicons name={messages[msgIndex]?.icon || "gift"} size={32} color="#FFFFFF" />
+                        <Ionicons name={messages[msgIndex]?.icon || "gift"} size={28} color="#FFFFFF" />
                       </View>
                       <View style={styles.offerTextContainer}>
                         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
                           <Ionicons name="sparkles" size={12} color="#FFDF00" style={{ marginRight: 4 }} />
                           <Text style={styles.offerLabel}>Limited offer</Text>
                         </View>
-                        <Text style={[styles.offerText, { color: '#FFFFFF', marginLeft: 0 }]} numberOfLines={2}>
-                          {highlightOffer(messages[msgIndex]?.text)}
-                        </Text>
+                        {highlightOffer(messages[msgIndex]?.text)}
                       </View>
                     </Animated.View>
                   </Animated.View>
@@ -434,12 +448,12 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
   },
   offerIconCircle: {
-    width: 60,
-    height: 60,
+    width: 50,
+    height: 50,
     backgroundColor: 'transparent',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: 10,
   },
   offerTextContainer: {
     flex: 1,
@@ -461,7 +475,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.1)',
   },
   offerText: {
-    fontSize: 15,
+    fontSize: 15 * scale,
     fontFamily: "PoppinsSemiBold",
     marginLeft: 0,
     color: '#F8FAFC',

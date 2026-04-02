@@ -12,7 +12,7 @@ const { width } = Dimensions.get("window");
 // Scale factor for responsiveness
 const scale = width / 375;
 
-export default function AppHeader({ user, onMenuPress, navigation, cartItems, transparent, statusColor, textColor, barStyle, disableSafeArea }) {
+export default function AppHeader({ user, onMenuPress, navigation, cartItems, transparent, statusColor, textColor, barStyle, disableSafeArea, currentLocationName, onLocationPress, locationLoading }) {
   const insets = useSafeAreaInsets();
   const totalItems = cartItems ? Object.values(cartItems).reduce((a, b) => a + b, 0) : 0;
 
@@ -119,23 +119,48 @@ export default function AppHeader({ user, onMenuPress, navigation, cartItems, tr
       ]}>
         <View style={styles.headerContent}>
 
-          {/* LEFT: User Info Only */}
-          <TouchableOpacity
-            style={styles.profileContainer}
-            activeOpacity={0.7}
-            onPress={() => {
-              if (!user) setAuthModalVisible(true);
-              else navigation.navigate("Profile");
-            }}
-          >
-            <View style={styles.avatarCircle}>
-              <Ionicons name="person" size={18 * scale} color="#FFFFFF" />
-            </View>
+          {/* LEFT: User Info & Location Inline */}
+          <View style={styles.profileContainer}>
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => {
+                if (!user) setAuthModalVisible(true);
+                else navigation.navigate("Profile");
+              }}
+            >
+              <View style={styles.avatarCircle}>
+                <Ionicons name="person" size={18 * scale} color="#FFFFFF" />
+              </View>
+            </TouchableOpacity>
+
             <View style={styles.textContainer}>
-              <Text style={[styles.greetingText, textColor && { color: textColor }]}>Hello,</Text>
-              <Text style={[styles.usernameText, textColor && { color: textColor }]} numberOfLines={1}>{username}</Text>
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => {
+                  if (!user) setAuthModalVisible(true);
+                  else navigation.navigate("Profile");
+                }}
+              >
+                <Text style={[styles.greetingText, textColor && { color: textColor }]} numberOfLines={1}>
+                  Hello, <Text style={[styles.usernameText, textColor && { color: textColor }]}>{username}</Text>
+                </Text>
+              </TouchableOpacity>
+
+              {(currentLocationName) && (
+                <TouchableOpacity 
+                  style={styles.inlineLocation} 
+                  activeOpacity={0.7} 
+                  onPress={onLocationPress}
+                >
+                  <Ionicons name={locationLoading ? "sync" : "location-sharp"} size={12 * scale} color={textColor || "#FF2B5C"} />
+                  <Text style={[styles.locationText, textColor && { color: textColor }]} numberOfLines={1}>
+                    {currentLocationName}
+                  </Text>
+                  <Ionicons name="chevron-down" size={12 * scale} color={textColor || "#666"} />
+                </TouchableOpacity>
+              )}
             </View>
-          </TouchableOpacity>
+          </View>
 
           {/* RIGHT: Actions */}
           <View style={styles.rightActions}>
@@ -243,7 +268,8 @@ const styles = StyleSheet.create({
   profileContainer: {
     flexDirection: "row",
     alignItems: "center",
-    maxWidth: "50%",
+    flex: 1,
+    paddingRight: 10,
   },
   avatarCircle: {
     width: 36 * scale,
@@ -256,19 +282,31 @@ const styles = StyleSheet.create({
   },
   textContainer: {
     justifyContent: "center",
+    flex: 1,
   },
   greetingText: {
     fontFamily: "PoppinsMedium",
-    fontSize: 11 * scale,
-    color: "#1C1C1C", // Set to black as requested
-    marginBottom: 0,
+    fontSize: 12 * scale,
+    color: "#1C1C1C",
     fontWeight: "500",
   },
   usernameText: {
     fontFamily: "PoppinsSemiBold",
     fontSize: 15 * scale,
     fontWeight: "700",
-    color: "#1C1C1C",
+  },
+  inlineLocation: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 1 * scale,
+  },
+  locationText: {
+    fontFamily: "PoppinsSemiBold",
+    fontSize: 12 * scale,
+    color: "#666",
+    marginLeft: 3,
+    marginRight: 2,
+    flex: 1,
   },
 
   // Right: Actions
