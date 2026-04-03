@@ -14,7 +14,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { initAndSaveFcmToken } from "../utils/fcm";
 import Ionicons from "react-native-vector-icons/Ionicons";
-import LinearGradient from "react-native-linear-gradient";
+
 
 const { width } = Dimensions.get("window");
 const scale = width / 400;
@@ -102,14 +102,9 @@ export default function SplashScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      {/* 🎨 CLEAN BOLD DUAL-TONE: LOGO BLUE + ZING YELLOW */}
-      <LinearGradient
-        colors={["#B3E5FC", "#F7CB45"]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 1 }}
-        style={StyleSheet.absoluteFill}
-      />
-      <StatusBar backgroundColor="#B3E5FC" barStyle="dark-content" />
+      {/* 🎨 CLEAN BOLD SOLID ORANGE BACKGROUND */}
+      <View style={[StyleSheet.absoluteFill, { backgroundColor: "#0a0a1a" }]} />
+      <StatusBar backgroundColor="#0a0a1a" barStyle="light-content" />
 
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.center} pointerEvents="none">
@@ -134,8 +129,6 @@ export default function SplashScreen({ navigation }) {
               opacity: textOpacity,
               transform: [{ translateY: textTranslateY }]
             }]}>
-              <Text style={styles.taglineText}>Order. Bite. Enjoy. 🍔</Text>
-              <View style={styles.accentLine} />
             </Animated.View>
           </Animated.View>
         </View>
@@ -143,7 +136,7 @@ export default function SplashScreen({ navigation }) {
         <View style={{ flex: 1 }} />
 
         <Animated.View style={[styles.bottomInfo, { opacity: textOpacity }]}>
-          <Text style={styles.eternal}>WHERE TRADITION MEETS TASTE</Text>
+          <Text style={styles.eternal} numberOfLines={1} adjustsFontSizeToFit>WHERE TRADITION MEETS TASTE</Text>
         </Animated.View>
 
         <View style={styles.footer}>
@@ -169,7 +162,7 @@ export default function SplashScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#FF8C00",
   },
   safeArea: {
     flex: 1,
@@ -212,12 +205,15 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   eternal: {
-    fontFamily: "PoppinsSemiBold",
-    fontSize: 11 * scale,
-    color: "#1C1C1C",
-    letterSpacing: 4,
-    fontWeight: '700',
-    opacity: 0.9,
+    fontFamily: "PoppinsBold",
+    fontSize: 18 * scale,
+    color: "#FFFFFF",
+    letterSpacing: 2,
+    fontWeight: '900',
+    textTransform: 'uppercase',
+    textShadowColor: 'rgba(0, 0, 0, 0.2)',
+    textShadowOffset: { width: 0, height: 1.5 },
+    textShadowRadius: 4,
   },
   footer: {
     paddingBottom: 110,
@@ -232,6 +228,6 @@ const styles = StyleSheet.create({
   },
   loaderFill: {
     height: "100%",
-    backgroundColor: "#C62828",
+    backgroundColor: "#FFFFFF",
   },
 });

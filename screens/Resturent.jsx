@@ -47,7 +47,7 @@ function RestaurantCard({ name, address, photo, onPress, instore, kerbside, dist
   // Extremely robust dynamic parsing (0=Veg, 1=NonVeg, 2=Jain)
   const rawFT = foodType !== null && foodType !== undefined ? String(foodType) : "";
   const foodTypeArr = rawFT ? rawFT.split(',').map(s => s.trim().toLowerCase()) : [];
-  
+
   const isVeg = foodTypeArr.includes('0') || foodTypeArr.includes('veg') || foodTypeArr.includes('pure veg');
   const isNonVeg = foodTypeArr.includes('1') || foodTypeArr.includes('nonveg') || foodTypeArr.includes('non-veg');
   const isJain = foodTypeArr.includes('2') || foodTypeArr.includes('jain');
@@ -109,7 +109,7 @@ function RestaurantCard({ name, address, photo, onPress, instore, kerbside, dist
 
           <View style={cardStyles.addressRow}>
             <Ionicons name="location" size={12 * scale} color="#94A3B8" style={{ marginTop: 2 }} />
-            <Text style={cardStyles.address} numberOfLines={1}>
+            <Text style={cardStyles.address}>
               {address}
             </Text>
           </View>
@@ -432,7 +432,7 @@ export default function Resturent({ navigation }) {
       setCurrentLocationName(address);
       const data = await fetchRestaurants(coords.latitude, coords.longitude);
       setRestaurants(data);
-      
+
       await AsyncStorage.setItem("last_auto_location", JSON.stringify({ name: address, coords }));
       await AsyncStorage.setItem("cached_restaurants_data", JSON.stringify(data));
     } else if (!useBackgroundFetch) {
@@ -624,7 +624,11 @@ export default function Resturent({ navigation }) {
                       <Text style={[styles.offerBadge, { backgroundColor: offer.badgeColor, color: offer.textColor, fontWeight: '900', opacity: 1 }]}>
                         {offer.title}
                       </Text>
-                      <Text style={[styles.offerMainTitle, { color: offer.textColor, fontWeight: '900' }]}>
+                      <Text 
+                        style={[styles.offerMainTitle, { color: offer.textColor, fontWeight: '900' }]}
+                        numberOfLines={1}
+                        adjustsFontSizeToFit={true}
+                      >
                         {offer.subtitle}
                       </Text>
                       <Text style={[styles.offerDesc, { color: offer.textColor, opacity: 1, fontFamily: 'PoppinsBold', fontWeight: '900' }]}>
@@ -934,7 +938,7 @@ const styles = StyleSheet.create({
     padding: 2,
   },
   sliderContainer: {
-    marginTop: 5,
+    marginTop: -8,
     position: 'relative',
   },
   sliderPage: {
@@ -1460,7 +1464,7 @@ const cardStyles = StyleSheet.create({
     marginTop: 8,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FF2B5C',
+    backgroundColor: '#FE724C',
     paddingHorizontal: 8,
     paddingVertical: 5,
     borderRadius: 8,
@@ -1468,8 +1472,8 @@ const cardStyles = StyleSheet.create({
     justifyContent: 'center',
   },
   distanceText: {
-    color: '#FFF',
-    fontSize: 10 * scale,
+    color: '#FFFFFF',
+    fontSize: 12 * scale,
     fontFamily: 'PoppinsBold',
     marginLeft: 4,
   },

@@ -28,6 +28,7 @@ const scale = width / 400; // Add scale definition since styles use it implicitl
 export default function HomeScreen({ navigation }) {
   const swingAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
+  const shimmerAnim = useRef(new Animated.Value(0)).current;
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   // Animation values for smooth cross-fade
@@ -133,11 +134,24 @@ export default function HomeScreen({ navigation }) {
       ])
     ).start();
 
+    Animated.loop(
+      Animated.timing(shimmerAnim, {
+        toValue: 1,
+        duration: 4000,
+        useNativeDriver: false,
+      })
+    ).start();
+
   }, []);
 
   const swing = swingAnim.interpolate({
     inputRange: [-1, 1],
     outputRange: ["-6deg", "6deg"],
+  });
+
+  const shimmerColor = shimmerAnim.interpolate({
+    inputRange: [0, 0.25, 0.5, 0.75, 1],
+    outputRange: ["#FF3B00", "#FF6B00", "#FFD700", "#FF6B00", "#FF3B00"],
   });
 
   // Smooth Cross-Fade Animation logic
@@ -196,7 +210,7 @@ export default function HomeScreen({ navigation }) {
   const highlightOffer = (text) => {
     if (!settings || !text) {
       return (
-        <Text 
+        <Text
           style={[styles.offerText, { color: "#FFFFFF", marginLeft: 0 }]}
           numberOfLines={1}
           adjustsFontSizeToFit
@@ -210,7 +224,7 @@ export default function HomeScreen({ navigation }) {
     const parts = text.split(regex);
 
     return (
-      <Text 
+      <Text
         style={[styles.offerText, { color: "#FFFFFF", marginLeft: 0 }]}
         numberOfLines={1}
         adjustsFontSizeToFit
@@ -230,15 +244,12 @@ export default function HomeScreen({ navigation }) {
 
   return (
     <>
-      <StatusBar backgroundColor="#B3E5FC" barStyle="dark-content" />
+      <StatusBar backgroundColor="#0a0a1a" barStyle="light-content" />
       <SafeAreaView
-        style={{ flex: 1, backgroundColor: "#B3E5FC" }}
+        style={{ flex: 1, backgroundColor: "#0a0a1a" }}
         edges={["top"]}
       >
-        <LinearGradient
-          colors={["#B3E5FC", "#F7CB45"]}
-          style={styles.container}
-        >
+        <View style={[styles.container, { backgroundColor: "#0a0a1a" }]}>
           <View style={[styles.mainContent, { paddingVertical: verticalPadding }]}>
             <View style={styles.topSection}>
               <View style={styles.rope} />
@@ -256,25 +267,20 @@ export default function HomeScreen({ navigation }) {
 
               <View style={styles.mainTitleWrap}>
                 <Text style={styles.mainTitleBlack}>Order UK's Finest Quality</Text>
-                <Text style={styles.mainTitleOrange}>Takeaway food</Text>
+                <Animated.Text style={[styles.mainTitleOrange, { color: shimmerColor }]}>Takeaway food</Animated.Text>
                 <Text style={[styles.mainTitleBlack, { fontSize: 18, marginTop: 4 }]}>From Local Restaurants</Text>
               </View>
 
               {settings && messages.length > 0 && (
                 <View style={{ width: "100%", alignItems: "center", height: imageCircleSize, justifyContent: 'center' }}>
                   <Animated.View style={[styles.premiumOfferCard, { width: width * 0.85, alignSelf: "center", transform: [{ scale: pulseAnim }] }]}>
-                    <LinearGradient
-                      colors={["#E63946", "#0288D1"]}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 1 }}
-                      style={{ ...StyleSheet.absoluteFillObject, borderRadius: 24 }}
-                    />
                     <Animated.View
                       style={[
                         {
                           flexDirection: 'row',
                           alignItems: 'center',
                           opacity: fadeAnim,
+                          paddingLeft: 12,
                           transform: [{ translateY: slideAnim }],
                         },
                       ]}
@@ -284,7 +290,7 @@ export default function HomeScreen({ navigation }) {
                       </View>
                       <View style={styles.offerTextContainer}>
                         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
-                          <Ionicons name="sparkles" size={12} color="#FFDF00" style={{ marginRight: 4 }} />
+                          <Ionicons name="sparkles" size={12} color="#FF3B00" style={{ marginRight: 4 }} />
                           <Text style={styles.offerLabel}>Limited offer</Text>
                         </View>
                         {highlightOffer(messages[msgIndex]?.text)}
@@ -304,16 +310,23 @@ export default function HomeScreen({ navigation }) {
               <View style={styles.buttonArea}>
                 <TouchableOpacity
                   onPress={() => navigation.navigate("Resturent")}
-                  style={styles.primaryBtn}
-                  activeOpacity={0.9}
+                  style={styles.primaryBtnWrapper}
+                  activeOpacity={0.8}
                 >
-                  <Ionicons
-                    name="restaurant-outline"
-                    size={20}
-                    color="#000000"
-                    style={styles.btnIcon}
-                  />
-                  <Text style={styles.primaryBtnText}>Explore</Text>
+                  <LinearGradient
+                    colors={["#FF3B00", "#FF6B00"]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.primaryBtn}
+                  >
+                    <Ionicons
+                      name="restaurant-outline"
+                      size={20}
+                      color="#FFFFFF"
+                      style={styles.btnIcon}
+                    />
+                    <Text style={styles.primaryBtnText}>Explore Restaurants</Text>
+                  </LinearGradient>
                 </TouchableOpacity>
 
                 <TouchableOpacity
@@ -327,7 +340,7 @@ export default function HomeScreen({ navigation }) {
                   <Ionicons
                     name={isLoggedIn ? "log-out-outline" : "log-in-outline"}
                     size={20}
-                    color="#000000"
+                    color="#fdf5f5ff"
                     style={styles.btnIcon}
                   />
                   <Text style={styles.secondaryBtnText}>
@@ -347,7 +360,7 @@ export default function HomeScreen({ navigation }) {
               </View>
             </View>
           </View>
-        </LinearGradient>
+        </View>
       </SafeAreaView>
 
       {/* PREMIUM LOGOUT MODAL */}
@@ -410,12 +423,12 @@ const styles = StyleSheet.create({
   mainTitleBlack: {
     fontSize: 22,
     fontFamily: "PoppinsSemiBold",
-    color: "#0F172A",
+    color: "#f1f2f5ff",
   },
   mainTitleOrange: {
     fontSize: 32,
     fontFamily: "PoppinsSemiBold",
-    color: "#C62828",
+    color: "#d62802",
     marginTop: -2,
     marginBottom: -2,
   },
@@ -433,16 +446,18 @@ const styles = StyleSheet.create({
   subtitle: {
     marginTop: 6,
     fontSize: 16,
-    color: "#1E293B",
+    color: "#f9f9f9ff",
     fontFamily: "PoppinsSemiBold",
   },
   premiumOfferCard: {
     paddingHorizontal: 16,
     paddingVertical: 18,
     borderRadius: 24,
-    backgroundColor: '#fff',
+    backgroundColor: '#3F1C14',
+    borderLeftWidth: 6,
+    borderLeftColor: '#FF3B00',
     elevation: 8,
-    shadowColor: "#E63946",
+    shadowColor: "#3F1C14",
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.35,
     shadowRadius: 12,
@@ -462,7 +477,7 @@ const styles = StyleSheet.create({
   offerLabel: {
     fontSize: 12,
     fontFamily: "PoppinsSemiBold",
-    color: "#FFDF00",
+    color: "#FF3B00",
     letterSpacing: 2.5,
   },
   offerPill: {
@@ -484,27 +499,36 @@ const styles = StyleSheet.create({
     width: "100%",
     alignItems: "center",
   },
-  primaryBtn: {
-    flexDirection: "row",
+  primaryBtnWrapper: {
     width: width * 0.75,
     borderRadius: 14,
-    borderWidth: 2,
-    borderColor: "#1E293B",
+    marginBottom: 10,
+    overflow: "hidden",
+    elevation: 8,
+    shadowColor: "#FF3B00",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+  },
+  primaryBtn: {
+    flexDirection: "row",
+    width: "100%",
     paddingVertical: 14,
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 10,
   },
   primaryBtnText: {
     fontSize: 16,
     fontFamily: "PoppinsSemiBold",
-    color: "#1E293B",
+    color: "#FFFFFF",
+    fontWeight: '700',
   },
   secondaryBtn: {
     flexDirection: "row",
     width: width * 0.75,
-    borderWidth: 2,
-    borderColor: "rgba(30, 41, 59, 0.6)",
+    borderWidth: 1.5,
+    borderColor: "rgba(255, 255, 255, 0.2)",
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
     paddingVertical: 14,
     borderRadius: 14,
     justifyContent: "center",
@@ -514,21 +538,22 @@ const styles = StyleSheet.create({
   secondaryBtnText: {
     fontSize: 16,
     fontFamily: "PoppinsSemiBold",
-    color: "#1E293B",
+    color: "#FFFFFF",
+    fontWeight: '600',
   },
   btnIcon: {
     marginRight: 8,
   },
   bottomLine: {
     fontSize: 14,
-    color: "#1E293B",
+    color: "#f6f7f8ff",
     marginTop: 2,
     fontFamily: "PoppinsSemiBold",
   },
   linkText: {
     fontFamily: "PoppinsSemiBold",
     textDecorationLine: "underline",
-    color: "#FF2B5C",
+    color: "#d62802",
   },
   rope: {
     width: 2,

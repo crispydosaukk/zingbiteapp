@@ -219,7 +219,7 @@ export default function Categories({ route, navigation }) {
       const d = await fetchRestaurantDetails(userId);
       setRestaurant(d);
     })();
-    
+
     // fetch reservation settings
     (async () => {
       const res = await fetchTableReservationSettings(userId);
@@ -298,7 +298,7 @@ export default function Categories({ route, navigation }) {
     // Reload restaurant
     const d = await fetchRestaurantDetails(userId);
     setRestaurant(d);
-    
+
     // Refresh reservation settings
     const res = await fetchTableReservationSettings(userId);
     if (res?.status === 1) setResSettings(res.data);
@@ -462,7 +462,7 @@ export default function Categories({ route, navigation }) {
         }
       >
         <LinearGradient
-          colors={isEven ? ["#FFF", "#FDF2F8"] : ["#FFF", "#FFF5F5"]}
+          colors={["#FFFFFF", "rgba(254, 114, 76, 0.06)"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={cardStyles.cardGradient}
@@ -485,12 +485,14 @@ export default function Categories({ route, navigation }) {
             <Text style={cardStyles.categoryName}>{item?.name}</Text>
             <View style={cardStyles.exploreRow}>
               <LinearGradient
-                colors={["#FFF5F5", "#FFE4E6"]}
+                colors={["#FE724C", "#FF8D6A"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
                 style={cardStyles.exploreBadge}
               >
                 <View style={cardStyles.exploreContent}>
-                  <Ionicons name="restaurant-outline" size={13 * scale} color="#FF2B5C" style={{ marginRight: 6 }} />
-                  <Text style={[cardStyles.exploreText, { color: '#FF2B5C' }]}>
+                  <Ionicons name="restaurant-outline" size={13 * scale} color="#FFFFFF" style={{ marginRight: 6 }} />
+                  <Text style={[cardStyles.exploreText, { color: '#FFFFFF' }]}>
                     Explore menu
                   </Text>
                 </View>
@@ -499,7 +501,7 @@ export default function Categories({ route, navigation }) {
           </View>
 
           <View style={cardStyles.floatingImageContainer}>
-            <View style={[cardStyles.imageShadow, { shadowColor: '#FF2B5C' }]}>
+            <View style={cardStyles.imageShadow}>
               <Image
                 source={
                   item?.image
@@ -577,7 +579,7 @@ export default function Categories({ route, navigation }) {
           {settings && animatedTexts.length > 0 && (
             <Animated.View style={[styles.premiumOfferWrap, { opacity: fadeAnim }]}>
               <LinearGradient
-                colors={offers[activeIndex]?.colors || ["#FF2B5C", "#FF6B8B"]}
+                colors={offers[activeIndex]?.colors || ["#FE724C", "#FF8D6A"]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 style={styles.premiumOfferInner}
@@ -612,12 +614,12 @@ export default function Categories({ route, navigation }) {
                   <View style={styles.nameHeaderRowWide}>
                     <Text style={styles.fullBoutiqueName}>{restaurant.restaurant_name}</Text>
                     <TouchableOpacity onPress={() => setInfoModalVisible(true)} style={styles.infoIconBtnCorner}>
-                      <Ionicons name="information-circle-outline" size={28} color="#FF2B5C" />
+                      <Ionicons name="information-circle-outline" size={28} color="#FE724C" />
                     </TouchableOpacity>
                   </View>
 
                   <View style={styles.infoRowCompact}>
-                    <Ionicons name="location" size={14} color="#FF2B5C" />
+                    <Ionicons name="location" size={14} color="#FE724C" />
                     <Text style={styles.locTextCompact} numberOfLines={1}>
                       {restaurant.restaurant_address}
                     </Text>
@@ -626,14 +628,14 @@ export default function Categories({ route, navigation }) {
                   <View style={styles.serviceRowSingleLine}>
                     {restaurant.instore && (
                       <View style={styles.serviceChipMinimal}>
-                        <Ionicons name="storefront" size={14 * scale} color="#FF2B5C" />
-                        <Text style={[styles.serviceChipTextMinimal, { color: '#FF2B5C' }]}>In-store</Text>
+                        <Ionicons name="storefront" size={16 * scale} color="#FE724C" />
+                        <Text style={[styles.serviceChipTextMinimal, { color: '#FE724C', fontSize: 14 * scale }]}>In-store</Text>
                       </View>
                     )}
                     {restaurant.kerbside && (
                       <View style={styles.serviceChipMinimal}>
-                        <Ionicons name="car-sport" size={16 * scale} color="#FF2B5C" />
-                        <Text style={[styles.serviceChipTextMinimal, { color: '#FF2B5C' }]}>Kerbside</Text>
+                        <Ionicons name="car-sport" size={18 * scale} color="#FE724C" />
+                        <Text style={[styles.serviceChipTextMinimal, { color: '#FE724C', fontSize: 14 * scale }]}>Kerbside</Text>
                       </View>
                     )}
                   </View>
@@ -642,19 +644,19 @@ export default function Categories({ route, navigation }) {
 
               <View style={styles.fullCardFooterCompact}>
                 <View style={styles.footerRowItem}>
-                  <Ionicons name="call" size={16 * scale} color="#FF2B5C" />
+                  <Ionicons name="call" size={16 * scale} color="#FE724C" />
                   <Text style={styles.footerTextSmall}>{restaurant.restaurant_phonenumber}</Text>
                 </View>
 
                 <View style={styles.vDividerSmall} />
 
                 <View style={styles.footerRowItem}>
-                  <Ionicons name="time" size={16 * scale} color="#FF2B5C" />
+                  <Ionicons name="time" size={16 * scale} color="#FE724C" />
                   <Text style={styles.footerTextSmall}>{timeLabel}</Text>
                 </View>
 
                 <TouchableOpacity style={styles.detailsChevron} onPress={openTimingsModal}>
-                  <Ionicons name="chevron-forward" size={18} color="#FF2B5C" />
+                  <Ionicons name="chevron-forward" size={18} color="#FE724C" />
                 </TouchableOpacity>
               </View>
             </View>
@@ -665,15 +667,8 @@ export default function Categories({ route, navigation }) {
               style={styles.reserveTableBtn}
               onPress={() => setReservationModalVisible(true)}
             >
-              <LinearGradient
-                colors={["#FF2B5C", "#FF6B8B"]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={styles.reserveTableGradient}
-              >
-                <Ionicons name="calendar-outline" size={20 * scale} color="#FFFFFF" style={{ marginRight: 8 }} />
-                <Text style={styles.reserveTableBtnText}>Reserve a table</Text>
-              </LinearGradient>
+              <Ionicons name="calendar-outline" size={20 * scale} color="#FFFFFF" style={{ marginRight: 8 }} />
+              <Text style={styles.reserveTableBtnText}>Reserve a table</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -687,8 +682,8 @@ export default function Categories({ route, navigation }) {
               onPress={toggleOffers}
             >
               <View style={offerStyles.offerHeaderRow}>
-                <View style={[offerStyles.offerTitleBadge, { backgroundColor: '#FFF5F5', borderColor: '#FFD1DC', borderWidth: 1, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, flexDirection: 'row', alignItems: 'center' }]}>
-                  <Ionicons name="pricetag" size={16 * scale} color="#FF2B5C" />
+                <View style={[offerStyles.offerTitleBadge, { backgroundColor: 'rgba(254, 114, 76, 0.08)', borderColor: 'rgba(254, 114, 76, 0.2)', borderWidth: 1, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, flexDirection: 'row', alignItems: 'center' }]}>
+                  <Ionicons name="pricetag" size={16 * scale} color="#FE724C" />
                   <Text style={offerStyles.offerSectionTitle}>Current Special Offers</Text>
                 </View>
                 <View style={offerStyles.headerRight}>
@@ -696,7 +691,7 @@ export default function Categories({ route, navigation }) {
                   <Ionicons
                     name={isOffersOpen ? "chevron-down" : "chevron-up"}
                     size={22 * scale}
-                    color="#FF2B5C"
+                    color="#FE724C"
                     style={{ marginLeft: 8 }}
                   />
                 </View>
@@ -959,7 +954,7 @@ export default function Categories({ route, navigation }) {
             <Animated.View style={[styles.modalBox, { maxHeight: '85%', padding: 0, overflow: 'hidden', backgroundColor: '#F8FAFC' }]}>
               {/* Premium Header */}
               <LinearGradient
-                colors={['#FF2B5C', '#FF6B8B']}
+                colors={['#FE724C', '#FF8D6A']}
                 start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
                 style={offerStyles.premiumModalHeader}
               >
@@ -972,7 +967,7 @@ export default function Categories({ route, navigation }) {
                   <Text style={offerStyles.premiumModalSub} numberOfLines={1}>{selectedOffer.description || "Unlock these special deals!"}</Text>
                 </View>
                 <TouchableOpacity onPress={() => setSelectedOffer(null)} style={offerStyles.modalCloseCirc}>
-                  <Ionicons name="close" size={24} color="#FF2B5C" />
+                  <Ionicons name="close" size={24} color="#FE724C" />
                 </TouchableOpacity>
               </LinearGradient>
 
@@ -1569,25 +1564,25 @@ export default function Categories({ route, navigation }) {
               <TouchableOpacity
                 onPress={() => setInfoModalVisible(false)}
                 style={{
-                  borderRadius: 16,
-                  overflow: 'hidden',
+                  borderRadius: 15,
+                  backgroundColor: '#FE724C',
+                  paddingVertical: 14,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  elevation: 6,
+                  shadowColor: "#FE724C",
+                  shadowOffset: { width: 0, height: 6 },
+                  shadowOpacity: 0.35,
+                  shadowRadius: 10,
                 }}
               >
-                <LinearGradient
-                  colors={["#FF2B5C", "#FF6B8B"]}
-                  style={{
-                    paddingVertical: 16,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <Text style={{
-                    fontSize: 16 * scale,
-                    fontFamily: 'PoppinsBold',
-                    color: '#FFF',
-                    fontWeight: '900',
-                  }}>Close</Text>
-                </LinearGradient>
+                <Text style={{
+                  fontSize: 15 * scale,
+                  fontFamily: 'PoppinsSemiBold',
+                  color: '#FFFFFF',
+                  fontWeight: '700',
+                  letterSpacing: 0.5,
+                }}>Close</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -1607,7 +1602,7 @@ export default function Categories({ route, navigation }) {
           ]}>
             <View style={styles.successGradient}>
               <View style={styles.checkRing}>
-                <Ionicons name="checkmark-circle" size={80 * scale} color="#FF2B5C" />
+                <Ionicons name="checkmark-circle" size={80 * scale} color="#FE724C" />
               </View>
 
               <Text style={styles.successTitle}>Success!</Text>
@@ -1627,11 +1622,9 @@ export default function Categories({ route, navigation }) {
                     useNativeDriver: true,
                   }).start(() => setReservationSuccessVisible(false));
                 }}
-                style={styles.successCloseBtn}
+                style={[styles.successCloseBtn, { backgroundColor: '#FE724C', overflow: 'hidden' }]}
               >
-                <LinearGradient colors={["#FF2B5C", "#FF6B8B"]} style={styles.successCloseBtnGradient}>
-                  <Text style={styles.successCloseText}>OK</Text>
-                </LinearGradient>
+                <Text style={styles.successCloseText}>OK</Text>
               </TouchableOpacity>
             </View>
           </Animated.View>
@@ -1719,7 +1712,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: "#E23744",
+    backgroundColor: "#FE724C",
     marginLeft: 10,
   },
 
@@ -1789,9 +1782,9 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   serviceChipTextMinimal: {
-    fontSize: 12 * scale,
+    fontSize: 14 * scale,
     fontFamily: 'PoppinsBold',
-    color: '#FF2B5C',
+    color: '#FE724C',
     fontWeight: '900',
   },
   fullCardFooterCompact: {
@@ -1965,29 +1958,27 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.2)',
   },
   reserveTableBtn: {
-    marginHorizontal: 16,
-    marginTop: 15,
-    borderRadius: 18,
-    overflow: 'hidden',
-    elevation: 4,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-  },
-  reserveTableGradient: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 14,
-    gap: 10,
+    marginHorizontal: 40,
+    marginTop: 15,
+    borderRadius: 15,
+    backgroundColor: '#FE724C',
+    elevation: 6,
+    gap: 8,
+    shadowColor: "#FE724C",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35,
+    shadowRadius: 10,
   },
   reserveTableBtnText: {
     color: '#FFFFFF',
-    fontSize: 16 * scale,
-    fontFamily: 'PoppinsBold',
-    fontWeight: '900',
-    letterSpacing: 1,
+    fontSize: 15 * scale,
+    fontFamily: 'PoppinsSemiBold',
+    fontWeight: '700',
+    letterSpacing: 0.5,
   },
 
   /* SUCCESS MODAL STYLES */
@@ -2133,12 +2124,12 @@ const modalStyles = StyleSheet.create({
     color: '#0F172A',
   },
   submitBtn: {
-    backgroundColor: '#FF2B5C',
+    backgroundColor: '#FE724C',
     borderRadius: 16,
     paddingVertical: 18,
     alignItems: 'center',
     marginTop: 10,
-    shadowColor: "#FF2B5C",
+    shadowColor: "#FE724C",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 10,
@@ -2146,7 +2137,7 @@ const modalStyles = StyleSheet.create({
   },
   submitBtnText: {
     color: '#FFFFFF',
-    fontSize: 16 * scale,
+    fontSize: 18 * scale,
     fontFamily: 'PoppinsBold',
     fontWeight: '900',
     letterSpacing: 1,
@@ -2229,7 +2220,7 @@ const cardStyles = StyleSheet.create({
     marginTop: 8,
     overflow: 'hidden',
     elevation: 2,
-    shadowColor: '#FF2B5C',
+    shadowColor: '#FE724C',
     shadowOpacity: 0.1,
     shadowRadius: 4,
     shadowOffset: { width: 0, height: 2 },
@@ -2239,11 +2230,12 @@ const cardStyles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 12,
     paddingVertical: 8,
+    backgroundColor: 'rgba(254, 114, 76, 0.08)',
   },
   exploreText: {
     fontSize: 12.5 * scale,
     fontFamily: 'PoppinsBold',
-    color: '#FF2B5C',
+    color: '#FE724C',
     fontWeight: '900',
     includeFontPadding: false,
     textAlignVertical: 'center',
@@ -2622,7 +2614,7 @@ const offerStyles = StyleSheet.create({
   offerSectionTitle: {
     fontSize: 13 * scale,
     fontFamily: 'PoppinsBold',
-    color: '#FF2B5C',
+    color: '#FE724C',
     marginLeft: 5,
   },
   offerCount: {
@@ -2684,25 +2676,25 @@ const offerStyles = StyleSheet.create({
     width: 36 * scale,
     height: 36 * scale,
     borderRadius: 18 * scale,
-    backgroundColor: '#FF2B5C',
+    backgroundColor: '#FE724C',
     alignItems: 'center',
     justifyContent: 'center',
     elevation: 4,
-    shadowColor: '#FF2B5C',
+    shadowColor: '#FE724C',
     shadowOpacity: 0.3,
     shadowOffset: { width: 0, height: 4 },
   },
   offerTapText: {
     fontSize: 8 * scale,
     fontFamily: 'PoppinsBold',
-    color: '#FF2B5C',
+    color: '#FE724C',
     marginTop: 4,
     fontWeight: '900',
   },
   offerBadgePill: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFF0F3',
+    backgroundColor: 'rgba(254, 114, 76, 0.1)',
     alignSelf: 'flex-start',
     paddingHorizontal: 8,
     paddingVertical: 2,
@@ -2713,7 +2705,7 @@ const offerStyles = StyleSheet.create({
   offerBadgeText: {
     fontSize: 10 * scale,
     fontFamily: 'PoppinsBold',
-    color: '#FF2B5C',
+    color: '#FE724C',
     textTransform: 'uppercase',
     letterSpacing: 0.8,
   },
