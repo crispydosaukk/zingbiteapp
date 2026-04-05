@@ -16,7 +16,6 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Picker } from "@react-native-picker/picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import api from "../config/api";
-import { fetchRestaurants } from "../services/restaurantService";
 
 export default function EditProfile({ navigation }) {
   const insets = useSafeAreaInsets();
@@ -33,22 +32,11 @@ export default function EditProfile({ navigation }) {
     preferred_restaurant: "",
   });
 
-  const [restaurants, setRestaurants] = useState([]);
   const [showDobPicker, setShowDobPicker] = useState(false);
 
   useEffect(() => {
     loadProfile();
-    loadRestaurants();
   }, []);
-
-  const loadRestaurants = async () => {
-    try {
-      const data = await fetchRestaurants();
-      setRestaurants(data || []);
-    } catch (err) {
-      console.warn("Failed to load restaurants", err);
-    }
-  };
 
   const loadProfile = async () => {
     try {
@@ -96,7 +84,7 @@ export default function EditProfile({ navigation }) {
   if (loading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color="#FF2B5C" />
+        <ActivityIndicator size="large" color="#FE724C" />
       </View>
     );
   }
@@ -105,7 +93,7 @@ export default function EditProfile({ navigation }) {
     <View style={{ flex: 1, backgroundColor: "#f6f7fb" }}>
       {/* HEADER */}
       <LinearGradient
-        colors={["#FF2B5C", "#FF6B8B"]}
+        colors={["#FE724C", "#FF9272"]}
         style={[styles.header, { paddingTop: insets.top + 16 }]}
       >
         <TouchableOpacity onPress={() => navigation.goBack()}>
@@ -190,23 +178,6 @@ export default function EditProfile({ navigation }) {
           />
         )}
 
-        {/* PREFERRED RESTAURANT */}
-        <View style={styles.inputCard}>
-          <Text style={styles.label}>Preferred Restaurant</Text>
-          <View style={styles.inputRow}>
-            <Ionicons name="restaurant-outline" size={18} color="#777" />
-            <Picker
-              selectedValue={form.preferred_restaurant}
-              onValueChange={(v) => setForm({ ...form, preferred_restaurant: v })}
-              style={styles.picker}
-            >
-              <Picker.Item label="Select Restaurant" value="" />
-              {restaurants.map((r) => (
-                <Picker.Item key={r.id || r.name} label={r.name} value={r.name} />
-              ))}
-            </Picker>
-          </View>
-        </View>
 
         {/* SAVE BUTTON */}
         <TouchableOpacity
@@ -266,63 +237,82 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#fff",
   },
 
   header: {
     paddingHorizontal: 16,
-    paddingBottom: 20,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
+    paddingBottom: 25,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+    elevation: 8,
+    shadowColor: "#FE724C",
+    shadowOpacity: 0.2,
+    shadowRadius: 15,
   },
   headerTitle: {
     marginTop: 12,
-    fontSize: 20,
-    fontWeight: "800",
+    fontSize: 22,
+    fontFamily: "PoppinsBold",
+    fontWeight: "900",
     color: "#fff",
   },
 
   inputCard: {
-    marginBottom: 14,
+    marginBottom: 16,
   },
   label: {
     fontSize: 12,
-    color: "#777",
-    marginBottom: 6,
+    fontFamily: "PoppinsBold",
+    color: "#64748B",
+    marginBottom: 8,
+    marginLeft: 4,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   inputRow: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#fff",
-    borderRadius: 14,
-    paddingHorizontal: 14,
-    height: 48,
-    elevation: 3,
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    height: 54,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    borderWidth: 1,
+    borderColor: "#F1F5F9",
   },
   input: {
     flex: 1,
-    marginLeft: 10,
-    fontSize: 14,
-    color: "#000",
-    paddingVertical: 10, // Ensure text is centered in TouchableOpacity
+    marginLeft: 12,
+    fontSize: 15,
+    fontFamily: "PoppinsMedium",
+    color: "#1E293B",
   },
   picker: {
     flex: 1,
     marginLeft: 4,
-    color: "#000",
+    color: "#1E293B",
   },
 
   saveBtn: {
-    backgroundColor: "#FF2B5C",
-    height: 52,
-    borderRadius: 16,
+    backgroundColor: "#FE724C",
+    height: 56,
+    borderRadius: 18,
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 20,
-    elevation: 4,
+    marginTop: 25,
+    elevation: 6,
+    shadowColor: "#FE724C",
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
   },
   saveText: {
     color: "#fff",
     fontSize: 16,
     fontFamily: "PoppinsBold",
+    fontWeight: '900',
   },
 });

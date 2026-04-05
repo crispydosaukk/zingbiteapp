@@ -85,8 +85,8 @@ function RestaurantCard({ name, address, photo, onPress, instore, kerbside, dist
           <View style={cardStyles.foodBadgeRow}>
             {isVeg && (
               <View style={cardStyles.vegBadgeCompact}>
-                <Ionicons name="leaf" size={12 * scale} color="#FF2B5C" />
-                <Text style={[cardStyles.dietText, { color: '#FF2B5C' }]}>Pure veg</Text>
+                <Ionicons name="leaf" size={12 * scale} color="#FE724C" />
+                <Text style={[cardStyles.dietText, { color: '#FE724C' }]}>Pure veg</Text>
               </View>
             )}
             {isNonVeg && (
@@ -560,7 +560,7 @@ export default function Resturent({ navigation }) {
   return (
     <View style={styles.root}>
       <StatusBar
-        backgroundColor={offers[activeIndex]?.colors?.[0] || "#E23744"}
+        backgroundColor={offers[activeIndex]?.colors?.[0] || "#FE724C"}
         barStyle={offers[activeIndex]?.textColor === "#FFFFFF" ? "light-content" : "dark-content"}
       />
 
@@ -586,7 +586,7 @@ export default function Resturent({ navigation }) {
             <Ionicons
               name="search"
               size={20 * scale}
-              color="#FF2B5C"
+              color="#FE724C"
             />
             <TextInput
               placeholder="Search restaurants, cuisines..."
@@ -624,7 +624,7 @@ export default function Resturent({ navigation }) {
                       <Text style={[styles.offerBadge, { backgroundColor: offer.badgeColor, color: offer.textColor, fontWeight: '900', opacity: 1 }]}>
                         {offer.title}
                       </Text>
-                      <Text 
+                      <Text
                         style={[styles.offerMainTitle, { color: offer.textColor, fontWeight: '900' }]}
                         numberOfLines={1}
                         adjustsFontSizeToFit={true}
@@ -635,13 +635,13 @@ export default function Resturent({ navigation }) {
                         {offer.desc}
                       </Text>
                     </View>
-                    <View style={[styles.offerIconCircle, { borderColor: offer.textColor, backgroundColor: 'rgba(255,255,255,0.1)' }]}>
-                      <Ionicons name={offer.icon} size={40 * scale} color={offer.textColor} />
+                    <View style={[styles.offerIconCircle, { borderColor: offer.textColor, backgroundColor: 'rgba(255,255,255,0.15)' }]}>
+                      <Ionicons name={offer.icon} size={42 * scale} color={offer.textColor} />
                     </View>
                   </View>
                   {/* Decorative Elements */}
-                  <View style={[styles.decorCircle1, { backgroundColor: 'rgba(255,255,255,0.1)' }]} />
-                  <View style={[styles.decorCircle2, { backgroundColor: 'rgba(255,255,255,0.05)' }]} />
+                  <View style={[styles.decorCircle1, { backgroundColor: 'rgba(255,255,255,0.15)' }]} />
+                  <View style={[styles.decorCircle2, { backgroundColor: 'rgba(255,255,255,0.1)' }]} />
                 </View>
               </View>
             ))}
@@ -727,7 +727,7 @@ export default function Resturent({ navigation }) {
         user={user}
         navigation={navigation}
       />
-      <BottomBar navigation={navigation} />
+      <BottomBar navigation={navigation} activeTab="Home" />
 
       {/* LOCATION SEARCH MODAL */}
       <Modal visible={searchLocationModal} animationType="slide" transparent={false}>
@@ -737,7 +737,7 @@ export default function Resturent({ navigation }) {
               <Ionicons name="arrow-back" size={24 * scale} color="#1c1c1c" />
             </TouchableOpacity>
             <View style={styles.searchLocInputBox}>
-              <Ionicons name="search" size={20 * scale} color="#FF2B5C" />
+              <Ionicons name="search" size={20 * scale} color="#FE724C" />
               <TextInput
                 placeholder="Search for area, street name..."
                 placeholderTextColor="#999"
@@ -765,9 +765,9 @@ export default function Resturent({ navigation }) {
                 loadAllData(true);
               }}
             >
-              <Ionicons name="locate" size={20 * scale} color="#FF2B5C" />
+              <Ionicons name="locate" size={20 * scale} color="#FE724C" />
               <View style={{ marginLeft: 12 }}>
-                <Text style={styles.useCurrentLocText}>Use current location</Text>
+                <Text style={[styles.useCurrentLocText, { color: '#FE724C' }]}>Use current location</Text>
                 <Text style={{ fontSize: 11 * scale, color: '#999', fontFamily: 'PoppinsMedium' }}>Reset to automatic GPS detection</Text>
               </View>
             </TouchableOpacity>
@@ -812,14 +812,14 @@ export default function Resturent({ navigation }) {
                         : "information-circle"
                   }
                   size={40}
-                  color={alertType === 'error' ? "#EF4444" : "#FF2B5C"}
+                  color={alertType === 'error' ? "#EF4444" : "#FE724C"}
                 />
               </View>
               <Text style={styles.alertTitleText}>{alertTitle}</Text>
               <Text style={styles.alertMsgText}>{alertMsg}</Text>
               <TouchableOpacity style={styles.alertBtn} onPress={hidePremiumAlert}>
                 <LinearGradient
-                  colors={["#FF2B5C", "#FF6B8B"]}
+                  colors={["#FE724C", "#FF9272"]}
                   style={styles.alertBtnGrad}
                 >
                   <Text style={styles.alertBtnText}>Ok</Text>
@@ -1271,7 +1271,7 @@ const styles = StyleSheet.create({
     marginLeft: 12,
     fontSize: 15 * scale,
     fontFamily: 'PoppinsSemiBold',
-    color: '#FF2B5C',
+    color: '#FE724C',
   },
   suggestionList: {
     paddingHorizontal: 16,
@@ -1305,9 +1305,12 @@ const cardStyles = StyleSheet.create({
     marginVertical: 12,
     borderRadius: 16,
     backgroundColor: "#ffffff",
-    borderWidth: 1.5,
-    borderColor: "#F1F5F9",
-    overflow: 'hidden',
+    overflow: 'visible', // Changed to visible for shadow
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.12,
+    shadowRadius: 15,
+    elevation: 8,
   },
   cardBody: {
     flexDirection: "row",
@@ -1317,9 +1320,9 @@ const cardStyles = StyleSheet.create({
     position: 'relative',
   },
   image: {
-    width: 110 * scale,
-    height: 110 * scale,
-    borderRadius: 8,
+    width: 120 * scale,
+    height: 120 * scale,
+    borderRadius: 18,
   },
   premiumBadge: {
     position: 'absolute',
@@ -1349,9 +1352,10 @@ const cardStyles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   name: {
-    fontSize: 15 * scale,
+    fontSize: 18 * scale,
     color: "#1C1C1C",
-    fontFamily: "PoppinsSemiBold",
+    fontFamily: "PoppinsBold",
+    fontWeight: '900',
     flex: 1,
     marginRight: 10,
   },
@@ -1392,7 +1396,7 @@ const cardStyles = StyleSheet.create({
   serviceChipText: {
     marginLeft: 6,
     fontSize: 14 * scale,
-    color: "#FF2B5C",
+    color: "#FE724C",
     fontFamily: "PoppinsBold",
     letterSpacing: 0.3,
   },
@@ -1415,26 +1419,17 @@ const cardStyles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginLeft: 8,
-    backgroundColor: '#F1F5F9', // Gray background card
+    backgroundColor: '#F1F5F9',
     paddingHorizontal: 8,
     paddingVertical: 5,
     borderRadius: 8,
   },
   serviceText: {
     fontSize: 12 * scale,
-    fontFamily: 'PoppinsSemiBold', // Semibold requested
+    fontFamily: 'PoppinsSemiBold',
     marginLeft: 5,
-    color: '#334155', // Dark gray text to match the pill style
+    color: '#334155',
     marginTop: 1,
-  },
-  card: {
-    marginHorizontal: 16,
-    marginVertical: 10,
-    borderRadius: 20,
-    backgroundColor: "#ffffff",
-    borderWidth: 1.5,
-    borderColor: "#F1F5F9",
-    overflow: 'hidden',
   },
   distanceBadge: {
     flexDirection: 'row',

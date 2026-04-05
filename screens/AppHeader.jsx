@@ -152,11 +152,11 @@ export default function AppHeader({ user, onMenuPress, navigation, cartItems, tr
                   activeOpacity={0.7} 
                   onPress={onLocationPress}
                 >
-                  <Ionicons name={locationLoading ? "sync" : "location-sharp"} size={12 * scale} color={textColor || "#FF2B5C"} />
+                  <Ionicons name={locationLoading ? "sync" : "location-sharp"} size={12 * scale} color={textColor || "#FE724C"} />
                   <Text style={[styles.locationText, textColor && { color: textColor }]} numberOfLines={1}>
                     {currentLocationName}
                   </Text>
-                  <Ionicons name="chevron-down" size={12 * scale} color={textColor || "#666"} />
+                  <Ionicons name="chevron-down" size={12 * scale} color={textColor || "#FE724C"} />
                 </TouchableOpacity>
               )}
             </View>
@@ -213,7 +213,7 @@ export default function AppHeader({ user, onMenuPress, navigation, cartItems, tr
 
             {/* Menu Icon */}
             <TouchableOpacity style={[styles.iconButton, { marginRight: 0 }]} onPress={onMenuPress}>
-              <Ionicons name="menu-outline" size={30 * scale} color={textColor || "#1C1C1C"} />
+              <Ionicons name="menu-outline" size={32 * scale} color={textColor || "#FE724C"} />
             </TouchableOpacity>
           </View>
         </View>
@@ -274,8 +274,8 @@ const styles = StyleSheet.create({
   avatarCircle: {
     width: 36 * scale,
     height: 36 * scale,
-    borderRadius: 18 * scale,
-    backgroundColor: "#FF2B5C", // Pink Identity
+    borderRadius: 12 * scale, // Rounded corner for modern look
+    backgroundColor: "#FE724C", // Orange Identity
     justifyContent: "center",
     alignItems: "center",
     marginRight: 10,
@@ -367,7 +367,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: -5,
     right: -6,
-    backgroundColor: "#E23744",
+    backgroundColor: "#FE724C",
     minWidth: 18 * scale,
     height: 18 * scale,
     borderRadius: 9 * scale,

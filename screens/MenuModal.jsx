@@ -74,10 +74,10 @@ export default function MenuModal({ visible, setVisible, user, navigation }) {
   };
 
   const menuItems = [
-    { id: "home", label: "Home", icon: "grid-outline", screen: "Home", color: "#FF2B5C" },
-    { id: "faq", label: "FAQ Support", icon: "help-buoy-outline", screen: "FAQ", color: "#FF2B5C" },
-    { id: "invite", label: "Refer & Earn", icon: "gift-outline", screen: "InviteFriends", color: "#FF2B5C" },
-    { id: "personal", label: "My Profile", icon: "person-outline", screen: "Profile", color: "#FF2B5C" },
+    { id: "home", label: "Home", icon: "grid-outline", screen: "Home", color: "#FE724C" },
+    { id: "faq", label: "FAQ Support", icon: "help-buoy-outline", screen: "FAQ", color: "#FE724C" },
+    { id: "invite", label: "Refer & Earn", icon: "gift-outline", screen: "InviteFriends", color: "#FE724C" },
+    { id: "personal", label: "My Profile", icon: "person-outline", screen: "Profile", color: "#FE724C" },
   ];
 
   return (
@@ -107,12 +107,12 @@ export default function MenuModal({ visible, setVisible, user, navigation }) {
           >
             {/* IMMERSIVE BRAND HEADER */}
             <LinearGradient
-              colors={["#FF2B5C", "#FF6B8B"]}
+              colors={["#FE724C", "#FF9272"]}
               style={styles.sidebarHeader}
             >
               <View style={styles.headerTop}>
                 <View style={styles.userIconCircle}>
-                  <Ionicons name="person" size={28} color="#FF2B5C" />
+                  <Ionicons name="person" size={28} color="#FE724C" />
                 </View>
                 <TouchableOpacity onPress={() => setVisible(false)} style={styles.closeIconBtn}>
                   <Ionicons name="close" size={28} color="#FFFFFF" />
@@ -126,13 +126,13 @@ export default function MenuModal({ visible, setVisible, user, navigation }) {
                       {user?.full_name ? user.full_name.split(" ")[0] : "Guest"}
                     </Text>
                   </View>
-                  <TouchableOpacity
-                    style={styles.supportIconBtn}
-                    onPress={() => handleNavigation("HelpCenter")}
-                  >
-                    <Ionicons name="headset" size={26} color="#000000" />
-                    <Text style={styles.supportBadgeText}>SUPPORT</Text>
-                  </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.supportIconBtn}
+                      onPress={() => handleNavigation("HelpCenter")}
+                    >
+                      <Ionicons name="headset" size={26} color="#FFF" />
+                      <Text style={styles.supportBadgeText}>SUPPORT</Text>
+                    </TouchableOpacity>
                 </View>
               </View>
             </LinearGradient>
@@ -172,7 +172,7 @@ export default function MenuModal({ visible, setVisible, user, navigation }) {
                     <View style={[styles.menuIconBox, { backgroundColor: "#EF444415" }]}>
                       <Ionicons name="log-out-outline" size={22} color="#EF4444" />
                     </View>
-                    <Text style={[styles.menuLabel, { color: "#EF4444" }]}>Sign Out</Text>
+                    <Text style={[styles.menuLabel, { color: "#EF4444", fontWeight: "900" }]}>Sign Out</Text>
                     <View style={styles.chevronBox}>
                       <Ionicons name="chevron-forward" size={16} color="#FFDADA" />
                     </View>
@@ -186,8 +186,8 @@ export default function MenuModal({ visible, setVisible, user, navigation }) {
                     }}
                     activeOpacity={0.6}
                   >
-                    <View style={[styles.menuIconBox, { backgroundColor: "#FF2B5C15" }]}>
-                      <Ionicons name="log-in-outline" size={22} color="#FF2B5C" />
+                    <View style={[styles.menuIconBox, { backgroundColor: "#FE724C15" }]}>
+                      <Ionicons name="log-in-outline" size={22} color="#FE724C" />
                     </View>
                     <Text style={styles.menuLabel}>Sign In</Text>
                     <View style={styles.chevronBox}>
@@ -219,11 +219,11 @@ export default function MenuModal({ visible, setVisible, user, navigation }) {
             { transform: [{ scale: logoutScaleAnim }] }
           ]}>
             <LinearGradient
-              colors={["#FFFFFF", "#FFF5F5"]}
+              colors={["#FFFFFF", "#FFF7ED"]}
               style={styles.logoutContent}
             >
-              <View style={[styles.logoutIconCircle, { backgroundColor: 'rgba(255, 43, 92, 0.1)', borderColor: 'rgba(255, 43, 92, 0.2)' }]}>
-                <Ionicons name="log-out" size={36 * scale} color="#FF2B5C" />
+              <View style={[styles.logoutIconCircle, { backgroundColor: 'rgba(254, 114, 76, 0.1)', borderColor: 'rgba(254, 114, 76, 0.2)' }]}>
+                <Ionicons name="log-out" size={36 * scale} color="#FE724C" />
               </View>
 
               <Text style={styles.logoutTitle}>Sign Out?</Text>
@@ -244,7 +244,7 @@ export default function MenuModal({ visible, setVisible, user, navigation }) {
                   onPress={confirmLogout}
                 >
                   <LinearGradient
-                    colors={["#FF2B5C", "#FF6B8B"]}
+                    colors={["#FE724C", "#FF9272"]}
                     style={styles.confirmLogoutGrad}
                   >
                     <Text style={styles.confirmLogoutText}>Sign out</Text>
@@ -320,7 +320,7 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontFamily: 'PoppinsBold',
     fontWeight: '900',
-    color: '#000',
+    color: '#FFF',
     marginTop: 1,
     letterSpacing: 0.5,
   },
@@ -441,6 +441,7 @@ const styles = StyleSheet.create({
     fontFamily: "PoppinsBold",
     color: "#1F2937",
     marginBottom: 10,
+    fontWeight: "900",
   },
   logoutMsg: {
     fontSize: 14 * scale,
@@ -468,6 +469,7 @@ const styles = StyleSheet.create({
     fontSize: 14 * scale,
     fontFamily: "PoppinsBold",
     color: "#4B5563",
+    fontWeight: "900",
   },
   confirmLogoutBtn: {
     flex: 1,
@@ -482,5 +484,6 @@ const styles = StyleSheet.create({
     fontSize: 14 * scale,
     fontFamily: "PoppinsBold",
     color: "#FFF",
+    fontWeight: "900",
   },
 });

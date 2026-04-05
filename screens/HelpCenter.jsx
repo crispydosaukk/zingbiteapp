@@ -14,22 +14,7 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import LinearGradient from "react-native-linear-gradient";
 
 export default function HelpCenter({ navigation }) {
-    const supportPhone = "+44 20 1234 5678"; // UK dummy phone number
     const supportEmail = "support@zingbite.com";
-
-    const handleCall = () => {
-        Alert.alert(
-            "Call Support",
-            `Would you like to call ${supportPhone}?`,
-            [
-                { text: "Cancel", style: "cancel" },
-                {
-                    text: "Call",
-                    onPress: () => Linking.openURL(`tel:${supportPhone}`),
-                },
-            ]
-        );
-    };
 
     const handleEmail = () => {
         Linking.openURL(`mailto:${supportEmail}`);
@@ -42,21 +27,12 @@ export default function HelpCenter({ navigation }) {
 
     const contactMethods = [
         {
-            id: "phone",
-            icon: "call",
-            title: "Phone Support",
-            subtitle: supportPhone,
-            color: "#0b7a2a",
-            bgColor: "#e8f5e9",
-            onPress: handleCall,
-        },
-        {
             id: "email",
             icon: "mail",
             title: "Email Support",
             subtitle: supportEmail,
-            color: "#1976d2",
-            bgColor: "#e3f2fd",
+            color: "#FE724C",
+            bgColor: "#FFF7ED",
             onPress: handleEmail,
         },
         {
@@ -65,7 +41,7 @@ export default function HelpCenter({ navigation }) {
             title: "WhatsApp",
             subtitle: "Chat with us",
             color: "#25D366",
-            bgColor: "#e8f8f0",
+            bgColor: "#F0FDF4",
             onPress: handleWhatsApp,
         },
     ];
@@ -84,7 +60,7 @@ export default function HelpCenter({ navigation }) {
         {
             title: "Payments & Wallet",
             icon: "wallet",
-            color: "#0b7a2a",
+            color: "#FE724C",
             questions: [
                 "How do I add money to wallet?",
                 "What payment methods are accepted?",
@@ -94,7 +70,7 @@ export default function HelpCenter({ navigation }) {
         {
             title: "Account & Profile",
             icon: "person",
-            color: "#1976d2",
+            color: "#FE724C",
             questions: [
                 "How do I update my profile?",
                 "How do I change my password?",
@@ -105,7 +81,7 @@ export default function HelpCenter({ navigation }) {
 
     return (
         <SafeAreaView style={styles.container} edges={["top"]}>
-            <LinearGradient colors={["#FFF5F5", "#FFFFFF"]} style={styles.header}>
+            <LinearGradient colors={["#FFF7ED", "#FFFFFF"]} style={styles.header}>
                 <TouchableOpacity
                     onPress={() => navigation.goBack()}
                     style={styles.backBtn}
@@ -120,7 +96,7 @@ export default function HelpCenter({ navigation }) {
                 {/* Hero Section */}
                 <View style={styles.heroCard}>
                     <LinearGradient
-                        colors={["#FF2B5C", "#FF6B8B"]}
+                        colors={["#FE724C", "#FF9272"]}
                         style={styles.heroGradient}
                     >
                         <Ionicons name="headset" size={64} color="#ffffff" />
@@ -282,7 +258,7 @@ const styles = StyleSheet.create({
     },
     heroSubtitle: {
         fontSize: 14,
-        color: "#e8f5e9",
+        color: "#FFF7ED",
         marginTop: 8,
     },
     section: {
@@ -335,7 +311,7 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "space-between",
-        backgroundColor: "#FF2B5C",
+        backgroundColor: "#FE724C",
         borderRadius: 16,
         padding: 18,
         marginBottom: 16,
@@ -357,7 +333,7 @@ const styles = StyleSheet.create({
         padding: 16,
         marginBottom: 12,
         borderLeftWidth: 4,
-        borderLeftColor: "#0b7a2a",
+        borderLeftColor: "#FE724C",
     },
     categoryHeader: {
         flexDirection: "row",

@@ -195,36 +195,34 @@ export default function CheckoutScreen({ navigation }) {
     ]).start(() => setToastVisible(false));
   };
 
-  const animateWallet = (show) => {
-    Animated.spring(walletScale, {
+  const animateCredits = (show, type) => {
+    const scaleToAnimate = type === 'wallet' ? walletScale : loyaltyScale;
+    Animated.spring(scaleToAnimate, {
       toValue: show ? 1 : 0,
       useNativeDriver: true,
       friction: 8,
       tension: 40,
     }).start();
-    if (show) showToast("Congrats! Wallet credits applied.");
-  };
 
-  const animateLoyalty = (show) => {
-    Animated.spring(loyaltyScale, {
-      toValue: show ? 1 : 0,
-      useNativeDriver: true,
-      friction: 8,
-      tension: 40,
-    }).start();
-    if (show) showToast("Awesome! Loyalty rewards added.");
+    if (show) {
+      showPremiumAlert(
+        "Enjoy Your Savings!",
+        `Your ${type === 'wallet' ? 'wallet' : 'loyalty'} credits have been successfully applied. Enjoy the discount on your meal!`,
+        "success"
+      );
+    }
   };
 
   const handleWalletToggle = () => {
     if (useWallet) {
       setUseWallet(false);
       setWalletUsed(0);
-      animateWallet(false);
+      animateCredits(false, 'wallet');
     } else {
       const amount = Math.min(walletBalance, getCartTotal());
       setUseWallet(true);
       setWalletUsed(amount);
-      animateWallet(true);
+      animateCredits(true, 'wallet');
     }
   };
 
@@ -232,13 +230,13 @@ export default function CheckoutScreen({ navigation }) {
     if (useLoyalty) {
       setUseLoyalty(false);
       setLoyaltyUsed(0);
-      animateLoyalty(false);
+      animateCredits(false, 'loyalty');
     } else {
       const totalLoyalty = loyaltyCredits.reduce((sum, c) => sum + Number(c.credit_value), 0);
       const amount = Math.min(totalLoyalty, getCartTotal());
       setUseLoyalty(true);
       setLoyaltyUsed(amount);
-      animateLoyalty(true);
+      animateCredits(true, 'loyalty');
     }
   };
 
@@ -488,7 +486,7 @@ export default function CheckoutScreen({ navigation }) {
             <View style={styles.serviceCompositeCard}>
               <View style={styles.serviceRow}>
                 <View style={styles.serviceIconFrame}>
-                  <Ionicons name={deliveryMethod === 'Kerbside' ? "car-sport" : "walk"} size={26} color="#FF2B5C" />
+                  <Ionicons name={deliveryMethod === 'Kerbside' ? "car-sport" : "walk"} size={26} color="#FE724C" />
                 </View>
                 <View style={{ flex: 1, marginLeft: 16 }}>
                   <Text style={styles.serviceLabel}>{deliveryMethod === 'instore' ? "In-store Pickup" : "Kerbside Delivery"}</Text>
@@ -565,12 +563,12 @@ export default function CheckoutScreen({ navigation }) {
               <View style={styles.premiumCreditCard}>
                 {/* WALLET */}
                 <View style={styles.creditItem}>
-                  <View style={[styles.creditIconBox, { backgroundColor: 'rgba(255, 43, 92, 0.08)' }]}>
-                    <Ionicons name="wallet" size={22} color="#FF2B5C" />
+                  <View style={[styles.creditIconBox, { backgroundColor: 'rgba(254, 114, 76, 0.08)' }]}>
+                    <Ionicons name="wallet" size={22} color="#FE724C" />
                   </View>
                   <View style={{ flex: 1, marginLeft: 12 }}>
-                    <Text style={styles.creditLabelText}>Wallet Balance</Text>
-                    <Text style={[styles.creditValueText, useWallet && { color: '#FF2B5C' }]}>£{walletBalance.toFixed(2)}</Text>
+                    <Text style={styles.creditLabelText}>Wallet balance</Text>
+                    <Text style={[styles.creditValueText, useWallet && { color: '#FE724C' }]}>£{walletBalance.toFixed(2)}</Text>
                   </View>
                   <TouchableOpacity
                     style={[styles.premiumApplyBtn, useWallet && styles.premiumAppliedBtn, walletBalance <= 0 && { opacity: 0.4 }]}
@@ -585,12 +583,12 @@ export default function CheckoutScreen({ navigation }) {
 
                 {/* LOYALTY */}
                 <View style={styles.creditItem}>
-                  <View style={[styles.creditIconBox, { backgroundColor: 'rgba(255, 43, 92, 0.08)' }]}>
-                    <Ionicons name="star" size={22} color="#FF2B5C" />
+                  <View style={[styles.creditIconBox, { backgroundColor: 'rgba(254, 114, 76, 0.08)' }]}>
+                    <Ionicons name="star" size={22} color="#FE724C" />
                   </View>
                   <View style={{ flex: 1, marginLeft: 12 }}>
-                    <Text style={styles.creditLabelText}>Loyalty Credits</Text>
-                    <Text style={[styles.creditValueText, useLoyalty && { color: '#FF2B5C' }]}>
+                    <Text style={styles.creditLabelText}>Loyalty credits</Text>
+                    <Text style={[styles.creditValueText, useLoyalty && { color: '#FE724C' }]}>
                       £{loyaltyCredits.reduce((sum, c) => sum + Number(c.credit_value || 0), 0).toFixed(2)}
                     </Text>
                   </View>
@@ -607,7 +605,7 @@ export default function CheckoutScreen({ navigation }) {
 
             {/* BILLING BREAKDOWN */}
             <View style={styles.billingSection}>
-              <Text style={styles.sectionTitleSmall}>Invoice Summary</Text>
+              <Text style={styles.sectionTitleSmall}>Invoice summary</Text>
               <View style={styles.invoiceCard}>
                 <View style={styles.invoiceRow}>
                   <Text style={styles.invoiceLabel}>Subtotal</Text>
@@ -636,10 +634,10 @@ export default function CheckoutScreen({ navigation }) {
               </View>
             </View>
 
-            {/* SAFETY BADGE */}
-            <View style={styles.premiumSafetyBar}>
-              <Ionicons name="shield-checkmark" size={22} color="#FF2B5C" />
-              <Text style={styles.premiumSafetyText}>ZingBite’s Kitchen Safety & Hygiene Assured</Text>
+            {/* SECURE PAYMENT BADGE */}
+            <View style={[styles.premiumSafetyBar, { backgroundColor: '#F0FDF4', borderColor: '#DCFCE7' }]}>
+              <Ionicons name="lock-closed" size={18} color="#10A37F" />
+              <Text style={[styles.premiumSafetyText, { color: '#065F46', opacity: 1 }]}>Secure Payment • Encrypted SSL Checkout</Text>
             </View>
           </View>
         </ScrollView>
@@ -655,7 +653,7 @@ export default function CheckoutScreen({ navigation }) {
                 disabled={processingPayment || !stripeConfigured || isKeyLoading}
               >
                 <LinearGradient
-                  colors={!stripeConfigured || isKeyLoading ? ["#94a3b8", "#64748b"] : ["#FF2B5C", "#FF6B8B"]}
+                  colors={!stripeConfigured || isKeyLoading ? ["#94a3b8", "#64748b"] : ["#FE724C", "#FF9272"]}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
                   style={styles.btnGradient}
@@ -687,7 +685,7 @@ export default function CheckoutScreen({ navigation }) {
               <TouchableOpacity onPress={() => closeSheet(() => navigation.goBack())} style={styles.modalBackBtn}>
                 <Ionicons name="arrow-back" size={22} color="#1C1C1C" />
               </TouchableOpacity>
-              <Text style={styles.sheetTitle}>Pickup details</Text>
+              <Text style={styles.sheetTitle}>Pickup Details</Text>
             </View>
 
             <TouchableOpacity
@@ -695,17 +693,17 @@ export default function CheckoutScreen({ navigation }) {
               onPress={() => setDeliveryMethod("kerbside")}
             >
               <LinearGradient
-                colors={deliveryMethod === 'kerbside' ? ["#FFF5F5", "#FFE4E9"] : ["#F8FAFC", "#F8FAFC"]}
+                colors={deliveryMethod === 'kerbside' ? ["#FFF7ED", "#FFEDD5"] : ["#F8FAFC", "#F8FAFC"]}
                 style={[styles.optionCard, deliveryMethod === 'kerbside' && styles.optionSelected]}
               >
                 <View style={styles.optionIconContainer}>
-                  <Ionicons name="car" size={26} color={deliveryMethod === 'kerbside' ? "#FF2B5C" : "#999"} />
+                  <Ionicons name="car" size={26} color={deliveryMethod === 'kerbside' ? "#FE724C" : "#999"} />
                 </View>
                 <View style={{ flex: 1, marginLeft: 15 }}>
                   <Text style={styles.optionTitle}>Kerbside Delivery</Text>
                   <Text style={styles.optionSub}>We bring it to your car</Text>
                 </View>
-                <Ionicons name={deliveryMethod === 'kerbside' ? "radio-button-on" : "radio-button-off"} size={22} color={deliveryMethod === 'kerbside' ? "#FF2B5C" : "#DDD"} />
+                <Ionicons name={deliveryMethod === 'kerbside' ? "radio-button-on" : "radio-button-off"} size={22} color={deliveryMethod === 'kerbside' ? "#FE724C" : "#DDD"} />
               </LinearGradient>
             </TouchableOpacity>
 
@@ -714,17 +712,17 @@ export default function CheckoutScreen({ navigation }) {
               onPress={() => setDeliveryMethod("instore")}
             >
               <LinearGradient
-                colors={deliveryMethod === 'instore' ? ["#FFF5F5", "#FFE4E9"] : ["#F8FAFC", "#F8FAFC"]}
+                colors={deliveryMethod === 'instore' ? ["#FFF7ED", "#FFEDD5"] : ["#F8FAFC", "#F8FAFC"]}
                 style={[styles.optionCard, deliveryMethod === 'instore' && styles.optionSelected]}
               >
                 <View style={styles.optionIconContainer}>
-                  <Ionicons name="walk" size={26} color={deliveryMethod === 'instore' ? "#FF2B5C" : "#999"} />
+                  <Ionicons name="walk" size={26} color={deliveryMethod === 'instore' ? "#FE724C" : "#999"} />
                 </View>
                 <View style={{ flex: 1, marginLeft: 15 }}>
                   <Text style={styles.optionTitle}>In-store Pickup</Text>
                   <Text style={styles.optionSub}>You collect from our counter</Text>
                 </View>
-                <Ionicons name={deliveryMethod === 'instore' ? "radio-button-on" : "radio-button-off"} size={22} color={deliveryMethod === 'instore' ? "#FF2B5C" : "#DDD"} />
+                <Ionicons name={deliveryMethod === 'instore' ? "radio-button-on" : "radio-button-off"} size={22} color={deliveryMethod === 'instore' ? "#FE724C" : "#DDD"} />
               </LinearGradient>
             </TouchableOpacity>
 
@@ -746,7 +744,7 @@ export default function CheckoutScreen({ navigation }) {
                 });
               }}
             >
-              <LinearGradient colors={["#FF2B5C", "#FF6B8B"]} style={styles.sheetActionGrad}>
+              <LinearGradient colors={["#FE724C", "#FF9272"]} style={styles.sheetActionGrad}>
                 <Text style={styles.sheetActionText}>Continue</Text>
               </LinearGradient>
             </TouchableOpacity>
@@ -776,7 +774,7 @@ export default function CheckoutScreen({ navigation }) {
               placeholderTextColor="#999"
             />
             <TouchableOpacity style={styles.sheetActionBtn} onPress={() => closeSheet(() => setAllergyPopup(false))}>
-              <LinearGradient colors={["#FF2B5C", "#FF6B8B"]} style={styles.sheetActionGrad}>
+              <LinearGradient colors={["#FE724C", "#FF9272"]} style={styles.sheetActionGrad}>
                 <Text style={styles.sheetActionText}>Review Order Summary</Text>
               </LinearGradient>
             </TouchableOpacity>
@@ -823,18 +821,18 @@ export default function CheckoutScreen({ navigation }) {
               colors={alertType === 'error' ? ["#FFF5F5", "#FFFFFF"] : ["#F0FDF4", "#FFFFFF"]}
               style={styles.alertContent}
             >
-              <View style={[styles.alertIconRing, { backgroundColor: alertType === 'error' ? '#FEE2E2' : '#DCFCE7' }]}>
+              <View style={[styles.alertIconRing, { backgroundColor: alertType === 'error' ? '#FEE2E2' : alertType === 'success' ? '#FFF7ED' : '#DCFCE7' }]}>
                 <Ionicons
-                  name={alertType === 'error' ? "close-circle" : "information-circle"}
+                  name={alertType === 'error' ? "close-circle" : alertType === 'success' ? "sparkles" : "information-circle"}
                   size={40}
-                  color={alertType === 'error' ? "#EF4444" : "#16A34A"}
+                  color={alertType === 'error' ? "#EF4444" : alertType === 'success' ? "#FE724C" : "#16A34A"}
                 />
               </View>
               <Text style={styles.alertTitleText}>{alertTitle}</Text>
               <Text style={styles.alertMsgText}>{alertMsg}</Text>
               <TouchableOpacity style={styles.alertBtn} onPress={hidePremiumAlert}>
                 <LinearGradient
-                  colors={alertType === 'error' ? ["#FF2B5C", "#FF6B8B"] : ["#FF2B5C", "#FF6B8B"]}
+                  colors={alertType === 'error' ? ["#FE724C", "#FF9272"] : ["#FE724C", "#FF9272"]}
                   style={styles.alertBtnGrad}
                 >
                   <Text style={styles.alertBtnText}>Got it</Text>
@@ -877,7 +875,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 5,
   },
-  miniAddText: { fontSize: 13 * scale, fontFamily: 'PoppinsBold', color: '#FF2B5C', marginLeft: 4 },
+  miniAddText: { fontSize: 13 * scale, fontFamily: 'PoppinsBold', color: '#FE724C', marginLeft: 4 },
 
   /* COMPOSITE CARD */
   serviceCompositeCard: {
@@ -899,14 +897,14 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 20,
-    backgroundColor: 'rgba(255,43,92,0.08)',
+    backgroundColor: 'rgba(254,114,76,0.08)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   serviceLabel: { fontSize: 17 * scale, fontFamily: 'PoppinsBold', color: '#0F172A', fontWeight: '900' },
   serviceSub: { fontSize: 13 * scale, fontFamily: 'PoppinsMedium', color: '#64748B', marginTop: 2 },
   changeBtn: { paddingVertical: 6, paddingHorizontal: 12, backgroundColor: '#F8FAFC', borderRadius: 8, borderWidth: 1, borderColor: '#E2E8F0' },
-  changeBtnText: { fontSize: 12 * scale, fontFamily: 'PoppinsBold', color: '#FF2B5C' },
+  changeBtnText: { fontSize: 12 * scale, fontFamily: 'PoppinsBold', color: '#FE724C' },
 
   kerbsideInfoDetail: {
     flexDirection: 'row',
@@ -995,7 +993,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(255,43,92,0.1)',
+    backgroundColor: 'rgba(254,114,76,0.1)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -1028,22 +1026,22 @@ const styles = StyleSheet.create({
   },
   creditItem: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10 },
   creditIconBox: { width: 44, height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-  creditLabelText: { fontSize: 13 * scale, fontFamily: 'PoppinsBold', fontWeight: '900', color: '#1E293B', letterSpacing: 0.5, textTransform: 'uppercase' },
+  creditLabelText: { fontSize: 14 * scale, fontFamily: 'PoppinsBold', fontWeight: '800', color: '#1E293B' },
   creditValueText: { fontSize: 19 * scale, fontFamily: 'PoppinsBold', color: '#0F172A', fontWeight: '900', marginTop: 1 },
-  premiumApplyBtn: { paddingVertical: 8, paddingHorizontal: 18, borderRadius: 30, borderWidth: 1.5, borderColor: '#FF2B5C', backgroundColor: '#FFF' },
-  premiumAppliedBtn: { backgroundColor: '#FF2B5C' },
-  premiumApplyBtnText: { fontSize: 13 * scale, fontFamily: 'PoppinsBold', color: '#FF2B5C' },
+  premiumApplyBtn: { paddingVertical: 8, paddingHorizontal: 18, borderRadius: 30, borderWidth: 1.5, borderColor: '#FE724C', backgroundColor: '#FFF' },
+  premiumAppliedBtn: { backgroundColor: '#FE724C' },
+  premiumApplyBtnText: { fontSize: 13 * scale, fontFamily: 'PoppinsBold', color: '#FE724C' },
   itemSeparatorLine: { height: 1, backgroundColor: '#F1F5F9', marginVertical: 10 },
 
   /* BILLING */
   billingSection: { paddingHorizontal: 16, marginBottom: 30 },
-  sectionTitleSmall: { fontSize: 14 * scale, fontFamily: 'PoppinsBold', color: '#94A3B8', textTransform: 'uppercase', marginBottom: 15, paddingLeft: 4, letterSpacing: 0.5 },
+  sectionTitleSmall: { fontSize: 14 * scale, fontFamily: 'PoppinsBold', color: '#94A3B8', marginBottom: 15, paddingLeft: 4, letterSpacing: 0.5 },
   invoiceCard: { backgroundColor: '#FFF', borderRadius: 24, padding: 24, elevation: 2, shadowColor: "#000", shadowOpacity: 0.02, shadowRadius: 10, borderWidth: 1, borderColor: '#F1F5F9' },
   invoiceRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 14 },
   invoiceLabel: { fontSize: 15 * scale, fontFamily: 'PoppinsMedium', color: '#64748B' },
   invoiceValue: { fontSize: 16 * scale, fontFamily: 'PoppinsBold', color: '#0F172A', fontWeight: '800' },
-  invoiceLabelDeduct: { fontSize: 15 * scale, fontFamily: 'PoppinsBold', color: '#FF2B5C' },
-  invoiceValueDeduct: { fontSize: 16 * scale, fontFamily: 'PoppinsBold', color: '#FF2B5C', fontWeight: '900' },
+  invoiceLabelDeduct: { fontSize: 15 * scale, fontFamily: 'PoppinsBold', color: '#FE724C' },
+  invoiceValueDeduct: { fontSize: 16 * scale, fontFamily: 'PoppinsBold', color: '#FE724C', fontWeight: '900' },
   invoiceDivider: { height: 1, backgroundColor: '#F1F5F9', marginVertical: 10 },
   grandTotalLabel: { fontSize: 18 * scale, fontFamily: 'PoppinsBold', color: '#0F172A', fontWeight: '900' },
   grandTotalValue: { fontSize: 20 * scale, fontFamily: 'PoppinsBold', color: '#0F172A', fontWeight: '900' },
@@ -1053,12 +1051,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginHorizontal: 16,
     padding: 16,
-    backgroundColor: '#FFF5F5',
+    backgroundColor: '#FFF7ED',
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#FFD1DC',
+    borderColor: '#FFEDD5',
   },
-  premiumSafetyText: { flex: 1, marginLeft: 12, fontSize: 12 * scale, fontFamily: 'PoppinsMedium', color: '#FF2B5C', opacity: 0.8 },
+  premiumSafetyText: { flex: 1, marginLeft: 12, fontSize: 12 * scale, fontFamily: 'PoppinsMedium', color: '#FE724C', opacity: 0.8 },
 
   /* STICKY FOOTER */
   stickyFooter: { position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 100 },
@@ -1098,7 +1096,7 @@ const styles = StyleSheet.create({
   modalBackBtn: { width: 40, height: 40, borderRadius: 12, backgroundColor: '#F8FAFC', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#E2E8F0' },
   sheetTitle: { fontSize: 22 * scale, fontFamily: "PoppinsBold", color: "#0F172A", marginLeft: 15, fontWeight: '900' },
   optionCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F8FAFC', borderRadius: 20, padding: 18, marginBottom: 15, borderWidth: 1.5, borderColor: '#F1F5F9' },
-  optionSelected: { borderColor: '#FF2B5C', backgroundColor: '#FFF5F5' },
+  optionSelected: { borderColor: '#FE724C', backgroundColor: '#FFF7ED' },
   optionIconContainer: { width: 48, height: 48, borderRadius: 16, backgroundColor: '#FFF', alignItems: 'center', justifyContent: 'center', elevation: 2 },
   optionTitle: { fontSize: 16 * scale, fontFamily: 'PoppinsBold', color: '#0F172A', fontWeight: '800' },
   optionSub: { fontSize: 13 * scale, fontFamily: 'PoppinsMedium', color: '#64748B', marginTop: 2 },
@@ -1124,7 +1122,7 @@ const styles = StyleSheet.create({
   fullSuccessTitle: { fontSize: 32 * scale, fontFamily: 'PoppinsBold', color: '#FFF', fontWeight: '900', marginTop: 30 },
   fullSuccessSub: { fontSize: 16 * scale, fontFamily: 'PoppinsMedium', color: 'rgba(255,255,255,0.8)', textAlign: 'center', marginTop: 10 },
   rewardCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.15)', padding: 20, borderRadius: 24, marginTop: 40, borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
-  rewardTitle: { fontSize: 18 * scale, fontFamily: 'PoppinsBold', color: '#FFF' },
+  rewardTitle: { fontSize: 18 * scale, fontFamily: 'PoppinsSemiBold', color: '#FFF' },
   rewardSub: { fontSize: 13 * scale, fontFamily: 'PoppinsMedium', color: 'rgba(255,255,255,0.7)', marginTop: 2 },
   confettiContainer: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
   confetti: { position: 'absolute', width: 10, height: 10, borderRadius: 5, backgroundColor: '#FFD700', opacity: 0.8 },

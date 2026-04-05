@@ -283,9 +283,9 @@ export default function CreditsScreen({ navigation }) {
 
           <View style={styles.column}>
             {/* LOYALTY CARD */}
-            <View style={[styles.card, { borderLeftWidth: 4, borderLeftColor: "#FF2B5C" }]}>
+            <View style={[styles.card, { borderLeftWidth: 4, borderLeftColor: "#FE724C" }]}>
               <View style={styles.cardHeader}>
-                <Ionicons name="gift-outline" size={22} color="#FF2B5C" />
+                <Ionicons name="gift-outline" size={22} color="#FE724C" />
                 <Text style={styles.cardLabel}>Loyalty Credits</Text>
               </View>
 
@@ -408,9 +408,9 @@ export default function CreditsScreen({ navigation }) {
             </View>
 
             {/* WALLET CARD */}
-            <View style={[styles.card, { marginTop: 16, borderLeftWidth: 4, borderLeftColor: "#FF2B5C" }]}>
+            <View style={[styles.card, { marginTop: 16, borderLeftWidth: 4, borderLeftColor: "#FE724C" }]}>
               <View style={styles.cardHeader}>
-                <Ionicons name="wallet-outline" size={22} color="#FF2B5C" />
+                <Ionicons name="wallet-outline" size={22} color="#FE724C" />
                 <View style={{ flex: 1, marginLeft: 10 }}>
                   <Text style={styles.cardLabel}>Referral and Signup Amount</Text>
                   <Text style={styles.cardSubLabel}>(Friend Invites & Joining)</Text>
@@ -426,9 +426,9 @@ export default function CreditsScreen({ navigation }) {
           </View>
 
           {/* CONSOLIDATED REFERRAL CARD */}
-          <View style={[styles.card, { borderLeftWidth: 4, borderLeftColor: "#FF2B5C" }]}>
+          <View style={[styles.card, { borderLeftWidth: 4, borderLeftColor: "#FE724C" }]}>
             <View style={styles.cardHeader}>
-              <Ionicons name="people-outline" size={24} color="#FF2B5C" />
+              <Ionicons name="people-outline" size={24} color="#FE724C" />
               <Text style={[styles.cardLabel, { fontSize: 14 }]}>Referrals & Rewards</Text>
             </View>
 
@@ -438,7 +438,7 @@ export default function CreditsScreen({ navigation }) {
                 <Text style={styles.statLabel}>Friends Referred</Text>
               </View>
               <View style={[styles.statBox, { borderLeftWidth: 1, borderLeftColor: "#f3f4f6" }]}>
-                <Text style={[styles.statValue, { color: "#FF2B5C" }]}>£{Number(referralCredits).toFixed(2)}</Text>
+                <Text style={[styles.statValue, { color: "#FE724C" }]}>£{Number(referralCredits).toFixed(2)}</Text>
                 <Text style={styles.statLabel}>Total Earned</Text>
               </View>
             </View>
@@ -448,7 +448,7 @@ export default function CreditsScreen({ navigation }) {
               <View style={styles.codeContainer}>
                 <Text style={styles.referCodeText}>{user?.referral_code || "—"}</Text>
                 <TouchableOpacity onPress={copyReferralCode} style={styles.inlineCopyBtn}>
-                  <Ionicons name="copy-outline" size={18} color="#FF2B5C" />
+                  <Ionicons name="copy-outline" size={18} color="#FE724C" />
                 </TouchableOpacity>
               </View>
               <Text style={styles.referHint}>
@@ -463,7 +463,7 @@ export default function CreditsScreen({ navigation }) {
                 style={styles.premiumShareBtn}
               >
                 <LinearGradient
-                  colors={["#FF2B5C", "#FF6B8B"]}
+                  colors={["#FE724C", "#FF9272"]}
                   start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
                   style={styles.premiumShareBtnGrad}
                 >
@@ -555,7 +555,7 @@ export default function CreditsScreen({ navigation }) {
         navigation={navigation}
       />
 
-      <BottomBar navigation={navigation} />
+      <BottomBar navigation={navigation} activeTab="Credits" />
     </View>
   );
 }
@@ -646,7 +646,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: 'hidden',
     elevation: 4,
-    shadowColor: "#FF2B5C",
+    shadowColor: "#FE724C",
     shadowOpacity: 0.2,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 4 },
@@ -678,6 +678,6 @@ const styles = StyleSheet.create({
   historyDesc: { fontSize: 12, color: "#6b7280", marginTop: 2 },
   historyDate: { fontSize: 11, color: "#9ca3af", marginTop: 4 },
   historyAmount: { fontSize: 14, fontWeight: "800", marginLeft: 8 },
-  positive: { color: "#FF2B5C" },
+  positive: { color: "#FE724C" },
   negative: { color: "#ef4444" },
 });

@@ -730,7 +730,7 @@ export default function Categories({ route, navigation }) {
                       {offer.banner_image ? (
                         <Image source={{ uri: offer.banner_image }} style={offerStyles.offerBannerImgSmall} resizeMode="cover" />
                       ) : (
-                        <LinearGradient colors={idx % 3 === 0 ? ['#FF2B5C', '#FF6B8B'] : idx % 3 === 1 ? ['#7C3AED', '#A855F7'] : ['#0F766E', '#14B8A6']} style={offerStyles.offerBannerImgSmall}>
+                        <LinearGradient colors={idx % 3 === 0 ? ['#FE724C', '#FF9272'] : idx % 3 === 1 ? ['#7C3AED', '#A855F7'] : ['#0F766E', '#14B8A6']} style={offerStyles.offerBannerImgSmall}>
                           <Ionicons name="gift" size={32 * scale} color="rgba(255,255,255,0.9)" />
                         </LinearGradient>
                       )}
@@ -872,14 +872,14 @@ export default function Categories({ route, navigation }) {
                 <View style={[modalStyles.inputGroup, { flex: 1, marginRight: 8 }]}>
                   <Text style={modalStyles.label}>Date</Text>
                   <TouchableOpacity style={modalStyles.pickerBtn} onPress={() => setShowDatePicker(true)}>
-                    <Ionicons name="calendar-outline" size={18} color="#FF2B5C" />
+                    <Ionicons name="calendar-outline" size={18} color="#FE724C" />
                     <Text style={modalStyles.pickerText}>{reservationForm.reservation_date.toLocaleDateString()}</Text>
                   </TouchableOpacity>
                 </View>
                 <View style={[modalStyles.inputGroup, { flex: 1 }]}>
                   <Text style={modalStyles.label}>Time</Text>
                   <TouchableOpacity style={modalStyles.pickerBtn} onPress={() => setShowTimePicker(true)}>
-                    <Ionicons name="time-outline" size={18} color="#FF2B5C" />
+                    <Ionicons name="time-outline" size={18} color="#FE724C" />
                     <Text style={modalStyles.pickerText}>{reservationForm.reservation_time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
                   </TouchableOpacity>
                 </View>
@@ -1067,7 +1067,7 @@ export default function Categories({ route, navigation }) {
           }}>
             {/* Header Gradient */}
             <LinearGradient
-              colors={["#FF2B5C", "#FF6B8B"]}
+              colors={["#FE724C", "#FF9272"]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={{ paddingVertical: 18, alignItems: 'center' }}
@@ -1083,28 +1083,21 @@ export default function Categories({ route, navigation }) {
 
             <View style={{ padding: 24 }}>
               {/* Header Row */}
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
-                <View style={{ flex: 1 }}>
-                  {instructionPopupTarget && (
-                    <Text style={{ fontSize: 20 * scale, fontFamily: 'PoppinsBold', color: '#1E293B', fontWeight: '900' }}>
-                      {instructionPopupTarget.name}
-                    </Text>
-                  )}
-                  <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4, gap: 8 }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingRight: 10 }}>
+                  <View style={{ flex: 1 }}>
                     {instructionPopupTarget && (
-                      <Text style={{ fontSize: 18 * scale, fontFamily: 'PoppinsBold', color: '#FF2B5C', fontWeight: '900' }}>
+                      <Text style={{ fontSize: 20 * scale, fontFamily: 'PoppinsBold', color: '#1E293B', fontWeight: '900' }} numberOfLines={1}>
+                        {instructionPopupTarget.name}
+                      </Text>
+                    )}
+                  </View>
+                  <View style={{ marginLeft: 15 }}>
+                    {instructionPopupTarget && (
+                      <Text style={{ fontSize: 18 * scale, fontFamily: 'PoppinsBold', color: '#1E293B', fontWeight: '900' }}>
                         £{Number(instructionPopupTarget.price || 0).toFixed(2)}
                       </Text>
                     )}
-                    {instructionPopupTarget && (instructionPopupTarget.discount_price || instructionPopupTarget.product_discount_price) &&
-                      Number(instructionPopupTarget.discount_price || instructionPopupTarget.product_discount_price) > Number(instructionPopupTarget.price) && (
-                        <Text style={{
-                          fontSize: 14 * scale,
-                          fontFamily: 'PoppinsMedium',
-                          color: '#94A3B8',
-                          textDecorationLine: 'line-through',
-                        }}>£{Number(instructionPopupTarget.discount_price || instructionPopupTarget.product_discount_price).toFixed(2)}</Text>
-                      )}
                   </View>
                 </View>
                 <TouchableOpacity
@@ -1119,7 +1112,7 @@ export default function Categories({ route, navigation }) {
               {instructionPopupTarget && (instructionPopupTarget.discount_price || instructionPopupTarget.product_discount_price) &&
                 Number(instructionPopupTarget.discount_price || instructionPopupTarget.product_discount_price) > Number(instructionPopupTarget.price) && (
                   <View style={{
-                    backgroundColor: '#FFF5F5',
+                    backgroundColor: '#FFF4F0',
                     paddingHorizontal: 12,
                     paddingVertical: 6,
                     borderRadius: 10,
@@ -1131,11 +1124,11 @@ export default function Categories({ route, navigation }) {
                     borderWidth: 1,
                     borderColor: '#FFD1DC',
                   }}>
-                    <Ionicons name="sparkles" size={14} color="#FF2B5C" style={{ marginRight: 6 }} />
+                    <Ionicons name="sparkles" size={14} color="#FE724C" style={{ marginRight: 6 }} />
                     <Text style={{
                       fontSize: 12 * scale,
                       fontFamily: 'PoppinsBold',
-                      color: '#FF2B5C',
+                      color: '#FE724C',
                       fontWeight: '900',
                     }}>
                       YOU SAVE £{(Number(instructionPopupTarget.discount_price || instructionPopupTarget.product_discount_price) - Number(instructionPopupTarget.price)).toFixed(2)}
@@ -1180,7 +1173,7 @@ export default function Categories({ route, navigation }) {
                 style={{ borderRadius: 16, overflow: 'hidden' }}
               >
                 <LinearGradient
-                  colors={["#FF2B5C", "#FF6B8B"]}
+                  colors={["#FE724C", "#FF9272"]}
                   style={{ paddingVertical: 16, alignItems: 'center' }}
                 >
                   <Text style={{ fontSize: 16 * scale, fontFamily: 'PoppinsBold', color: '#FFF', fontWeight: '900', letterSpacing: 1 }}>
@@ -1224,7 +1217,7 @@ export default function Categories({ route, navigation }) {
               borderWidth: 2,
               borderColor: '#FFD1DC',
             }}>
-              <Ionicons name="checkmark-circle" size={50 * scale} color="#FF2B5C" />
+              <Ionicons name="checkmark-circle" size={50 * scale} color="#FE724C" />
             </View>
 
             <Text style={{
@@ -1292,7 +1285,7 @@ export default function Categories({ route, navigation }) {
                   fontFamily: 'PoppinsBold',
                   color: '#475569',
                   fontWeight: '800',
-                }}>Continue Shopping</Text>
+                }}>Add More Items</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -1302,7 +1295,7 @@ export default function Categories({ route, navigation }) {
                 }}
               >
                 <LinearGradient
-                  colors={["#FF2B5C", "#FF6B8B"]}
+                  colors={["#FE724C", "#FF9272"]}
                   style={{
                     paddingVertical: 15,
                     borderRadius: 16,
@@ -1383,7 +1376,7 @@ export default function Categories({ route, navigation }) {
           }}>
             {/* Header Gradient */}
             <LinearGradient
-              colors={["#FF2B5C", "#FF6B8B"]}
+              colors={["#FE724C", "#FF9272"]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={{ paddingVertical: 20, alignItems: 'center', paddingHorizontal: 20 }}
@@ -1408,21 +1401,21 @@ export default function Categories({ route, navigation }) {
                   onPress={() => openInMaps(restaurant?.restaurant_address, restaurant?.latitude, restaurant?.longitude)}
                   activeOpacity={0.7}
                 >
-                  <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#FFF0F3', alignItems: 'center', justifyContent: 'center', marginRight: 12, marginTop: 2 }}>
-                    <Ionicons name="location" size={22} color="#FF2B5C" />
+                  <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#FFF4F0', alignItems: 'center', justifyContent: 'center', marginRight: 12, marginTop: 2 }}>
+                    <Ionicons name="location" size={22} color="#FE724C" />
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={{ fontSize: 13 * scale, fontFamily: 'PoppinsMedium', color: '#64748B', marginBottom: 2 }}>Address</Text>
                     <Text style={{ fontSize: 15 * scale, fontFamily: 'PoppinsSemiBold', color: '#1E293B' }}>{restaurant?.restaurant_address || 'Not available'}</Text>
-                    <Text style={{ fontSize: 12 * scale, fontFamily: 'PoppinsMedium', color: '#FF2B5C', marginTop: 2 }}>📍 Tap to open in Maps</Text>
+                    <Text style={{ fontSize: 12 * scale, fontFamily: 'PoppinsMedium', color: '#FE724C', marginTop: 2 }}>📍 Tap to open in Maps</Text>
                   </View>
                   <Ionicons name="chevron-forward" size={16} color="#CBD5E1" style={{ marginTop: 10 }} />
                 </TouchableOpacity>
 
                 {restaurant?.restaurant_phonenumber && (
                   <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }} onPress={() => Linking.openURL(`tel:${restaurant.restaurant_phonenumber}`)}>
-                    <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#FFF0F3', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
-                      <Ionicons name="call" size={20} color="#FF2B5C" />
+                    <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#FFF4F0', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+                      <Ionicons name="call" size={20} color="#FE724C" />
                     </View>
                     <View style={{ flex: 1 }}>
                       <Text style={{ fontSize: 13 * scale, fontFamily: 'PoppinsMedium', color: '#64748B', marginBottom: 2 }}>Phone</Text>
@@ -1434,8 +1427,8 @@ export default function Categories({ route, navigation }) {
 
                 {restaurant?.restaurant_email && (
                   <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }} onPress={() => Linking.openURL(`mailto:${restaurant.restaurant_email}`)}>
-                    <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#FFF0F3', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
-                      <Ionicons name="mail" size={20} color="#FF2B5C" />
+                    <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#FFF4F0', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+                      <Ionicons name="mail" size={20} color="#FE724C" />
                     </View>
                     <View style={{ flex: 1 }}>
                       <Text style={{ fontSize: 13 * scale, fontFamily: 'PoppinsMedium', color: '#64748B', marginBottom: 2 }}>Email</Text>
@@ -1447,12 +1440,12 @@ export default function Categories({ route, navigation }) {
 
                 {restaurant?.website_url && (
                   <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }} onPress={() => Linking.openURL(restaurant.website_url)}>
-                    <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#FFF0F3', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
-                      <Ionicons name="globe" size={20} color="#FF2B5C" />
+                    <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#FFF4F0', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+                      <Ionicons name="globe" size={20} color="#FE724C" />
                     </View>
                     <View style={{ flex: 1 }}>
                       <Text style={{ fontSize: 13 * scale, fontFamily: 'PoppinsMedium', color: '#64748B', marginBottom: 2 }}>Website</Text>
-                      <Text style={{ fontSize: 15 * scale, fontFamily: 'PoppinsSemiBold', color: '#FF2B5C' }}>Visit Website</Text>
+                      <Text style={{ fontSize: 15 * scale, fontFamily: 'PoppinsSemiBold', color: '#FE724C' }}>Visit Website</Text>
                     </View>
                     <Ionicons name="chevron-forward" size={16} color="#CBD5E1" />
                   </TouchableOpacity>
@@ -1481,7 +1474,7 @@ export default function Categories({ route, navigation }) {
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' }}>
                   {restaurant?.food_type != null && (
                     <View style={{ width: '48%', marginBottom: 16, backgroundColor: '#F8FAFC', padding: 12, borderRadius: 16, borderWidth: 1, borderColor: '#F1F5F9' }}>
-                      <Ionicons name="restaurant" size={20} color="#FF2B5C" style={{ marginBottom: 8 }} />
+                      <Ionicons name="restaurant" size={20} color="#FE724C" style={{ marginBottom: 8 }} />
                       <Text style={{ fontSize: 12 * scale, fontFamily: 'PoppinsMedium', color: '#64748B' }}>Food Type</Text>
                       <Text style={{ fontSize: 13 * scale, fontFamily: 'PoppinsSemiBold', color: '#1E293B', marginTop: 2 }}>{formatFoodType(restaurant?.food_type)}</Text>
                     </View>
@@ -1489,7 +1482,7 @@ export default function Categories({ route, navigation }) {
 
                   {restaurant?.cuisine_type != null && (
                     <View style={{ width: '100%', marginBottom: 16, backgroundColor: '#F8FAFC', padding: 12, borderRadius: 16, borderWidth: 1, borderColor: '#F1F5F9' }}>
-                      <Ionicons name="pizza" size={20} color="#FF2B5C" style={{ marginBottom: 8 }} />
+                      <Ionicons name="pizza" size={20} color="#FE724C" style={{ marginBottom: 8 }} />
                       <Text style={{ fontSize: 12 * scale, fontFamily: 'PoppinsMedium', color: '#64748B' }}>Cuisine</Text>
                       <Text style={{ fontSize: 13 * scale, fontFamily: 'PoppinsSemiBold', color: '#1E293B', marginTop: 4, lineHeight: 22 }}>{formatCuisineType(restaurant?.cuisine_type)}</Text>
                     </View>
@@ -1503,7 +1496,7 @@ export default function Categories({ route, navigation }) {
 
                   {(restaurant?.instore == 1) && (
                     <View style={{ width: '48%', marginBottom: 16, backgroundColor: '#F8FAFC', padding: 12, borderRadius: 16, borderWidth: 1, borderColor: '#F1F5F9' }}>
-                      <Ionicons name="storefront" size={20} color="#FF2B5C" style={{ marginBottom: 8 }} />
+                      <Ionicons name="storefront" size={20} color="#FE724C" style={{ marginBottom: 8 }} />
                       <Text style={{ fontSize: 12 * scale, fontFamily: 'PoppinsMedium', color: '#64748B' }}>In-store Dining</Text>
                       <Text style={{ fontSize: 13 * scale, fontFamily: 'PoppinsSemiBold', color: '#1E293B', marginTop: 2 }}>Available</Text>
                     </View>
@@ -1622,9 +1615,36 @@ export default function Categories({ route, navigation }) {
                     useNativeDriver: true,
                   }).start(() => setReservationSuccessVisible(false));
                 }}
-                style={[styles.successCloseBtn, { backgroundColor: '#FE724C', overflow: 'hidden' }]}
+                style={{
+                  width: '100%',
+                  borderRadius: 16,
+                  overflow: 'hidden',
+                  marginTop: 10,
+                  elevation: 6,
+                  shadowColor: "#FE724C",
+                  shadowOffset: { width: 0, height: 6 },
+                  shadowOpacity: 0.35,
+                  shadowRadius: 10,
+                }}
               >
-                <Text style={styles.successCloseText}>OK</Text>
+                <LinearGradient
+                  colors={["#FE724C", "#FF9272"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={{
+                    paddingVertical: 15,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Text style={{
+                    fontSize: 16 * scale,
+                    fontFamily: 'PoppinsBold',
+                    color: '#FFF',
+                    fontWeight: '800',
+                    letterSpacing: 1,
+                  }}>OK</Text>
+                </LinearGradient>
               </TouchableOpacity>
             </View>
           </Animated.View>
@@ -2326,7 +2346,7 @@ const cardStyles = StyleSheet.create({
   contactIconBg: {
     width: 38 * scale,
     height: 38 * scale,
-    backgroundColor: '#FFF0F3',
+    backgroundColor: '#FFF4F0',
     borderRadius: 19 * scale,
     alignItems: 'center',
     justifyContent: 'center',
@@ -2400,12 +2420,12 @@ const cardStyles = StyleSheet.create({
     width: 70 * scale,
     height: 70 * scale,
     borderRadius: 35 * scale,
-    backgroundColor: "rgba(255, 43, 92, 0.1)",
+    backgroundColor: "rgba(254, 114, 76, 0.1)",
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: "rgba(255, 43, 92, 0.2)",
+    borderColor: "rgba(254, 114, 76, 0.2)",
   },
   popupHeaderRow: {
     flexDirection: 'row',
@@ -2424,7 +2444,7 @@ const cardStyles = StyleSheet.create({
     fontSize: 18 * scale,
     fontFamily: "PoppinsBold",
     fontWeight: "900",
-    color: "#FF2B5C",
+    color: "#1C1C1C",
   },
   popupCloseBtn: {
     padding: 4,
@@ -2465,7 +2485,7 @@ const cardStyles = StyleSheet.create({
     flex: 1,
     borderRadius: 14,
     overflow: "hidden",
-    shadowColor: "#FF2B5C",
+    shadowColor: "#FE724C",
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.3,
     shadowRadius: 10,
@@ -2802,7 +2822,7 @@ const offerStyles = StyleSheet.create({
   itemPrice: {
     fontSize: 16 * scale,
     fontFamily: 'PoppinsBold',
-    color: '#FF2B5C',
+    color: '#1E293B',
     fontWeight: '900',
   },
   itemOriginalPrice: {
@@ -2816,7 +2836,7 @@ const offerStyles = StyleSheet.create({
     position: 'absolute',
     top: 6,
     left: 6,
-    backgroundColor: '#FF2B5C',
+    backgroundColor: '#FE724C',
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 8,
@@ -2863,14 +2883,14 @@ const offerStyles = StyleSheet.create({
   offerClickHintText: {
     fontSize: 10 * scale,
     fontFamily: 'PoppinsBold',
-    color: '#FF2B5C',
+    color: '#FE724C',
     fontWeight: '900',
     letterSpacing: 0.5,
   },
   addCircleBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FF2B5C',
+    backgroundColor: '#FE724C',
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 14,
@@ -2884,7 +2904,7 @@ const offerStyles = StyleSheet.create({
   },
 
   discountBadgeSmall: {
-    backgroundColor: 'rgba(255, 43, 92, 0.1)',
+    backgroundColor: 'rgba(254, 114, 76, 0.1)',
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
@@ -2894,7 +2914,7 @@ const offerStyles = StyleSheet.create({
   discountBadgeTextSmall: {
     fontSize: 9 * scale,
     fontFamily: 'PoppinsBold',
-    color: '#FF2B5C',
+    color: '#FE724C',
     fontWeight: '900',
   },
 
@@ -3031,7 +3051,7 @@ const offerStyles = StyleSheet.create({
   premiumActualPrice: {
     fontSize: 18 * scale,
     fontFamily: 'PoppinsBold',
-    color: '#FF2B5C',
+    color: '#1E293B',
     fontWeight: '900',
   },
 });

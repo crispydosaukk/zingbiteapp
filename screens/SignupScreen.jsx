@@ -242,7 +242,7 @@ export default function SignupScreen({ navigation }) {
               {settings && animatedTexts.length > 0 && (
                 <Animated.View style={[styles.premiumOfferWrap, { opacity: fadeAnim }]}>
                   <LinearGradient
-                    colors={["#E63946", "#0288D1"]}
+                    colors={["#FE724C", "#FF9272"]}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
                     style={styles.premiumOfferInner}
@@ -296,13 +296,13 @@ export default function SignupScreen({ navigation }) {
 
             {/* RESTAURANT PICKER - commented out */}
             {/* <View style={styles.pickerWrapper}>
-              <Ionicons name="restaurant-outline" size={20} color="#16a34a" style={styles.pickerIcon} />
+              <Ionicons name="restaurant-outline" size={20} color="#FE724C" style={styles.pickerIcon} />
               <View style={{ flex: 1 }}>
                 <Picker
                   selectedValue={preferredRestaurant}
                   onValueChange={setPreferredRestaurant}
                   style={styles.picker}
-                  dropdownIconColor="#16a34a"
+                  dropdownIconColor="#FE724C"
                 >
                   <Picker.Item label="Preferred Restaurant" value="" color="#94A3B8" />
                   {restaurants.map(r => (
@@ -354,14 +354,14 @@ export default function SignupScreen({ navigation }) {
             <InputItem icon="gift-outline" placeholder="Referral Code (Optional)" value={referralCode} onChangeText={setReferralCode} />
 
             <TouchableOpacity style={styles.termsRow} onPress={() => setTermsAccepted(!termsAccepted)}>
-              <Ionicons name={termsAccepted ? "checkbox" : "square-outline"} size={22} color={termsAccepted ? "#C62828" : "#CBD5E1"} />
+              <Ionicons name={termsAccepted ? "checkbox" : "square-outline"} size={22} color={termsAccepted ? "#FE724C" : "#CBD5E1"} />
               <Text style={styles.termsText}>
                 I agree to the <Text style={styles.link} onPress={() => navigation.navigate("TermsConditions")}>Terms</Text> & <Text style={styles.link} onPress={() => navigation.navigate("PrivacyPolicy")}>Privacy Policy</Text> <Text style={{ color: 'red' }}>*</Text>
               </Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.mainBtn} onPress={handleSignup}>
-              <LinearGradient colors={["#FF2B5C", "#FF6B8B"]} style={styles.mainBtnGradient}>
+              <LinearGradient colors={["#FE724C", "#FF9272"]} style={styles.mainBtnGradient}>
                 {loading ? (
                   <ActivityIndicator size="small" color="#FFFFFF" />
                 ) : (
@@ -375,7 +375,7 @@ export default function SignupScreen({ navigation }) {
 
           </View>
 
-          <TouchableOpacity style={styles.footer} onPress={() => navigation.navigate("Login")}>
+          <TouchableOpacity style={styles.footer} onPress={() => navigation.navigate("Login")} activeOpacity={0.7}>
             <Text style={styles.footerText}>Already have an account? <Text style={styles.footerLink}>Sign In</Text></Text>
           </TouchableOpacity>
 
@@ -400,7 +400,7 @@ export default function SignupScreen({ navigation }) {
               <Text style={styles.alertTitleText}>{alertTitle}</Text>
               <Text style={styles.alertMsgText}>{alertMsg}</Text>
               <TouchableOpacity style={styles.alertBtn} onPress={hidePremiumAlert}>
-                <LinearGradient colors={["#FF2B5C", "#FF6B8B"]} style={styles.alertBtnGradient}>
+                <LinearGradient colors={["#FE724C", "#FF9272"]} style={styles.alertBtnGradient}>
                   <Text style={styles.alertBtnText}>Ok</Text>
                 </LinearGradient>
               </TouchableOpacity>
@@ -415,7 +415,7 @@ export default function SignupScreen({ navigation }) {
           <Animated.View style={[styles.alertCard, { transform: [{ scale: successScale }] }]}>
             <View style={[styles.alertContent, { backgroundColor: "#FFFFFF" }]}>
               <View style={[styles.successIconRing, { backgroundColor: '#F0FDF4', borderWidth: 2, borderColor: '#DCFCE7' }]}>
-                <Ionicons name="checkmark-circle" size={80 * scale} color="#16a34a" />
+                <Ionicons name="checkmark-circle" size={80 * scale} color="#FE724C" />
               </View>
               <Text style={styles.alertTitleText}>Account Created!</Text>
               <Text style={styles.alertMsgText}>
@@ -555,12 +555,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: "#F8FAFC",
-    borderRadius: 12,
+    borderRadius: 16,
     paddingHorizontal: 15,
     height: 52,
     marginBottom: 10,
     borderWidth: 1.2,
-    borderColor: "#94A3B8"
+    borderColor: "#FE724C"
   },
   input: { flex: 1, marginLeft: 12, fontSize: 14 * scale, color: "#000000", fontFamily: "PoppinsBold", paddingVertical: 0 },
 
@@ -568,12 +568,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: "#F8FAFC",
-    borderRadius: 12,
+    borderRadius: 16,
     paddingHorizontal: 15,
     height: 52,
     marginBottom: 10,
     borderWidth: 1.2,
-    borderColor: "#94A3B8"
+    borderColor: "#FE724C",
   },
   callingCodeText: { fontSize: 14 * scale, fontFamily: "PoppinsBold", color: "#000000", marginLeft: 5 },
   phoneInput: { flex: 1, marginLeft: 10, fontSize: 14 * scale, color: "#000000", fontFamily: "PoppinsBold", paddingVertical: 0 },
@@ -607,7 +607,7 @@ const styles = StyleSheet.create({
 
   termsRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 15, marginTop: 4 },
   termsText: { flex: 1, marginLeft: 10, fontSize: 12 * scale, color: "#475569", lineHeight: 18 },
-  link: { color: "#C62828", fontFamily: "PoppinsBold" },
+  link: { color: "#FE724C", fontFamily: "PoppinsBold" },
 
   mainBtn: {
     borderRadius: 14,
@@ -628,8 +628,8 @@ const styles = StyleSheet.create({
   },
 
   footer: { marginTop: 20, alignItems: 'center' },
-  footerText: { fontSize: 14 * scale, color: "#64748B" },
-  footerLink: { color: "#C62828", fontFamily: "PoppinsBold" },
+  footerText: { fontSize: 16 * scale, color: "#475569", fontFamily: "PoppinsMedium" },
+  footerLink: { color: "#FE724C", fontFamily: "PoppinsSemiBold", textDecorationLine: 'underline' },
 
   /* ALERT STYLES */
   alertOverlay: {

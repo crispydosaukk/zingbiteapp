@@ -27,6 +27,7 @@ import { fetchProfile } from "../services/profileService";
 import { getWalletSummary } from "../services/walletService";
 import { getCart } from "../services/cartService";
 import { getOrders } from "../services/orderService";
+import { deleteAccount as apiDeleteAccount } from "../services/profileService";
 
 const { width } = Dimensions.get("window");
 const scale = width / 400;
@@ -58,6 +59,11 @@ export default function Profile({ navigation }) {
   // Premium Logout Modal State
   const [logoutModalVisible, setLogoutModalVisible] = useState(false);
   const logoutScaleAnim = useRef(new Animated.Value(0)).current;
+
+  // Premium Delete Account Modal State
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const deleteScaleAnim = useRef(new Animated.Value(0)).current;
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     const init = async () => {
@@ -226,19 +232,40 @@ export default function Profile({ navigation }) {
     }).start(() => setLogoutModalVisible(false));
   };
 
+  const showDeleteModal = () => {
+    setDeleteModalVisible(true);
+    Animated.spring(deleteScaleAnim, {
+      toValue: 1,
+      tension: 50,
+      friction: 8,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const cancelDelete = () => {
+    Animated.timing(deleteScaleAnim, {
+      toValue: 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => setDeleteModalVisible(false));
+  };
+
+  const confirmDeleteAccount = async () => {
+    try {
+      setDeleting(true);
+      await apiDeleteAccount();
+      setDeleteModalVisible(false);
+      await AsyncStorage.multiRemove(["token", "user", "profile_cache", "wallet_summary_cache"]);
+      navigation.reset({ index: 0, routes: [{ name: "Login" }] });
+    } catch (err) {
+      setDeleteModalVisible(false);
+      showPremiumAlert("Error", "We couldn't process your request right now. Please try again later.", "error");
+    } finally {
+      setDeleting(false);
+    }
+  };
 
 
-  if (!userLocal) {
-    return (
-      <View style={{ flex: 1, backgroundColor: "#FFF" }}>
-        <AppHeader user={null} navigation={navigation} cartItems={{}} onMenuPress={() => setAuthModalVisible(true)} />
-        <View style={styles.authContainer}>
-          <AuthRequiredInline onSignIn={() => navigation.replace("Login")} description={"Sign in to access your business profile and rewards."} />
-        </View>
-        <BottomBar navigation={navigation} />
-      </View>
-    );
-  }
 
   const totalWallet = wallet
     ? (Number(wallet.wallet_balance || 0) + (wallet.loyalty_expiry_list || []).reduce((sum, i) => sum + Number(i.credit_value || 0), 0)).toFixed(2)
@@ -246,109 +273,121 @@ export default function Profile({ navigation }) {
 
   return (
     <View style={styles.root}>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 20, paddingTop: insets.top }}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#16a34a" />}
-      >
-        <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
-          {/* PREMIUM HEADER CARD */}
-          <LinearGradient colors={["#FF2B5C", "#FF6B8B"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.profileHeader}>
-            <View style={styles.headerContent}>
-              <View style={styles.avatarContainer}>
-                <View style={styles.avatarInner}>
-                  <Ionicons name="person" size={40} color="#FF2B5C" />
+      {!userLocal ? (
+        <>
+          <AppHeader user={null} navigation={navigation} cartItems={{}} onMenuPress={() => setAuthModalVisible(true)} />
+          <View style={styles.authContainer}>
+            <AuthRequiredInline onSignIn={() => navigation.replace("Login")} description={"Sign in to access your business profile and rewards."} />
+          </View>
+          <BottomBar navigation={navigation} />
+        </>
+      ) : (
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 20, paddingTop: insets.top }}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#16a34a" />}
+        >
+          <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
+            {/* PREMIUM HEADER CARD */}
+            <LinearGradient colors={["#FE724C", "#FF9272"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.profileHeader}>
+              <View style={styles.headerContent}>
+                <View style={styles.avatarContainer}>
+                  <View style={styles.avatarInner}>
+                    <Ionicons name="person" size={40} color="#FE724C" />
+                  </View>
+                  <View style={styles.editBadge}>
+                    <Ionicons name="camera" size={12} color="#FFF" />
+                  </View>
                 </View>
-                <View style={styles.editBadge}>
-                  <Ionicons name="camera" size={12} color="#FFF" />
+                <View style={styles.userInfo}>
+                  <Text style={styles.userName}>{profile?.full_name || "ZingBite User"}</Text>
+                  <Text style={styles.userPhone}>{profile?.country_code} {profile?.mobile_number}</Text>
+                  <View style={styles.businessBadge}>
+                    <Ionicons name="checkmark-circle" size={14} color="#FFF" />
+                    <Text style={styles.badgeText}>Verified User Account</Text>
+                  </View>
                 </View>
               </View>
-              <View style={styles.userInfo}>
-                <Text style={styles.userName}>{profile?.full_name || "ZingBite User"}</Text>
-                <Text style={styles.userPhone}>{profile?.country_code} {profile?.mobile_number}</Text>
-                <View style={styles.businessBadge}>
-                  <Ionicons name="checkmark-circle" size={14} color="#FFF" />
-                  <Text style={styles.badgeText}>Verified Business Account</Text>
-                </View>
-              </View>
-            </View>
 
-            {/* QUICK STATS OVERLAY */}
-            <View style={styles.statsRow}>
-              <View style={styles.statBox}>
-                <Text style={styles.statVal}>£{totalWallet}</Text>
-                <Text style={styles.statLabel}>Total Balance</Text>
-              </View>
-              <View style={styles.statDivider} />
-              <View style={styles.statBox}>
-                <Text style={styles.statVal}>{wallet?.loyalty_expiry_list?.length || 0}</Text>
-                <Text style={styles.statLabel}>Points Items</Text>
-              </View>
-              <View style={styles.statDivider} />
-              <View style={styles.statBox}>
-                <Text style={styles.statVal}>{orderCount}</Text>
-                <Text style={styles.statLabel}>Orders</Text>
-              </View>
-            </View>
-          </LinearGradient>
-
-          {/* REFERRAL BUSINESS CARD */}
-          <View style={styles.section}>
-            <LinearGradient colors={["#FFF", "#F8FAFC"]} style={styles.referralCard}>
-              <View style={styles.refLeft}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 5 }}>
-                  <Ionicons name="people-circle" size={26} color="#FF2B5C" />
-                  <Text style={[styles.refTitle, { marginLeft: 8 }]}>Refer a Friend</Text>
+              {/* QUICK STATS OVERLAY */}
+              <View style={styles.statsRow}>
+                <View style={styles.statBox}>
+                  <Text style={styles.statVal}>£{totalWallet}</Text>
+                  <Text style={styles.statLabel}>Total Balance</Text>
                 </View>
-                <Text style={styles.refDesc}>(Invite friends and earn instantly)</Text>
-                <View style={styles.codeRow}>
-                  <Text style={styles.refCodeLabel}>My code:</Text>
-                  <Text style={styles.refCodeText}>{profile?.referral_code || "ALPHA"}</Text>
+                <View style={styles.statDivider} />
+                <View style={styles.statBox}>
+                  <Text style={styles.statVal}>{wallet?.loyalty_expiry_list?.length || 0}</Text>
+                  <Text style={styles.statLabel}>Points Items</Text>
                 </View>
-              </View>
-              <View style={styles.refActions}>
-                <TouchableOpacity style={[styles.iconBtn, { marginBottom: 10 }]} onPress={copyReferralCode}>
-                  <Ionicons name="copy" size={20} color="#FF2B5C" />
-                </TouchableOpacity>
-                <TouchableOpacity style={[styles.iconBtn, { backgroundColor: '#FF2B5C' }]} onPress={shareReferral}>
-                  <Ionicons name="share-social" size={20} color="#FFF" />
-                </TouchableOpacity>
+                <View style={styles.statDivider} />
+                <View style={styles.statBox}>
+                  <Text style={styles.statVal}>{orderCount}</Text>
+                  <Text style={styles.statLabel}>Orders</Text>
+                </View>
               </View>
             </LinearGradient>
-          </View>
 
-          {/* MAIN MENU SECTIONS */}
-          <View style={styles.section}>
-            <Text style={styles.sectionLabel}>Account management</Text>
-            <View style={styles.menuGroup}>
-              <MenuItem icon="receipt" label="My Orders" sub="View history & tracking" color="#FF2B5C" onPress={() => navigation.navigate("Orders")} />
-              <MenuItem icon="wallet" label="Credits & Wallet" sub="Balance & statement" color="#FF2B5C" onPress={() => navigation.navigate("Credits")} />
-              <MenuItem icon="person-circle" label="Edit Profile" sub="Update personal info" color="#FF2B5C" onPress={() => navigation.navigate("EditProfile")} />
+            {/* REFERRAL BUSINESS CARD */}
+            <View style={styles.section}>
+              <LinearGradient colors={["#FFF", "#F8FAFC"]} style={styles.referralCard}>
+                <View style={styles.refLeft}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 5 }}>
+                    <Ionicons name="people-circle" size={26} color="#FE724C" />
+                    <Text style={[styles.refTitle, { marginLeft: 8 }]}>Refer a Friend</Text>
+                  </View>
+                  <Text style={styles.refDesc}>(Invite friends and earn instantly)</Text>
+                  <View style={styles.codeRow}>
+                    <Text style={styles.refCodeLabel}>Referral code:</Text>
+                    <Text style={styles.refCodeText}>{profile?.referral_code || "ALPHA"}</Text>
+                  </View>
+                </View>
+                <View style={styles.refActions}>
+                  <TouchableOpacity style={[styles.iconBtn, { marginBottom: 10 }]} onPress={copyReferralCode}>
+                    <Ionicons name="copy" size={20} color="#FE724C" />
+                  </TouchableOpacity>
+                  <TouchableOpacity style={[styles.iconBtn, { backgroundColor: '#FE724C' }]} onPress={shareReferral}>
+                    <Ionicons name="share-social" size={20} color="#FFF" />
+                  </TouchableOpacity>
+                </View>
+              </LinearGradient>
             </View>
-          </View>
 
-          <View style={styles.section}>
-            <Text style={styles.sectionLabel}>Resources & legal</Text>
-            <View style={styles.menuGroup}>
-              <MenuItem icon="help-buoy" label="Support Center" sub="FAQs & live chat" color="#FF2B5C" onPress={() => navigation.navigate("HelpCenter")} />
-              <MenuItem icon="shield-checkmark" label="Privacy Policy" sub="How we use your data" color="#64748B" onPress={() => navigation.navigate("PrivacyPolicy")} />
-              <MenuItem icon="document-text" label="Terms of Service" sub="App usage guidelines" color="#64748B" onPress={() => navigation.navigate("TermsConditions")} />
+            {/* MAIN MENU SECTIONS */}
+            <View style={styles.section}>
+              <Text style={styles.sectionLabel}>Account management</Text>
+              <View style={styles.menuGroup}>
+                <MenuItem icon="receipt" label="My Orders" sub="View history & tracking" color="#FE724C" onPress={() => navigation.navigate("Orders")} />
+                <MenuItem icon="wallet" label="Credits & Wallet" sub="Balance & statement" color="#FE724C" onPress={() => navigation.navigate("Credits")} />
+                <MenuItem icon="person-circle" label="Edit Profile" sub="Update personal info" color="#FE724C" onPress={() => navigation.navigate("EditProfile")} />
+                <MenuItem icon="trash-outline" label="Delete Account" sub="Permanently remove your data" color="#ef4444" onPress={showDeleteModal} />
+              </View>
             </View>
-          </View>
 
-          <TouchableOpacity style={styles.logoutBtn} onPress={logout}>
-            <LinearGradient colors={["#FF2B5C", "#FF6B8B"]} style={styles.logoutInner}>
-              <Ionicons name="log-out" size={22} color="#FFFFFF" />
-              <Text style={[styles.logoutText, { color: "#FFFFFF" }]}>Sign Out Account</Text>
-            </LinearGradient>
-          </TouchableOpacity>
+            <View style={styles.section}>
+              <Text style={styles.sectionLabel}>Resources & legal</Text>
+              <View style={styles.menuGroup}>
+                <MenuItem icon="help-buoy" label="Support Center" sub="FAQs & live chat" color="#FE724C" onPress={() => navigation.navigate("HelpCenter")} />
+                <MenuItem icon="shield-checkmark" label="Privacy Policy" sub="How we use your data" color="#64748B" onPress={() => navigation.navigate("PrivacyPolicy")} />
+                <MenuItem icon="document-text" label="Terms of Service" sub="App usage guidelines" color="#64748B" onPress={() => navigation.navigate("TermsConditions")} />
+              </View>
+            </View>
 
-          <Text style={styles.versionText}>ZingBite Business v2.0.1</Text>
+            <TouchableOpacity style={styles.logoutBtn} onPress={logout}>
+              <LinearGradient colors={["#FE724C", "#FF9272"]} style={styles.logoutInner}>
+                <Ionicons name="log-out" size={22} color="#FFFFFF" />
+                <Text style={[styles.logoutText, { color: "#FFFFFF" }]}>Sign Out Account</Text>
+              </LinearGradient>
+            </TouchableOpacity>
 
-        </Animated.View>
-      </ScrollView>
+            <Text style={styles.versionText}>ZingBite Business v2.0.1</Text>
 
-      <BottomBar navigation={navigation} />
+          </Animated.View>
+        </ScrollView>
+      )}
+
+      {userLocal && <BottomBar navigation={navigation} activeTab="Profile" />}
+
       <AuthRequiredModal visible={authModalVisible} onClose={() => setAuthModalVisible(false)} onSignIn={() => { setAuthModalVisible(false); navigation.replace("Login"); }} />
 
       {/* PREMIUM ALERT MODAL */}
@@ -356,12 +395,12 @@ export default function Profile({ navigation }) {
         <View style={styles.alertOverlay}>
           <Animated.View style={[styles.alertCard, { transform: [{ scale: alertScale }] }]}>
             <LinearGradient
-              colors={alertType === 'error' ? ["#FFF5F5", "#FFFFFF"] : ["#FFF5F5", "#FFFFFF"]}
+              colors={alertType === 'error' ? ["#FFF7ED", "#FFFFFF"] : ["#FFF7ED", "#FFFFFF"]}
               style={styles.alertContent}
             >
               <View style={[
                 styles.alertIconRing,
-                { backgroundColor: alertType === 'error' ? '#FEE2E2' : '#FFD1DC' }
+                { backgroundColor: alertType === 'error' ? '#FEE2E2' : '#FFD1B3' }
               ]}>
                 <Ionicons
                   name={
@@ -370,14 +409,14 @@ export default function Profile({ navigation }) {
                         : "information-circle"
                   }
                   size={40}
-                  color={alertType === 'error' ? "#EF4444" : "#FF2B5C"}
+                  color={alertType === 'error' ? "#EF4444" : "#FE724C"}
                 />
               </View>
               <Text style={styles.alertTitleText}>{alertTitle}</Text>
               <Text style={styles.alertMsgText}>{alertMsg}</Text>
               <TouchableOpacity style={styles.alertBtn} onPress={hidePremiumAlert}>
                 <LinearGradient
-                  colors={["#FF2B5C", "#FF6B8B"]}
+                  colors={["#FE724C", "#FF9272"]}
                   style={styles.alertBtnGrad}
                 >
                   <Text style={styles.alertBtnText}>Ok</Text>
@@ -392,9 +431,9 @@ export default function Profile({ navigation }) {
       <Modal visible={logoutModalVisible} transparent animationType="fade">
         <View style={styles.alertOverlay}>
           <Animated.View style={[styles.alertCard, { transform: [{ scale: logoutScaleAnim }] }]}>
-            <LinearGradient colors={["#FFFFFF", "#FFF5F5"]} style={styles.alertContent}>
-              <View style={[styles.alertIconRing, { backgroundColor: 'rgba(255, 43, 92, 0.1)' }]}>
-                <Ionicons name="log-out" size={40} color="#FF2B5C" />
+            <LinearGradient colors={["#FFFFFF", "#FFF7ED"]} style={styles.alertContent}>
+              <View style={[styles.alertIconRing, { backgroundColor: 'rgba(254, 114, 76, 0.1)' }]}>
+                <Ionicons name="log-out" size={40} color="#FE724C" />
               </View>
               <Text style={styles.alertTitleText}>Sign Out?</Text>
               <Text style={styles.alertMsgText}>Are you sure you want to sign out from your account?</Text>
@@ -404,8 +443,42 @@ export default function Profile({ navigation }) {
                   <Text style={styles.cancelLogoutText}>Stay</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.confirmLogoutBtn} onPress={confirmLogout}>
-                  <LinearGradient colors={["#FF2B5C", "#FF6B8B"]} style={styles.alertBtnGrad}>
+                  <LinearGradient colors={["#FE724C", "#FF9272"]} style={styles.alertBtnGrad}>
                     <Text style={styles.alertBtnText}>Sign out</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+              </View>
+            </LinearGradient>
+          </Animated.View>
+        </View>
+      </Modal>
+
+      {/* PREMIUM DELETE ACCOUNT MODAL */}
+      <Modal visible={deleteModalVisible} transparent animationType="fade">
+        <View style={styles.alertOverlay}>
+          <Animated.View style={[styles.alertCard, { transform: [{ scale: deleteScaleAnim }] }]}>
+            <LinearGradient colors={["#FFFFFF", "#FEF2F2"]} style={styles.alertContent}>
+              <View style={[styles.alertIconRing, { backgroundColor: '#FEE2E2' }]}>
+                <Ionicons name="warning" size={40} color="#EF4444" />
+              </View>
+              <Text style={[styles.alertTitleText, { color: '#EF4444' }]}>Delete Account?</Text>
+              <Text style={styles.alertMsgText}>
+                Are you sure you want to delete your account? Once you delete, you <Text style={{ fontFamily: 'PoppinsBold', color: '#111' }}>cannot restore</Text> and you <Text style={{ fontFamily: 'PoppinsBold', color: '#111' }}>cannot register again</Text> with the same number.
+                {"\n\n"}
+                Contact <Text style={{ color: '#FE724C' }}>support@zingbit.co.uk</Text> in the future if needed.
+              </Text>
+
+              <View style={styles.logoutActionRow}>
+                <TouchableOpacity style={styles.cancelLogoutBtn} onPress={cancelDelete} disabled={deleting}>
+                  <Text style={styles.cancelLogoutText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.confirmLogoutBtn} onPress={confirmDeleteAccount} disabled={deleting}>
+                  <LinearGradient colors={["#EF4444", "#CC1F1F"]} style={styles.alertBtnGrad}>
+                    {deleting ? (
+                      <ActivityIndicator size="small" color="#FFF" />
+                    ) : (
+                      <Text style={styles.alertBtnText}>Delete Me</Text>
+                    )}
                   </LinearGradient>
                 </TouchableOpacity>
               </View>
@@ -436,7 +509,7 @@ const MenuItem = ({ icon, label, sub, color, onPress }) => (
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: "#F8FAFC" },
   loaderContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FFF' },
-  loaderText: { marginTop: 15, fontFamily: 'PoppinsMedium', color: '#FF2B5C' },
+  loaderText: { marginTop: 15, fontFamily: 'PoppinsMedium', color: '#FE724C' },
   authContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
 
   profileHeader: {
@@ -445,20 +518,20 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 35,
     borderBottomRightRadius: 35,
     elevation: 20,
-    shadowColor: '#FF2B5C',
+    shadowColor: '#FE724C',
     shadowOpacity: 0.3,
     shadowRadius: 20,
   },
   headerContent: { flexDirection: 'row', alignItems: 'center' },
   avatarContainer: { position: 'relative' },
   avatarInner: { width: 85, height: 85, borderRadius: 45, backgroundColor: '#FFF', alignItems: 'center', justifyContent: 'center', borderWidth: 3, borderColor: 'rgba(255,255,255,0.4)' },
-  editBadge: { position: 'absolute', bottom: 0, right: 0, backgroundColor: '#FF2B5C', padding: 6, borderRadius: 12, borderWidth: 2, borderColor: '#FFF' },
+  editBadge: { position: 'absolute', bottom: 0, right: 0, backgroundColor: '#FE724C', padding: 6, borderRadius: 12, borderWidth: 2, borderColor: '#FFF' },
 
   userInfo: { marginLeft: 20, flex: 1 },
   userName: { fontSize: 24 * scale, fontFamily: "PoppinsBold", color: "#FFF", fontWeight: '900' },
   userPhone: { fontSize: 14 * scale, fontFamily: "PoppinsMedium", color: "rgba(255,255,255,0.8)", marginTop: -2 },
   businessBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, marginTop: 8, alignSelf: 'flex-start' },
-  badgeText: { fontSize: 10 * scale, fontFamily: "PoppinsBold", color: "#FFF", marginLeft: 5, letterSpacing: 0.5 },
+  badgeText: { fontSize: 10 * scale, fontFamily: "PoppinsSemiBold", color: "#FFF", marginLeft: 5, letterSpacing: 0.5 },
 
   statsRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 35, backgroundColor: 'rgba(0,0,0,0.15)', padding: 18, borderRadius: 25 },
   statBox: { flex: 1, alignItems: 'center' },
@@ -475,10 +548,10 @@ const styles = StyleSheet.create({
   refDesc: { fontSize: 12 * scale, fontFamily: "PoppinsMedium", color: "#64748B", marginTop: 2 },
   codeRow: { flexDirection: 'row', alignItems: 'center', marginTop: 12 },
   refCodeLabel: { fontSize: 10 * scale, fontFamily: "PoppinsBold", color: "#94A3B8" },
-  refCodeText: { fontSize: 16 * scale, fontFamily: "PoppinsBold", color: "#FF2B5C", marginLeft: 8, letterSpacing: 2 },
+  refCodeText: { fontSize: 16 * scale, fontFamily: "PoppinsSemiBold", color: "#FE724C", marginLeft: 8, letterSpacing: 2, fontWeight: '700' },
 
   refActions: {},
-  iconBtn: { width: 45, height: 45, borderRadius: 15, backgroundColor: '#FFF5F5', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#FFD1DC' },
+  iconBtn: { width: 45, height: 45, borderRadius: 15, backgroundColor: '#FFF7ED', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#FFD1B3' },
 
   menuGroup: { backgroundColor: '#FFF', borderRadius: 22, padding: 10, elevation: 4, shadowColor: '#000', shadowOpacity: 0.03, borderWidth: 1, borderColor: '#F1F5F9' },
   menuItem: { flexDirection: 'row', alignItems: 'center', padding: 15 },
@@ -489,7 +562,7 @@ const styles = StyleSheet.create({
   chevron: { opacity: 0.5 },
 
   logoutBtn: { marginHorizontal: 20, marginTop: 30, borderRadius: 20, overflow: 'hidden', elevation: 2 },
-  logoutInner: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 18, borderDash: [5, 5], borderWidth: 1, borderColor: '#FFD1DC' },
+  logoutInner: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 18, borderDash: [5, 5], borderWidth: 1, borderColor: '#FFD1B3' },
   logoutText: { fontSize: 16 * scale, fontFamily: "PoppinsSemiBold", color: "#FFFFFF", marginLeft: 10 },
 
   versionText: { textAlign: 'center', marginTop: 30, fontSize: 12 * scale, fontFamily: "PoppinsMedium", color: "#CBD5E1" },

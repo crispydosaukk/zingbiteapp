@@ -453,18 +453,15 @@ export default function Products({ route, navigation }) {
   };
 
   const performAddItem = (id) => {
-    // mark pending so it won't sync until popup confirmation
-    setCartItems((p) => ({ ...p, [id]: (p[id] || 0) + 1 }));
-    setPending((s) => ({ ...s, [id]: true }));
+    // 1. Immediately open the popup WITHOUT updating the cart state
+    // This ensures no delay and the View Cart button doesn't show prematurely
+    setPopupTargetIds([id]);
+    setPopupIndex(0);
+    setNoteInput(notes[id] || "");
+    setPopupVisible(true);
 
-    // Add scale animation trigger here
-    triggerAddAnimation();
-    triggerFlyAnimation(() => {
-      setPopupTargetIds([id]);
-      setPopupIndex(0);
-      setNoteInput(notes[id] || "");
-      setPopupVisible(true);
-    });
+    // Mark as pending which we'll use in handleNextPopup
+    setPending((s) => ({ ...s, [id]: true }));
   };
 
   const cartScale = useRef(new Animated.Value(1)).current;
@@ -492,12 +489,12 @@ export default function Products({ route, navigation }) {
     Animated.parallel([
       Animated.timing(flyAnim, {
         toValue: 0,
-        duration: 1000, // Even slower as requested
+        duration: 400, // Faster now as requested
         useNativeDriver: true,
       }),
       Animated.timing(flyY, {
-        toValue: 400,
-        duration: 1000,
+        toValue: -400, // Fly upwards towards cart icon
+        duration: 400,
         useNativeDriver: true,
       })
     ]).start(() => {
@@ -542,8 +539,16 @@ export default function Products({ route, navigation }) {
       setPopupIndex(next);
       setNoteInput(notes[ids[next]] || "");
     } else {
+      // 1. IF we are in the single-item ADD flow (popupTargetIds), NOW we officially add it to cart
+      const currentPid = popupIds[0];
+      if (popupTargetIds && pending[currentPid]) {
+        setCartItems((p) => ({ ...p, [currentPid]: (p[currentPid] || 0) + 1 }));
+        triggerAddAnimation();
+        triggerFlyAnimation();
+        // The server sync (addToCart) will happen below...
+      }
+
       setPopupVisible(false);
-      // clear target ids if we were in single-item flow
       setPopupTargetIds(null);
 
       // Calculate Savings for success modal
@@ -634,21 +639,32 @@ export default function Products({ route, navigation }) {
               </View>
             )}
 
-            <View style={{ marginTop: 12 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                <Text style={styles.price}>£{item.price}</Text>
-                {(item.discount_price && Number(item.discount_price) > Number(item.price)) && (
-                  <Text style={styles.originalPrice}>£{item.discount_price}</Text>
-                )}
-              </View>
-              {(item.discount_price && Number(item.discount_price) > Number(item.price)) && (
-                <View style={[styles.discountBadgeSmall, { marginTop: 4 }]}>
-                  <Text style={styles.discountBadgeTextSmall}>
-                    SAVE {Math.round(((Number(item.discount_price) - Number(item.price)) / Number(item.discount_price)) * 100)}%
-                  </Text>
+                <View style={{ marginTop: 12 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <Text style={[styles.price, { color: '#1C1C1C', fontSize: 18 * scale }]}>£{item.price}</Text>
+                    {item.discount_price && Number(item.discount_price) > Number(item.price) && (
+                      <Text style={[styles.originalPrice, { fontSize: 13 * scale }]}>£{item.discount_price}</Text>
+                    )}
+                    {item.discount_price && Number(item.discount_price) > Number(item.price) && (
+                      <View style={styles.discountBadgeSmall}>
+                        <Text style={styles.discountBadgeTextSmall}>
+                          {Math.round(((Number(item.discount_price) - Number(item.price)) / Number(item.discount_price)) * 100)}% OFF
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                  {item.discount_price && Number(item.discount_price) > Number(item.price) && (
+                    <Text style={{ 
+                      fontSize: 11 * scale, 
+                      color: '#FE724C', 
+                      fontFamily: 'PoppinsBold', 
+                      marginTop: 2,
+                      fontWeight: '900'
+                    }}>
+                      Save £{(Number(item.discount_price) - Number(item.price)).toFixed(2)} on this item
+                    </Text>
+                  )}
                 </View>
-              )}
-            </View>
           </View>
 
           {/* RIGHT: Image & Action */}
@@ -676,7 +692,7 @@ export default function Products({ route, navigation }) {
                     {updating[item.id] ? (
                       <ActivityIndicator size="small" color="#FFF" />
                     ) : (
-                      <Ionicons name="remove" size={16 * scale} color="#FFF" />
+                      <Ionicons name="remove" size={20 * scale} color="#FFF" />
                     )}
                   </TouchableOpacity>
 
@@ -690,17 +706,17 @@ export default function Products({ route, navigation }) {
                     {updating[item.id] ? (
                       <ActivityIndicator size="small" color="#FFF" />
                     ) : (
-                      <Ionicons name="add" size={16 * scale} color="#FFF" />
+                      <Ionicons name="add" size={20 * scale} color="#FFF" />
                     )}
                   </TouchableOpacity>
                 </View>
               ) : (
                 <TouchableOpacity
-                  style={styles.addBtnPremium}
+                  style={[styles.addBtnPremium, { borderColor: '#FE724C' }]}
                   onPress={() => addAndOpenPopup(item.id)}
                 >
-                  <Text style={styles.addTextPremium}>ADD</Text>
-                  <Ionicons name="add" size={12 * scale} color="#FF2B5C" style={{ position: 'absolute', right: 5, top: 3 }} />
+                  <Text style={[styles.addTextPremium, { color: '#FE724C' }]}>ADD</Text>
+                  <Ionicons name="add" size={16 * scale} color="#FE724C" style={{ position: 'absolute', right: 5, top: 2, fontWeight: '900' }} />
                 </TouchableOpacity>
               )}
             </View>
@@ -773,7 +789,7 @@ export default function Products({ route, navigation }) {
           transform: [{ translateY: flyY }, { scale: flyAnim }]
         }
       ]}>
-        <Ionicons name="fast-food" size={30} color="#FF2B5C" />
+        <Ionicons name="fast-food" size={30} color="#FE724C" />
       </Animated.View>
 
       {/* Professional Glassmorphic sticky 'Go to Cart' button */}
@@ -795,7 +811,7 @@ export default function Products({ route, navigation }) {
               onPress={() => navigation.navigate("CartSummary", { cartItems, notes, user })}
             >
               <LinearGradient
-                colors={["#FF2B5C", "#FF6B8B"]}
+                colors={["#FE724C", "#FF9272"]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 style={styles.checkoutGradient}
@@ -821,7 +837,7 @@ export default function Products({ route, navigation }) {
           <View style={styles.popupBox}>
             {/* Header Gradient */}
             <LinearGradient
-              colors={["#FF2B5C", "#FF6B8B"]}
+              colors={["#FE724C", "#FF9272"]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={{ paddingVertical: 15, alignItems: 'center' }}
@@ -836,25 +852,17 @@ export default function Products({ route, navigation }) {
             </LinearGradient>
 
             <View style={{ padding: 24, backgroundColor: '#FFF' }}>
-              {/* Header Row */}
-              <View style={styles.popupHeaderRow}>
-                <View style={{ flex: 1 }}>
-                  {currentProduct && (
-                    <Text style={styles.popupTitle}>{currentProduct.name}</Text>
-                  )}
-                  <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4, gap: 8 }}>
+              <View style={[styles.popupHeaderRow, { alignItems: 'center' }]}>
+                <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingRight: 40 }}>
+                  <View style={{ flex: 1 }}>
                     {currentProduct && (
-                      <Text style={styles.popupPrice}>£{currentProduct.price}</Text>
+                      <Text style={styles.popupTitle} numberOfLines={1}>{currentProduct.name}</Text>
                     )}
-                    {currentProduct && (currentProduct.discount_price || currentProduct.product_discount_price) &&
-                      Number(currentProduct.discount_price || currentProduct.product_discount_price) > Number(currentProduct.price) && (
-                        <Text style={{
-                          fontSize: 14 * scale,
-                          fontFamily: 'PoppinsMedium',
-                          color: '#94A3B8',
-                          textDecorationLine: 'line-through',
-                        }}>£{Number(currentProduct.discount_price || currentProduct.product_discount_price).toFixed(2)}</Text>
-                      )}
+                  </View>
+                  <View style={{ marginLeft: 15 }}>
+                    {currentProduct && (
+                      <Text style={[styles.popupPrice, { color: '#1C1C1C' }]}>£{currentProduct.price}</Text>
+                    )}
                   </View>
                 </View>
                 <TouchableOpacity
@@ -931,7 +939,7 @@ export default function Products({ route, navigation }) {
                   onPress={handleNextPopup}
                 >
                   <LinearGradient
-                    colors={["#FF2B5C", "#FF6B8B"]}
+                    colors={["#FE724C", "#FF9272"]}
                     style={styles.popupPrimaryBtn}
                   >
                     <Text style={styles.popupPrimaryText}>
@@ -960,18 +968,18 @@ export default function Products({ route, navigation }) {
             shadowOpacity: 0.4,
             shadowRadius: 20,
           }}>
-            <View style={{
-              width: 80 * scale,
-              height: 80 * scale,
-              borderRadius: 40 * scale,
-              backgroundColor: '#FFF5F5',
-              justifyContent: 'center',
-              alignItems: 'center',
-              marginBottom: 20,
-              borderWidth: 2,
-              borderColor: '#FFD1DC',
-            }}>
-              <Ionicons name="checkmark-circle" size={50 * scale} color="#FF2B5C" />
+              <View style={{
+                width: 80 * scale,
+                height: 80 * scale,
+                borderRadius: 40 * scale,
+                backgroundColor: '#FFF7ED',
+                justifyContent: 'center',
+                alignItems: 'center',
+                marginBottom: 20,
+                borderWidth: 2,
+                borderColor: '#FFEDD5',
+              }}>
+              <Ionicons name="checkmark-circle" size={50 * scale} color="#FE724C" />
             </View>
 
             <Text style={{
@@ -1007,15 +1015,15 @@ export default function Products({ route, navigation }) {
                 }}
               >
                 <Ionicons name="gift" size={20} color="#D97706" style={{ marginRight: 10 }} />
-                <View>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                   <Text style={{
-                    fontSize: 11 * scale,
+                    fontSize: 12 * scale,
                     fontFamily: 'PoppinsBold',
                     color: '#B45309',
-                    letterSpacing: 1,
-                  }}>YOU JUST SAVED</Text>
+                    letterSpacing: 0.5,
+                  }}>YOU JUST SAVED </Text>
                   <Text style={{
-                    fontSize: 18 * scale,
+                    fontSize: 16 * scale,
                     fontFamily: 'PoppinsBold',
                     color: '#92400E',
                     fontWeight: '900',
@@ -1033,15 +1041,15 @@ export default function Products({ route, navigation }) {
                   borderRadius: 16,
                   alignItems: 'center',
                   borderWidth: 2,
-                  borderColor: '#FF2B5C',
+                  borderColor: '#FE724C',
                 }}
               >
                 <Text style={{
                   fontSize: 15 * scale,
                   fontFamily: 'PoppinsBold',
-                  color: '#FF2B5C',
+                  color: '#FE724C',
                   fontWeight: '800',
-                }}>Continue Shopping</Text>
+                }}>Add More Items</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -1051,7 +1059,7 @@ export default function Products({ route, navigation }) {
                 }}
               >
                 <LinearGradient
-                  colors={["#FF2B5C", "#FF6B8B"]}
+                  colors={["#FE724C", "#FF9272"]}
                   style={{
                     paddingVertical: 15,
                     borderRadius: 16,
@@ -1104,7 +1112,7 @@ export default function Products({ route, navigation }) {
                   onPress={() => { setReplaceModalVisible(false); if (replaceAction) replaceAction(); }}
                 >
                   <LinearGradient
-                    colors={["#FF2B5C", "#FF6B8B"]}
+                    colors={["#FE724C", "#FF9272"]}
                     style={styles.popupPrimaryBtn}
                   >
                     <Text style={styles.popupPrimaryText}>Replace</Text>
@@ -1288,6 +1296,7 @@ const styles = StyleSheet.create({
   cardContent: {
     flexDirection: "row",
     padding: 16,
+    paddingBottom: 22,
     justifyContent: 'space-between',
     alignItems: 'center',
   },
@@ -1315,14 +1324,14 @@ const styles = StyleSheet.create({
   },
   actionOverlay: {
     position: 'absolute',
-    bottom: -15,
+    bottom: -12,
     width: '100%',
     alignItems: 'center',
   },
   addBtnPremium: {
     backgroundColor: '#FFFFFF',
     borderWidth: 1.5,
-    borderColor: '#FF2B5C',
+    borderColor: '#FE724C',
     paddingVertical: 8,
     paddingHorizontal: 25,
     borderRadius: 10,
@@ -1336,7 +1345,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   addTextPremium: {
-    color: "#FF2B5C",
+    color: "#FE724C",
     fontFamily: "PoppinsBold",
     fontSize: 14 * scale,
     fontWeight: "900",
@@ -1344,7 +1353,7 @@ const styles = StyleSheet.create({
   qtyRowVertical: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#FF2B5C",
+    backgroundColor: "#FE724C",
     borderRadius: 10,
     padding: 6,
     elevation: 4,
@@ -1406,7 +1415,7 @@ const styles = StyleSheet.create({
     fontSize: 18 * scale,
     fontFamily: "PoppinsBold",
     fontWeight: "900",
-    color: "#FF2B5C",
+    color: "#1C1C1C",
   },
   originalPrice: {
     fontSize: 12 * scale,
@@ -1416,17 +1425,17 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   discountBadgeSmall: {
-    backgroundColor: 'rgba(255, 43, 92, 0.1)',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-    marginTop: 2,
-    alignSelf: 'flex-start',
+    backgroundColor: 'rgba(254, 114, 76, 0.1)',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    marginTop: 0,
+    alignSelf: 'center',
   },
   discountBadgeTextSmall: {
     fontSize: 9 * scale,
     fontFamily: 'PoppinsBold',
-    color: '#FF2B5C',
+    color: '#FE724C',
     fontWeight: '900',
   },
 
@@ -1460,7 +1469,7 @@ const styles = StyleSheet.create({
   addBtn: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#FF2B5C",
+    backgroundColor: "#FE724C",
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 10,
@@ -1494,7 +1503,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 16,
-    backgroundColor: '#FF2B5C',
+    backgroundColor: '#FE724C',
   },
   checkoutText: {
     color: "#ffffff",
@@ -1632,7 +1641,7 @@ const styles = StyleSheet.create({
     fontSize: 18 * scale,
     fontFamily: "PoppinsBold",
     fontWeight: "900",
-    color: "#FF2B5C",
+    color: "#1C1C1C",
   },
   popupCloseBtn: {
     padding: 4,

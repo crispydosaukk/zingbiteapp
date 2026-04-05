@@ -191,7 +191,7 @@ export default function CartSummary({ navigation }) {
 
       {loadingCart ? (
         <View style={styles.loaderFull}>
-          <ActivityIndicator size="large" color="#FF2B5C" />
+          <ActivityIndicator size="large" color="#FE724C" />
           <Text style={styles.loaderText}>Syncing your cart...</Text>
         </View>
       ) : products.length < 1 ? (
@@ -210,7 +210,7 @@ export default function CartSummary({ navigation }) {
             style={styles.browseBtn}
             onPress={() => navigation.navigate("Resturent")}
           >
-            <LinearGradient colors={["#FF2B5C", "#FF6B8B"]} style={styles.browseGradient}>
+            <LinearGradient colors={["#FE724C", "#FF9272"]} style={styles.browseGradient}>
               <Text style={styles.browseText}>Start Ordering</Text>
             </LinearGradient>
           </TouchableOpacity>
@@ -235,7 +235,7 @@ export default function CartSummary({ navigation }) {
                 <View style={styles.etaCard}>
                   <LinearGradient colors={["#FFF", "#FAFAFA"]} style={styles.etaInner}>
                     <View style={styles.etaIconBg}>
-                      <Ionicons name="time" size={24} color="#FF2B5C" />
+                      <Ionicons name="time" size={24} color="#FE724C" />
                     </View>
                     <View style={styles.etaTextWrap}>
                       <Text style={styles.etaLabel}>Estimated Prep Time</Text>
@@ -255,13 +255,13 @@ export default function CartSummary({ navigation }) {
                 >
                   <View style={styles.addMoreContent}>
                     <View style={styles.addMoreIconWrap}>
-                      <Ionicons name="add" size={24} color="#FF2B5C" />
+                      <Ionicons name="add" size={24} color="#FE724C" />
                     </View>
                     <View style={{ flex: 1, marginLeft: 15 }}>
                       <Text style={styles.addMoreTitle}>Hungry for more?</Text>
                       <Text style={styles.addMoreSub}>Add more items to your bucket</Text>
                     </View>
-                    <Ionicons name="chevron-forward" size={20} color="#FF2B5C" />
+                    <Ionicons name="chevron-forward" size={20} color="#FE724C" />
                   </View>
                 </TouchableOpacity>
               </Animated.View>
@@ -272,21 +272,18 @@ export default function CartSummary({ navigation }) {
               const total = calcTotal(price, qty);
 
               return (
-                <View style={styles.itemRow}>
-                  <View style={styles.itemInfo}>
-                    <View style={styles.nameHeader}>
-                      <Ionicons name="radio-button-on" size={12} color="#FF2B5C" style={{ marginRight: 6, marginTop: 3 }} />
-                      <Text style={styles.itemName} numberOfLines={2}>{item.product_name}</Text>
+                <View style={[styles.itemRow, { flexDirection: 'column', alignItems: 'stretch' }]}>
+                  {/* Line 1: Name and Price */}
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'flex-start', flex: 1, paddingRight: 10 }}>
+                      <Ionicons name="radio-button-on" size={12} color="#FE724C" style={{ marginRight: 8, marginTop: 4 }} />
+                      <Text style={[styles.itemName, { flex: 1 }]} numberOfLines={2}>{item.product_name}</Text>
                     </View>
-                    {item.textfield ? (
-                      <View style={styles.noteBox}>
-                        <Text style={styles.itemNote}>“{item.textfield}”</Text>
-                      </View>
-                    ) : null}
-                    <Text style={styles.itemPriceUnit}>£{price.toFixed(2)}</Text>
+                    <Text style={[styles.itemPriceUnit, { marginTop: 0, color: '#1C1C1C' }]}>£{price.toFixed(2)}</Text>
                   </View>
 
-                  <View style={styles.actionCol}>
+                  {/* Line 2: Quantity Controls Below Name */}
+                  <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12 }}>
                     <View style={styles.qtyContainer}>
                       <TouchableOpacity
                         style={styles.actionBtnMinus}
@@ -294,9 +291,9 @@ export default function CartSummary({ navigation }) {
                         disabled={!!updating[item.product_id]}
                       >
                         {updating[item.product_id] ? (
-                          <ActivityIndicator size="small" color="#FF2B5C" />
+                          <ActivityIndicator size="small" color="#FE724C" />
                         ) : (
-                          <Ionicons name={qty === 1 ? "trash-outline" : "remove"} size={20} color="#FF2B5C" />
+                          <Ionicons name={qty === 1 ? "trash-outline" : "remove"} size={22} color="#FE724C" />
                         )}
                       </TouchableOpacity>
                       <Text style={styles.qtyText}>{qty}</Text>
@@ -305,10 +302,17 @@ export default function CartSummary({ navigation }) {
                         onPress={() => updateQty(item, 1)}
                         disabled={!!updating[item.product_id]}
                       >
-                        <Ionicons name="add" size={22} color="#FFF" />
+                        <Ionicons name="add" size={24} color="#FFF" />
                       </TouchableOpacity>
                     </View>
                   </View>
+
+                  {/* Line 3: Optional Notes */}
+                  {item.textfield ? (
+                    <View style={styles.noteBox}>
+                      <Text style={styles.itemNote}>“{item.textfield}”</Text>
+                    </View>
+                  ) : null}
                 </View>
               );
             }}
@@ -322,7 +326,7 @@ export default function CartSummary({ navigation }) {
                   </View>
                   <View style={styles.billRow}>
                     <Text style={styles.billLabel}>Preparation Fee</Text>
-                    <Text style={[styles.billValue, { color: '#FF2B5C' }]}>FREE</Text>
+                    <Text style={[styles.billValue, { color: '#FE724C' }]}>FREE</Text>
                   </View>
                   <View style={styles.billDivider} />
                   <View style={styles.billRow}>
@@ -334,7 +338,7 @@ export default function CartSummary({ navigation }) {
                 {/* Safety Badge */}
                 <View style={styles.safetyCard}>
                   <View style={styles.safetyIconBg}>
-                    <Ionicons name="shield-checkmark" size={24} color="#FF2B5C" />
+                    <Ionicons name="shield-checkmark" size={24} color="#FE724C" />
                   </View>
                   <View style={styles.safetyTextRow}>
                     <Text style={styles.safetyTitle}>Safety & Hygiene Guaranteed</Text>
@@ -359,7 +363,7 @@ export default function CartSummary({ navigation }) {
             onPress={() => navigation.navigate("CheckoutScreen")}
           >
             <LinearGradient
-              colors={["#FF2B5C", "#FF6B8B"]}
+              colors={["#FE724C", "#FF9272"]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.stickyBtn}
@@ -405,11 +409,11 @@ const styles = StyleSheet.create({
 
   headerSub: { fontSize: 12 * scale, fontFamily: 'PoppinsMedium', color: '#888' },
   addMoreBtn: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,43,92,0.08)', paddingVertical: 6, paddingHorizontal: 12, borderRadius: 8 },
-  addMoreText: { fontSize: 13 * scale, fontFamily: 'PoppinsBold', color: '#FF2B5C', marginLeft: 5 },
+  addMoreText: { fontSize: 13 * scale, fontFamily: 'PoppinsBold', color: '#FE724C', marginLeft: 5 },
 
   etaCard: { marginHorizontal: 20, marginBottom: 15, borderRadius: 12, overflow: 'hidden', elevation: 4 },
   etaInner: { flexDirection: 'row', alignItems: 'center', padding: 15 },
-  etaIconBg: { width: 45, height: 45, borderRadius: 10, backgroundColor: 'rgba(255,43,92,0.1)', alignItems: 'center', justifyContent: 'center' },
+  etaIconBg: { width: 45, height: 45, borderRadius: 10, backgroundColor: 'rgba(254,114,76,0.1)', alignItems: 'center', justifyContent: 'center' },
   etaTextWrap: { flex: 1, marginLeft: 15 },
   etaLabel: {
     fontSize: 12 * scale,
@@ -426,7 +430,7 @@ const styles = StyleSheet.create({
   },
 
   arrivalBadge: { backgroundColor: '#FFF5F5', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, borderWidth: 1, borderColor: '#FFD1DC' },
-  arrivalText: { fontSize: 10 * scale, fontFamily: 'PoppinsBold', color: '#FF2B5C' },
+  arrivalText: { fontSize: 10 * scale, fontFamily: 'PoppinsSemiBold', color: '#FE724C' },
 
   itemRow: { flexDirection: 'row', backgroundColor: '#FFF', marginHorizontal: 20, marginVertical: 6, borderRadius: 12, padding: 16, elevation: 2 },
   itemInfo: { flex: 1, paddingRight: 10 },
@@ -440,12 +444,12 @@ const styles = StyleSheet.create({
 
   noteBox: { backgroundColor: '#F9F9F9', padding: 10, borderRadius: 8, marginTop: 8, borderLeftWidth: 3, borderLeftColor: '#DDD' },
   itemNote: { fontSize: 12 * scale, fontFamily: 'PoppinsMedium', fontStyle: 'italic', color: '#666' },
-  itemPriceUnit: { fontSize: 14 * scale, fontFamily: 'PoppinsSemiBold', color: '#FF2B5C', marginTop: 8 },
+  itemPriceUnit: { fontSize: 14 * scale, fontFamily: 'PoppinsSemiBold', color: '#1C1C1C', marginTop: 8 },
 
   actionCol: { alignItems: 'flex-end', justifyContent: 'space-between' },
   qtyContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F8F8F8', borderRadius: 12, padding: 4, borderWidth: 1, borderColor: '#EEE' },
   actionBtnMinus: { width: 34, height: 34, backgroundColor: '#FFF', borderRadius: 10, alignItems: 'center', justifyContent: 'center', elevation: 1, borderWidth: 1, borderColor: '#E2E8F0' },
-  actionBtnPlus: { width: 34, height: 34, backgroundColor: '#FF2B5C', borderRadius: 10, alignItems: 'center', justifyContent: 'center', elevation: 3, shadowColor: '#FF2B5C', shadowOpacity: 0.3, shadowOffset: { width: 0, height: 4 } },
+  actionBtnPlus: { width: 34, height: 34, backgroundColor: '#FE724C', borderRadius: 10, alignItems: 'center', justifyContent: 'center', elevation: 3, shadowColor: '#FE724C', shadowOpacity: 0.3, shadowOffset: { width: 0, height: 4 } },
   qtyText: { fontSize: 16 * scale, fontFamily: 'PoppinsBold', fontWeight: '900', color: '#1C1C1C', marginHorizontal: 12, minWidth: 20, textAlign: 'center' },
   totalTextSmall: { fontSize: 15 * scale, fontFamily: 'PoppinsBold', color: '#1C1C1C', marginTop: 10 },
 
@@ -479,15 +483,15 @@ const styles = StyleSheet.create({
     fontSize: 22 * scale,      // ⬆️ premium emphasis
     fontFamily: 'PoppinsBold',
     fontWeight: '900',         // 🔥 extra bold
-    color: '#FF2B5C',
+    color: '#1C1C1C',
   },
 
 
-  safetyCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFF5F5', marginTop: 12, padding: 14, borderRadius: 12, borderWidth: 1, borderColor: '#FFD1DC' },
+  safetyCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFF4F0', marginTop: 12, padding: 14, borderRadius: 12, borderWidth: 1, borderColor: '#FFD1DC' },
   safetyIconBg: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#FFD1DC', alignItems: 'center', justifyContent: 'center' },
   safetyTextRow: { marginLeft: 12 },
-  safetyTitle: { fontSize: 13 * scale, fontFamily: 'PoppinsBold', color: '#FF2B5C' },
-  safetySub: { fontSize: 11 * scale, fontFamily: 'PoppinsMedium', color: '#FF2B5C', opacity: 0.8 },
+  safetyTitle: { fontSize: 13 * scale, fontFamily: 'PoppinsBold', color: '#FE724C' },
+  safetySub: { fontSize: 11 * scale, fontFamily: 'PoppinsMedium', color: '#FE724C', opacity: 0.8 },
 
   stickyFooter: {
     position: 'absolute',
@@ -555,7 +559,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(255,43,92,0.1)',
+    backgroundColor: 'rgba(254,114,76,0.1)',
     alignItems: 'center',
     justifyContent: 'center',
   },

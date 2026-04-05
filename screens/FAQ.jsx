@@ -41,7 +41,7 @@ export default function FAQ({ navigation }) {
 
     return (
         <SafeAreaView style={styles.container} edges={["top"]}>
-            <LinearGradient colors={["#d7f7df", "#ffffff"]} style={styles.header}>
+            <LinearGradient colors={["#FFF7ED", "#ffffff"]} style={styles.header}>
                 <TouchableOpacity
                     onPress={() => navigation.goBack()}
                     style={styles.backBtn}
@@ -57,7 +57,7 @@ export default function FAQ({ navigation }) {
                 {faqs.map((faq, index) => (
                     <View key={index} style={styles.faqItem}>
                         <View style={styles.questionRow}>
-                            <Ionicons name="help-circle" size={24} color="#0b7a2a" />
+                            <Ionicons name="help-circle" size={24} color="#FE724C" />
                             <Text style={styles.question}>{faq.question}</Text>
                         </View>
                         <Text style={styles.answer}>{faq.answer}</Text>
@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         padding: 16,
         borderLeftWidth: 4,
-        borderLeftColor: "#0b7a2a",
+        borderLeftColor: "#FE724C",
     },
     questionRow: {
         flexDirection: "row",

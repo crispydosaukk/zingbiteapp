@@ -123,12 +123,12 @@ export default function LoginScreen({ navigation }) {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#B3E5FC" }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#FFF7ED" }}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-        <LinearGradient colors={["#B3E5FC", "#F7CB45"]} style={styles.container}>
+        <LinearGradient colors={["#FFF7ED", "#FFFFFF"]} style={styles.container}>
 
           {/* LOGO */}
           <View style={styles.logoWrap}>
@@ -190,7 +190,7 @@ export default function LoginScreen({ navigation }) {
 
             {/* LOGIN BUTTON */}
             <TouchableOpacity style={styles.loginBtn} onPress={handleLogin}>
-              <LinearGradient colors={["#FF2B5C", "#FF6B8B"]} style={styles.loginGradient}>
+              <LinearGradient colors={["#FE724C", "#FF9272"]} style={styles.loginGradient}>
                 {loading ? (
                   <ActivityIndicator size="small" color="#FFFFFF" />
                 ) : (
@@ -261,7 +261,7 @@ export default function LoginScreen({ navigation }) {
               <Text style={styles.alertTitleText}>{alertTitle}</Text>
               <Text style={styles.alertMsgText}>{alertMsg}</Text>
               <TouchableOpacity style={styles.alertBtn} onPress={hidePremiumAlert}>
-                <LinearGradient colors={["#FF2B5C", "#FF6B8B"]} style={styles.alertBtnGradient}>
+                <LinearGradient colors={["#FE724C", "#FF9272"]} style={styles.alertBtnGradient}>
                   <Text style={styles.alertBtnText}>Ok</Text>
                 </LinearGradient>
               </TouchableOpacity>
@@ -337,9 +337,11 @@ const styles = StyleSheet.create({
   inputRow: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#F1F5F9",
-    borderRadius: 12,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
     paddingHorizontal: 12,
+    borderWidth: 1.2,
+    borderColor: "#FE724C",
   },
   input: {
     flex: 1,
@@ -356,7 +358,7 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   forgotBtn: { alignSelf: "flex-end", marginTop: 4 },
-  forgotText: { color: "#C62828", fontFamily: "PoppinsSemiBold" },
+  forgotText: { color: "#FE724C", fontFamily: "PoppinsSemiBold" },
 
   loginBtn: {
     marginTop: 10,
@@ -381,7 +383,7 @@ const styles = StyleSheet.create({
     fontFamily: "PoppinsSemiBold",
   },
   signup: {
-    color: "#C62828",
+    color: "#FE724C",
     fontFamily: "PoppinsBold",
     textDecorationLine: "underline",
   },

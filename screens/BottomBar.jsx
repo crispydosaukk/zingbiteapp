@@ -1,23 +1,24 @@
 import React from "react";
 import { View, TouchableOpacity, Text, StyleSheet, Dimensions } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-
 const { width } = Dimensions.get("window");
 const scale = width / 400;
 
-export default function BottomBar({ navigation }) {
-  const insets = useSafeAreaInsets();
+export default function BottomBar({ navigation, activeTab }) {
 
   return (
     <View style={styles.bottomBarContainer}>
       <TouchableOpacity
         style={styles.tabItem}
-        onPress={() => navigation.navigate("Home")}
+        onPress={() => navigation.navigate("Resturent")}
         activeOpacity={0.6}
       >
-        <Ionicons name="home-outline" size={24 * scale} color="#334155" />
-        <Text style={styles.tabLabel}>Home</Text>
+        <Ionicons 
+          name={activeTab === "Home" ? "home" : "home-outline"} 
+          size={24 * scale} 
+          color={activeTab === "Home" ? "#FE724C" : "#334155"} 
+        />
+        <Text style={[styles.tabLabel, activeTab === "Home" && { color: "#FE724C" }]}>Home</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
@@ -25,8 +26,12 @@ export default function BottomBar({ navigation }) {
         onPress={() => navigation.navigate("Orders")}
         activeOpacity={0.6}
       >
-        <Ionicons name="receipt-outline" size={24 * scale} color="#334155" />
-        <Text style={styles.tabLabel}>Orders</Text>
+        <Ionicons 
+          name={activeTab === "Orders" ? "receipt" : "receipt-outline"} 
+          size={24 * scale} 
+          color={activeTab === "Orders" ? "#FE724C" : "#334155"} 
+        />
+        <Text style={[styles.tabLabel, activeTab === "Orders" && { color: "#FE724C" }]}>Orders</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
@@ -34,8 +39,12 @@ export default function BottomBar({ navigation }) {
         onPress={() => navigation.navigate("Credits")}
         activeOpacity={0.6}
       >
-        <Ionicons name="wallet-outline" size={24 * scale} color="#334155" />
-        <Text style={styles.tabLabel}>Credits</Text>
+        <Ionicons 
+          name={activeTab === "Credits" ? "wallet" : "wallet-outline"} 
+          size={24 * scale} 
+          color={activeTab === "Credits" ? "#FE724C" : "#334155"} 
+        />
+        <Text style={[styles.tabLabel, activeTab === "Credits" && { color: "#FE724C" }]}>Credits</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
@@ -43,8 +52,12 @@ export default function BottomBar({ navigation }) {
         onPress={() => navigation.navigate("Profile")}
         activeOpacity={0.6}
       >
-        <Ionicons name="person-outline" size={24 * scale} color="#334155" />
-        <Text style={styles.tabLabel}>Profile</Text>
+        <Ionicons 
+          name={activeTab === "Profile" ? "person" : "person-outline"} 
+          size={24 * scale} 
+          color={activeTab === "Profile" ? "#FE724C" : "#334155"} 
+        />
+        <Text style={[styles.tabLabel, activeTab === "Profile" && { color: "#FE724C" }]}>Profile</Text>
       </TouchableOpacity>
     </View>
   );

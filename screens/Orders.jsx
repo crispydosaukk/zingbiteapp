@@ -7,6 +7,13 @@ import {
   FlatList,
   ActivityIndicator,
   TouchableOpacity,
+  Modal,
+  ScrollView,
+  Image,
+  Dimensions,
+  Platform,
+  Linking,
+  Alert
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Ionicons from "react-native-vector-icons/Ionicons";
@@ -15,11 +22,9 @@ import AppHeader from "./AppHeader";
 import { AuthRequiredInline } from "./AuthRequired";
 import BottomBar from "./BottomBar";
 import MenuModal from "./MenuModal";
-import { Modal, ScrollView, Image, Dimensions, Platform } from "react-native";
 import LinearGradient from "react-native-linear-gradient";
 import { useIsFocused, useFocusEffect } from "@react-navigation/native";
-import { getOrders } from "../services/orderService";
-import { getOrder } from "../services/orderService";
+import { getOrders, getOrder } from "../services/orderService";
 import { getCart } from "../services/cartService";
 
 const { width } = Dimensions.get("window");
@@ -51,7 +56,7 @@ export default function Orders({ navigation, route }) {
     if (s === 2) return { state: "Rejected" };
     if (s === 5) return { state: "Cancelled" };
     if (s === 3) return { state: "Ready" };
-    if (s === 1 && etaTime) {
+    if (s === 1 && typeof etaTime === 'string') {
       const eta = new Date(etaTime.replace(" ", "T")).getTime();
       const now = Date.now();
       if (!isNaN(eta)) {
@@ -60,6 +65,17 @@ export default function Orders({ navigation, route }) {
       }
     }
     return { state: "Preparing" };
+  };
+
+  const handleCallSupport = (item) => {
+    const phone = item.restaurant_phone || item.vendor_phone || item.branch_phone || item.phone || "+448001234567";
+    if (phone) {
+      Linking.openURL(`tel:${phone}`).catch(() => {
+        Alert.alert("Error", "Could not open dialer.");
+      });
+    } else {
+      Alert.alert("Information", "Restaurant contact number is unavailable.");
+    }
   };
 
   useEffect(() => {
@@ -110,12 +126,17 @@ export default function Orders({ navigation, route }) {
       if (newOrderId) {
         const cachedSingle = await AsyncStorage.getItem(`order_${newOrderId}`);
         if (cachedSingle) {
-          const parsed = JSON.parse(cachedSingle);
-          setOrders(prev => {
-            const exists = prev.find(o => (o.order_id || o.id) == (parsed.order_id || parsed.id));
-            if (exists) return prev;
-            return [parsed].concat(prev || []);
-          });
+          try {
+            const parsed = JSON.parse(cachedSingle);
+            if (parsed && typeof parsed === 'object') {
+              setOrders(prev => {
+                const prevArr = Array.isArray(prev) ? prev : [];
+                const exists = prevArr.find(o => (o.order_id || o.id) == (parsed.order_id || parsed.id));
+                if (exists) return prevArr;
+                return [parsed].concat(prevArr);
+              });
+            }
+          } catch (e) { console.log("Cached single parse error", e); }
         }
         navigation.setParams({ newOrderId: undefined });
       }
@@ -213,7 +234,9 @@ export default function Orders({ navigation, route }) {
               </View>
               <Text style={styles.orderNo}>{orderNo}</Text>
             </View>
-            {renderStatusChip(item.status)}
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              {renderStatusChip(item.status)}
+            </View>
           </View>
 
           <View style={styles.cardContent}>
@@ -426,9 +449,10 @@ export default function Orders({ navigation, route }) {
               </View>
 
               <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 30 }}>
-                {detailsLoading ? <ActivityIndicator size="large" style={{ marginTop: 20 }} /> : orderDetails ? (
+                {detailsLoading ? (
+                  <ActivityIndicator size="large" style={{ marginTop: 40 }} color="#FF2B5C" />
+                ) : orderDetails ? (
                   <>
-                    {/* ORDER INFO CARD */}
                     <View style={styles.orderInfoCard}>
                       <View style={styles.orderInfoRow}>
                         <View style={styles.orderInfoItem}>
@@ -454,20 +478,19 @@ export default function Orders({ navigation, route }) {
                         <View style={styles.orderInfoItem}>
                           <Text style={styles.orderInfoLabel}>PAYMENT</Text>
                           <Text style={styles.orderInfoValueBasic}>
-                            {(orderDetails.payment_method || orderDetails.payment_type || "Paid").toUpperCase()}
+                            {(String(orderDetails.payment_method || orderDetails.payment_type || "Paid")).toUpperCase()}
                           </Text>
                         </View>
                         <View style={styles.verticalDivider} />
                         <View style={styles.orderInfoItem}>
                           <Text style={styles.orderInfoLabel}>STATUS</Text>
-                          <Text style={[styles.orderInfoValueBasic, { color: ORDER_STATUS[Number(orderDetails.status)]?.color || '#333' }]}>
+                          <Text style={[styles.orderInfoValueBasic, { color: ORDER_STATUS[Number(orderDetails.status)]?.color || '#F8FAFC' }]}>
                             {ORDER_STATUS[Number(orderDetails.status)]?.label || "Unknown"}
                           </Text>
                         </View>
                       </View>
                     </View>
 
-                    {/* KERBSIDE VEHICLE DETAILS */}
                     {((orderDetails.order_type || orderDetails.delivery_type || "").toLowerCase().includes('kerb') || (orderDetails.order_type || orderDetails.delivery_type || "").toLowerCase().includes('curb')) && (
                       <View style={styles.kerbsideBox}>
                         <View style={styles.kerbsideHeader}>
@@ -478,7 +501,7 @@ export default function Orders({ navigation, route }) {
                           {(orderDetails.car_number || orderDetails.vehicle_number) ? (
                             <View style={styles.kerbsideDetailItem}>
                               <Text style={styles.kerbsideLabel}>NUMBER</Text>
-                              <Text style={styles.kerbsideValue}>{(orderDetails.car_number || orderDetails.vehicle_number).toUpperCase()}</Text>
+                              <Text style={styles.kerbsideValue}>{(String(orderDetails.car_number || orderDetails.vehicle_number)).toUpperCase()}</Text>
                             </View>
                           ) : null}
                           {(orderDetails.car_model || orderDetails.vehicle_model) ? (
@@ -499,26 +522,29 @@ export default function Orders({ navigation, route }) {
 
                     <Text style={styles.sectionHeader}>ITEMS</Text>
                     <View style={styles.itemsList}>
-                      {(orderDetails.items || orderDetails.order_items || orderDetails.products || []).map((it, idx) => (
-                        <View key={idx} style={styles.itemRowContainer}>
-                          <View style={styles.itemRow}>
-                            <View style={styles.itemInfo}>
-                              <Text style={styles.itemName}>{it.name || it.product_name}</Text>
-                              {it.contains ? <Text style={styles.itemMeta}>{it.contains}</Text> : null}
+                      {(orderDetails.items || orderDetails.order_items || orderDetails.products || []).map((it, idx) => {
+                        if (!it) return null;
+                        return (
+                          <View key={idx} style={styles.itemRowContainer}>
+                            <View style={styles.itemRow}>
+                              <View style={styles.itemInfo}>
+                                <Text style={styles.itemName}>{it.name || it.product_name || "Unknown Item"}</Text>
+                                {it.contains ? <Text style={styles.itemMeta}>{it.contains}</Text> : null}
+                              </View>
+                              <Text style={styles.itemQty}>x{it.quantity || it.product_quantity || 1}</Text>
+                              <Text style={styles.itemPrice}>£{(Number(it.price || it.product_price || 0) * (it.quantity || it.product_quantity || 1)).toFixed(2)}</Text>
                             </View>
-                            <Text style={styles.itemQty}>x{it.quantity || it.product_quantity}</Text>
-                            <Text style={styles.itemPrice}>£{(Number(it.price || it.product_price) * (it.quantity || it.product_quantity)).toFixed(2)}</Text>
+                            {(it.special_instruction || it.notes || it.instruction || it.special_instructions || it.note || it.textfield || (it.pivot && it.pivot.special_instruction)) ? (
+                              <View style={styles.specialInstructionBox}>
+                                <Ionicons name="chatbox-ellipses-outline" size={12 * scale} color="#94A3B8" style={{ marginRight: 6, marginTop: 2 }} />
+                                <Text style={styles.specialInstruction}>
+                                  {it.special_instruction || it.notes || it.instruction || it.special_instructions || it.note || it.textfield || (it.pivot && it.pivot.special_instruction)}
+                                </Text>
+                              </View>
+                            ) : null}
                           </View>
-                          {(it.special_instruction || it.notes || it.instruction || it.special_instructions || it.note || it.textfield || (it.pivot && it.pivot.special_instruction)) ? (
-                            <View style={styles.specialInstructionBox}>
-                              <Ionicons name="chatbox-ellipses-outline" size={12 * scale} color="#94A3B8" style={{ marginRight: 6, marginTop: 2 }} />
-                              <Text style={styles.specialInstruction}>
-                                {it.special_instruction || it.notes || it.instruction || it.special_instructions || it.note || it.textfield || (it.pivot && it.pivot.special_instruction)}
-                              </Text>
-                            </View>
-                          ) : null}
-                        </View>
-                      ))}
+                        );
+                      })}
                     </View>
 
                     {orderDetails.special_instruction ? (
@@ -536,7 +562,7 @@ export default function Orders({ navigation, route }) {
                     <View style={styles.billSection}>
                       <View style={styles.billRow}>
                         <Text style={styles.billLabel}>Subtotal</Text>
-                        <Text style={styles.billValue}>£{Number(orderDetails.sub_total || orderDetails.total_amount || orderDetails.grand_total || (orderDetails.items || orderDetails.order_items || []).reduce((sum, item) => sum + (Number(item.price || item.product_price) * (item.quantity || item.product_quantity)), 0)).toFixed(2)}</Text>
+                        <Text style={styles.billValue}>£{Number(orderDetails.sub_total || orderDetails.total_amount || orderDetails.grand_total || (orderDetails.items || orderDetails.order_items || []).reduce((sum, item) => sum + (Number(item?.price || item?.product_price || 0) * (item?.quantity || item?.product_quantity || 0)), 0)).toFixed(2)}</Text>
                       </View>
                       {Number(orderDetails.wallet_used || 0) > 0 && (
                         <View style={styles.billRow}>
@@ -559,13 +585,17 @@ export default function Orders({ navigation, route }) {
                       </View>
                     </View>
                   </>
-                ) : null}
+                ) : (
+                  <View style={{ alignItems: 'center', marginTop: 40 }}>
+                    <Text style={{ color: '#94A3B8', fontFamily: 'PoppinsMedium' }}>Select an order to view details</Text>
+                  </View>
+                )}
               </ScrollView>
             </LinearGradient>
           </View>
         </View>
       </Modal>
-      <BottomBar navigation={navigation} />
+      <BottomBar navigation={navigation} activeTab="Orders" />
     </View>
   );
 }

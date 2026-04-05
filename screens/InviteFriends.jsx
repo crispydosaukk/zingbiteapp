@@ -99,7 +99,7 @@ export default function InviteFriends({ navigation }) {
 
     return (
         <SafeAreaView style={styles.container} edges={["top"]}>
-            <LinearGradient colors={["#FFF5F5", "#FFFFFF"]} style={styles.header}>
+            <LinearGradient colors={["#FFF7ED", "#FFFFFF"]} style={styles.header}>
                 <TouchableOpacity
                     onPress={() => navigation.goBack()}
                     style={styles.backBtn}
@@ -112,7 +112,7 @@ export default function InviteFriends({ navigation }) {
 
             <ScrollView style={styles.content}>
                 <View style={styles.heroCard}>
-                    <Ionicons name="gift" size={64} color="#FF2B5C" />
+                    <Ionicons name="gift" size={64} color="#FE724C" />
                     <Text style={styles.heroTitle}>Share the Love!</Text>
                     <Text style={styles.heroSubtitle}>
                         Invite your friends and earn {settings ? `£${Number(settings.referral_bonus_amount).toFixed(2)}` : "rewards"} when they make their first order
@@ -129,14 +129,14 @@ export default function InviteFriends({ navigation }) {
                             selectTextOnFocus
                         />
                         <TouchableOpacity style={styles.copyBtn} onPress={handleCopy}>
-                            <Ionicons name="copy-outline" size={20} color="#FF2B5C" />
+                            <Ionicons name="copy-outline" size={20} color="#FE724C" />
                         </TouchableOpacity>
                     </View>
                 </View>
 
                 <TouchableOpacity style={styles.shareBtn} onPress={handleShare}>
                     <LinearGradient
-                        colors={["#FF2B5C", "#FF6B8B"]}
+                        colors={["#FE724C", "#FF9272"]}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 0 }}
                         style={styles.shareBtnGrad}
@@ -201,7 +201,7 @@ export default function InviteFriends({ navigation }) {
                             <Text style={styles.alertMsgText}>{alertMsg}</Text>
                             <TouchableOpacity style={styles.alertBtn} onPress={hidePremiumAlert}>
                                 <LinearGradient
-                                    colors={["#FF2B5C", "#FF6B8B"]}
+                                    colors={["#FE724C", "#FF9272"]}
                                     style={styles.alertBtnGrad}
                                 >
                                     <Text style={styles.alertBtnText}>Ok</Text>
@@ -241,7 +241,7 @@ const styles = StyleSheet.create({
     },
     heroCard: {
         alignItems: "center",
-        backgroundColor: "#FFF5F5",
+        backgroundColor: "#FFF7ED",
         borderRadius: 16,
         padding: 32,
         marginTop: 20,
@@ -278,14 +278,14 @@ const styles = StyleSheet.create({
         backgroundColor: "#ffffff",
         borderRadius: 8,
         borderWidth: 2,
-        borderColor: "#FF2B5C",
+        borderColor: "#FE724C",
         paddingHorizontal: 12,
     },
     codeText: {
         flex: 1,
         fontSize: 20,
         fontWeight: "700",
-        color: "#FF2B5C",
+        color: "#FE724C",
         letterSpacing: 2,
         paddingVertical: 12,
     },
@@ -327,7 +327,7 @@ const styles = StyleSheet.create({
         width: 40,
         height: 40,
         borderRadius: 20,
-        backgroundColor: "#FF2B5C",
+        backgroundColor: "#FE724C",
         justifyContent: "center",
         alignItems: "center",
         marginRight: 12,
