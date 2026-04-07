@@ -205,7 +205,81 @@ export default function Notifications({ navigation }) {
               <Text style={styles.title}>{(item.title || "").replace(/Delivered/g, "Collected").replace(/delivered/g, "collected")}</Text>
               {isUnread && <View style={styles.dot} />}
             </View>
-            <Text style={styles.body}>{(item.body || "").replace(/Delivered/g, "Collected").replace(/delivered/g, "collected")}</Text>
+            <Text style={styles.body}>
+              {(() => {
+                let body = (item.body || "").replace(/Delivered/g, "Collected").replace(/delivered/g, "collected");
+                
+                // Try parsing item.data if it's a string
+                let parsedData = {};
+                try {
+                  if (typeof item.data === 'string') parsedData = JSON.parse(item.data);
+                  else if (item.data) parsedData = item.data;
+                } catch (e) {}
+
+                // Robust extraction of reservation details from many possible fields/paths
+                const resDate = item.reservation_date || item.booking_date || item.date || 
+                               item.reservation?.reservation_date || item.data?.reservation_date || 
+                               parsedData?.reservation_date || parsedData?.booking_date;
+                               
+                const resTime = item.reservation_time || item.booking_time || item.time || item.time_slot || item.slot ||
+                               item.reservation?.reservation_time || item.data?.reservation_time ||
+                               parsedData?.reservation_time || parsedData?.time_slot;
+                               
+                // If it's a reservation confirmation and we have date/time, append it to the body text
+                if (((item.title || "").includes("Confirmed") || body.toLowerCase().includes("reservation")) && (resDate || resTime)) {
+                   body = body.replace(/[!.]+$/, ""); // remove trailing exclamation/dot
+                   body += ` for ${resDate || ''}${resDate && resTime ? ' at ' : ''}${(resTime || "").slice(0, 5)}`;
+                }
+                return body;
+              })()}
+            </Text>
+
+            {/* DYNAMIC RESERVATION DETAILS DISPLAY */}
+            {((item.title || "").includes("Confirmed") || (item.body || "").includes("reservation")) && (
+              (() => {
+                let parsedData = {};
+                try {
+                  if (typeof item.data === 'string') parsedData = JSON.parse(item.data);
+                  else if (item.data) parsedData = item.data;
+                } catch (e) {}
+
+                let resDate = item.reservation_date || item.booking_date || item.date || 
+                               item.reservation?.reservation_date || item.data?.reservation_date ||
+                               parsedData?.reservation_date || parsedData?.booking_date;
+                               
+                let resTime = item.reservation_time || item.booking_time || item.time || item.time_slot || item.slot ||
+                               item.reservation?.reservation_time || item.data?.reservation_time ||
+                               parsedData?.reservation_time || parsedData?.time_slot;
+                
+                // Fallback: extract directly from the notification body (e.g. "... on 4/6/2026 at 18:00 is confirmed!")
+                if (!resDate && !resTime) {
+                    const match = (item.body || "").match(/on\s+(.*?)\s+at\s+([0-9:]+)/i);
+                    if (match) {
+                        resDate = match[1];
+                        resTime = match[2];
+                    }
+                }
+                
+                if (!resDate && !resTime) return null;
+
+                return (
+                  <View style={styles.reservationBox}>
+                    {resDate ? (
+                      <View style={styles.resItem}>
+                        <Ionicons name="calendar-outline" size={14 * scale} color="#FE724C" />
+                        <Text style={styles.resLabel}>{resDate}</Text>
+                      </View>
+                    ) : null}
+                    {resTime ? (
+                      <View style={[styles.resItem, { marginLeft: resDate ? 16 : 0 }]}>
+                        <Ionicons name="time-outline" size={14 * scale} color="#FE724C" />
+                        <Text style={styles.resLabel}>{(resTime || "").slice(0, 5)}</Text>
+                      </View>
+                    ) : null}
+                  </View>
+                );
+              })()
+            )}
 
             <Text style={styles.time}>
               {new Date(item.created_at).toLocaleString()}
@@ -357,5 +431,27 @@ const styles = StyleSheet.create({
     backgroundColor: "#E23744",
     marginLeft: 6,
     marginTop: 4
+  },
+  // Reservation details styles
+  reservationBox: {
+    backgroundColor: 'rgba(254, 114, 76, 0.05)',
+    padding: 10,
+    borderRadius: 12,
+    marginTop: 4,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(254, 114, 76, 0.1)',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  resItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  resLabel: {
+    fontSize: 12 * scale,
+    fontWeight: "600",
+    color: "#444",
+    marginLeft: 6,
   }
 });

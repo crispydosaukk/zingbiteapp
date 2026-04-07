@@ -7,28 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:6604989866:android:041cbba2dc614a176137d3",
+        "mobilesdk_app_id": "1:6604989866:android:bf82d23a49ea7be86137d3",
         "android_client_info": {
-          "package_name": "com.crispydosa"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyCUsFNCP5Mg7GFIoTdQqKEOkrfqxLU8wE4"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:6604989866:android:ca9ce374e04c5f626137d3",
-        "android_client_info": {
-          "package_name": "com.crispydosa.app"
+          "package_name": "com.zingbite.app"
         }
       },
       "oauth_client": [],

@@ -1,4 +1,4 @@
-package com.crispydosa.app
+package com.zingbite.app
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate

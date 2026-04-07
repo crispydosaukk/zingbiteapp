@@ -402,16 +402,21 @@ export default function Categories({ route, navigation }) {
 
     setReservationSubmitting(true);
     try {
+      const dateObj = reservationForm.reservation_date;
+      const timeObj = reservationForm.reservation_time;
+      const formattedDate = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, "0")}-${String(dateObj.getDate()).padStart(2, "0")}`;
+      const formattedTime = `${String(timeObj.getHours()).padStart(2, "0")}:${String(timeObj.getMinutes()).padStart(2, "0")}:00`;
+
       const res = await submitTableReservation({
-        user_id: userId, // restaurant owner id
-        customer_id: user.id, // customer id for notifications
+        user_id: userId,
+        customer_id: user.id,
         customer_name: reservationForm.customer_name,
         customer_phone: reservationForm.customer_phone,
         customer_email: reservationForm.customer_email,
         table_number: reservationForm.table_number,
         party_size: parseInt(reservationForm.party_size) || 1,
-        reservation_date: reservationForm.reservation_date.toISOString().split('T')[0],
-        reservation_time: reservationForm.reservation_time.toTimeString().split(' ')[0],
+        reservation_date: formattedDate,
+        reservation_time: formattedTime,
         duration_minutes: parseInt(reservationForm.duration_minutes) || 60,
         special_requests: reservationForm.special_requests,
       });
@@ -914,7 +919,7 @@ export default function Categories({ route, navigation }) {
               <DateTimePicker
                 value={reservationForm.reservation_date}
                 mode="date"
-                minimumDate={new Date()}
+                minimumDate={new Date(new Date().setHours(0,0,0,0))}
                 display={Platform.OS === 'ios' ? 'spinner' : 'default'}
                 onChange={(event, date) => {
                   setShowDatePicker(false);
@@ -1599,9 +1604,16 @@ export default function Categories({ route, navigation }) {
               </View>
 
               <Text style={styles.successTitle}>Success!</Text>
-              <Text style={styles.successMsg}>
-                Table reservation request submitted successfully!
-              </Text>
+              <Text style={styles.successMsg}>Table reservation request submitted successfully!</Text>
+              <View style={{ backgroundColor: '#F8FAFC', padding: 12, borderRadius: 15, width: '100%', marginTop: 10, borderWidth: 1, borderColor: '#E2E8F0' }}>
+                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+                    <Ionicons name="calendar-outline" size={16} color="#FE724C" />
+                    <Text style={{ fontSize: 13 * scale, fontFamily: 'PoppinsBold', color: '#1E293B' }}>{reservationForm.reservation_date.toLocaleDateString()}</Text>
+                    <View style={{ width: 1, height: 15, backgroundColor: '#CBD5E1' }} />
+                    <Ionicons name="time-outline" size={16} color="#FE724C" />
+                    <Text style={{ fontSize: 13 * scale, fontFamily: 'PoppinsBold', color: '#1E293B' }}>{reservationForm.reservation_time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
+                 </View>
+              </View>
 
               <Text style={styles.enjoyText}>
                 We will confirm your reservation soon.
