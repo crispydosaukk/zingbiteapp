@@ -42,12 +42,14 @@ export default function Orders({ navigation, route }) {
 
   const isFocused = useIsFocused();
   const ORDER_STATUS = {
-    0: { label: "Placed", color: "#f59e0b", icon: "paper-plane" }, // Amber
+    0: { label: "Placed", color: "#FE724C", icon: "paper-plane" }, // Amber
     1: { label: "Accepted", color: "#3b82f6", icon: "checkmark-circle" }, // Blue
     2: { label: "Rejected", color: "#ef4444", icon: "close-circle" }, // Red
-    3: { label: "Ready", color: "#8b5cf6", icon: "gift" }, // Purple
-    4: { label: "Collected", color: "#FF2B5C", icon: "checkmark-done-circle" }, // Pink
-    5: { label: "Cancelled", color: "#6b7280", icon: "ban" } // Gray
+    3: { label: "Ready", color: "#FE724C", icon: "gift" }, // Purple
+    4: { label: "Collected", color: "#FE724C", icon: "checkmark-done-circle" }, // Pink
+    5: { label: "Cancelled", color: "#6b7280", icon: "ban" }, // Gray
+    6: { label: "Refunded", color: "#3b82f6", icon: "refresh-circle" }, // Blue
+    7: { label: "Partial Refund", color: "#6366f1", icon: "refresh-circle" } // Indigo
   };
 
   const getOrderUIState = (status, etaTime) => {
@@ -55,6 +57,7 @@ export default function Orders({ navigation, route }) {
     if (s === 4) return { state: "Collected" };
     if (s === 2) return { state: "Rejected" };
     if (s === 5) return { state: "Cancelled" };
+    if (s === 6 || s === 7) return { state: "Refunded" };
     if (s === 3) return { state: "Ready" };
     if (s === 1 && typeof etaTime === 'string') {
       const eta = new Date(etaTime.replace(" ", "T")).getTime();
@@ -220,8 +223,8 @@ export default function Orders({ navigation, route }) {
         <LinearGradient
           colors={
             isEven
-              ? ["#FFFFFF", "rgba(255,43,92,0.04)"]
-              : ["#FFFFFF", "rgba(255,43,92,0.02)"]
+              ? ["#FFFFFF", "rgba(254,114,76,0.04)"]
+              : ["#FFFFFF", "rgba(254,114,76,0.02)"]
           }
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
@@ -230,7 +233,7 @@ export default function Orders({ navigation, route }) {
           <View style={styles.cardHeader}>
             <View style={{ flexDirection: "row", alignItems: "center" }}>
               <View style={styles.receiptIconBg}>
-                <Ionicons name="receipt" size={16 * scale} color="#FF2B5C" />
+                <Ionicons name="receipt" size={16 * scale} color="#FE724C" />
               </View>
               <Text style={styles.orderNo}>{orderNo}</Text>
             </View>
@@ -284,10 +287,10 @@ export default function Orders({ navigation, route }) {
                 <Ionicons
                   name="time"
                   size={16 * scale}
-                  color="#f59e0b"
+                  color="#FE724C"
                   style={{ marginRight: 8 }}
                 />
-                <Text style={[styles.statusBadgeText, { color: "#f59e0b" }]}>
+                <Text style={[styles.statusBadgeText, { color: "#FE724C" }]}>
                   Estimated ready in {ui.minutes} min
                 </Text>
               </View>
@@ -320,10 +323,10 @@ export default function Orders({ navigation, route }) {
                 <Ionicons
                   name="gift"
                   size={16 * scale}
-                  color="#8b5cf6"
+                  color="#FE724C"
                   style={{ marginRight: 8 }}
                 />
-                <Text style={[styles.statusBadgeText, { color: "#8b5cf6" }]}>
+                <Text style={[styles.statusBadgeText, { color: "#FE724C" }]}>
                   Order is ready for pickup
                 </Text>
               </View>
@@ -338,10 +341,10 @@ export default function Orders({ navigation, route }) {
                 <Ionicons
                   name="checkmark-done-circle"
                   size={16 * scale}
-                  color="#FF2B5C"
+                  color="#FE724C"
                   style={{ marginRight: 8 }}
                 />
-                <Text style={[styles.statusBadgeText, { color: "#FF2B5C" }]}>
+                <Text style={[styles.statusBadgeText, { color: "#FE724C" }]}>
                   Order collected successfully
                 </Text>
               </View>
@@ -382,6 +385,24 @@ export default function Orders({ navigation, route }) {
                 </Text>
               </View>
             )}
+            {ui.state === "REFUNDED" || ui.state === "Refunded" && (
+              <View
+                style={[
+                  styles.statusBadge,
+                  { backgroundColor: "#DBEAFE", borderColor: "#BFDBFE" },
+                ]}
+              >
+                <Ionicons
+                  name="refresh-circle"
+                  size={16 * scale}
+                  color="#3b82f6"
+                  style={{ marginRight: 8 }}
+                />
+                <Text style={[styles.statusBadgeText, { color: "#3b82f6" }]}>
+                  Order refunded successfully
+                </Text>
+              </View>
+            )}
           </View>
         </LinearGradient>
       </TouchableOpacity>
@@ -419,7 +440,7 @@ export default function Orders({ navigation, route }) {
           refreshing={refreshing}
           onRefresh={() => fetchOrders(true)}
           contentContainerStyle={{ padding: 16, paddingBottom: 80 }}
-          ListHeaderComponent={<View style={styles.headerRow}><Ionicons name="bag-check-outline" size={20} color="#FF2B5C" /><Text style={styles.headerTitle}>Your Orders</Text></View>}
+          ListHeaderComponent={<View style={styles.headerRow}><Ionicons name="bag-check-outline" size={20} color="#FE724C" /><Text style={styles.headerTitle}>Your Orders</Text></View>}
         />
       )}
       <MenuModal visible={menuVisible} setVisible={setMenuVisible} user={user} navigation={navigation} />
@@ -450,7 +471,7 @@ export default function Orders({ navigation, route }) {
 
               <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 30 }}>
                 {detailsLoading ? (
-                  <ActivityIndicator size="large" style={{ marginTop: 40 }} color="#FF2B5C" />
+                  <ActivityIndicator size="large" style={{ marginTop: 40 }} color="#FE724C" />
                 ) : orderDetails ? (
                   <>
                     <View style={styles.orderInfoCard}>
@@ -461,10 +482,10 @@ export default function Orders({ navigation, route }) {
                             <Ionicons
                               name={(orderDetails.order_type === 'kerbside' || orderDetails.delivery_type === 'kerbside') ? "car-sport" : (orderDetails.order_type === 'delivery' || orderDetails.shipping_method === 'delivery' ? "bicycle" : "storefront")}
                               size={14}
-                              color={(orderDetails.order_type === 'kerbside' || orderDetails.delivery_type === 'kerbside') ? "#1E40AF" : "#FF2B5C"}
+                              color={(orderDetails.order_type === 'kerbside' || orderDetails.delivery_type === 'kerbside') ? "#1E40AF" : "#FE724C"}
                               style={{ marginRight: 4 }}
                             />
-                            <Text style={[styles.orderInfoValue, { color: (orderDetails.order_type === 'kerbside' || orderDetails.delivery_type === 'kerbside') ? '#1E40AF' : '#FF2B5C' }]}>
+                            <Text style={[styles.orderInfoValue, { color: (orderDetails.order_type === 'kerbside' || orderDetails.delivery_type === 'kerbside') ? '#1E40AF' : '#FE724C' }]}>
                               {(() => {
                                 const type = (orderDetails.order_type || orderDetails.shipping_method || orderDetails.delivery_type || "").toLowerCase();
                                 if (type.includes('kerb') || type.includes('curb')) return "KERBSIDE";
@@ -550,7 +571,7 @@ export default function Orders({ navigation, route }) {
                     {orderDetails.special_instruction ? (
                       <View style={styles.globalInstructionBox}>
                         <View style={styles.instructionHeader}>
-                          <Ionicons name="chatbox-ellipses" size={16 * scale} color="#FF2B5C" style={{ marginRight: 6 }} />
+                          <Ionicons name="chatbox-ellipses" size={16 * scale} color="#FE724C" style={{ marginRight: 6 }} />
                           <Text style={styles.globalInstructionLabel}>SPECIAL INSTRUCTION</Text>
                         </View>
                         <Text style={styles.globalInstructionText}>{orderDetails.special_instruction}</Text>
@@ -566,14 +587,14 @@ export default function Orders({ navigation, route }) {
                       </View>
                       {Number(orderDetails.wallet_used || 0) > 0 && (
                         <View style={styles.billRow}>
-                          <Text style={[styles.billLabel, { color: '#FF2B5C' }]}>Wallet Used</Text>
-                          <Text style={[styles.billValue, { color: '#FF2B5C' }]}>-£{Number(orderDetails.wallet_used).toFixed(2)}</Text>
+                          <Text style={[styles.billLabel, { color: '#FE724C' }]}>Wallet Used</Text>
+                          <Text style={[styles.billValue, { color: '#FE724C' }]}>-£{Number(orderDetails.wallet_used).toFixed(2)}</Text>
                         </View>
                       )}
                       {Number(orderDetails.loyalty_used || 0) > 0 && (
                         <View style={styles.billRow}>
-                          <Text style={[styles.billLabel, { color: '#FF2B5C' }]}>Loyalty Discount</Text>
-                          <Text style={[styles.billValue, { color: '#FF2B5C' }]}>-£{Number(orderDetails.loyalty_used).toFixed(2)}</Text>
+                          <Text style={[styles.billLabel, { color: '#FE724C' }]}>Loyalty Discount</Text>
+                          <Text style={[styles.billValue, { color: '#FE724C' }]}>-£{Number(orderDetails.loyalty_used).toFixed(2)}</Text>
                         </View>
                       )}
                       <View style={styles.divider} />
@@ -646,7 +667,7 @@ const styles = StyleSheet.create({
     width: 32 * scale,
     height: 32 * scale,
     borderRadius: 10,
-    backgroundColor: 'rgba(255,43,92,0.08)',
+    backgroundColor: 'rgba(254,114,76,0.08)',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 10,
@@ -716,7 +737,7 @@ const styles = StyleSheet.create({
   totalText: {
     fontSize: 18 * scale,
     fontFamily: 'PoppinsBold',
-    color: '#FF2B5C',
+    color: '#FE724C',
     fontWeight: '900',
   },
   statusBadge: {
@@ -840,7 +861,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     borderWidth: 1,
     borderColor: '#FFD1DC',
-    shadowColor: "#FF2B5C",
+    shadowColor: "#FE724C",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 4,
@@ -854,7 +875,7 @@ const styles = StyleSheet.create({
   globalInstructionLabel: {
     fontSize: 12 * scale,
     fontFamily: 'PoppinsBold',
-    color: '#FF2B5C',
+    color: '#FE724C',
     letterSpacing: 1,
     fontWeight: '900',
   },
@@ -910,7 +931,7 @@ const styles = StyleSheet.create({
   orderInfoValue: {
     fontSize: 12 * scale,
     fontFamily: 'PoppinsBold',
-    color: '#FF2B5C',
+    color: '#FE724C',
     fontWeight: '800',
   },
   orderInfoValueBasic: {
@@ -1006,7 +1027,7 @@ const styles = StyleSheet.create({
   totalValue: {
     fontSize: 20 * scale,
     fontFamily: 'PoppinsBold',
-    color: '#FF2B5C',
+    color: '#FE724C',
     fontWeight: '900',
   },
   kerbsideBox: {

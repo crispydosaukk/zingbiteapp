@@ -13,6 +13,7 @@ import {
   Modal,
   Animated,
   Dimensions,
+  ScrollView,
 } from "react-native";
 import LinearGradient from "react-native-linear-gradient";
 import Ionicons from "react-native-vector-icons/Ionicons";
@@ -129,6 +130,11 @@ export default function LoginScreen({ navigation }) {
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         <LinearGradient colors={["#FFF7ED", "#FFFFFF"]} style={styles.container}>
+          <ScrollView
+            contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
 
           {/* LOGO */}
           <View style={styles.logoWrap}>
@@ -210,7 +216,7 @@ export default function LoginScreen({ navigation }) {
               </Text>
             </Text>
           </View>
-
+          </ScrollView>
         </LinearGradient>
       </KeyboardAvoidingView>
 

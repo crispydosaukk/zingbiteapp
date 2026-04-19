@@ -103,8 +103,8 @@ export default function SplashScreen({ navigation }) {
   return (
     <View style={styles.container}>
       {/* 🎨 CLEAN BOLD SOLID ORANGE BACKGROUND */}
-      <View style={[StyleSheet.absoluteFill, { backgroundColor: "#0a0a1a" }]} />
-      <StatusBar backgroundColor="#0a0a1a" barStyle="light-content" />
+      <View style={[StyleSheet.absoluteFill, { backgroundColor: "#FE724C" }]} />
+      <StatusBar backgroundColor="#FE724C" barStyle="light-content" />
 
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.center} pointerEvents="none">
@@ -162,7 +162,7 @@ export default function SplashScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FF8C00",
+    backgroundColor: "#FE724C",
   },
   safeArea: {
     flex: 1,

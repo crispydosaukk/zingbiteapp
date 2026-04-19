@@ -48,12 +48,12 @@ export default function HelpCenter({ navigation }) {
 
     const faqCategories = [
         {
-            title: "Orders & Delivery",
+            title: "Orders & Takeaway",
             icon: "fast-food",
             color: "#ff6b35",
             questions: [
                 "How do I track my order?",
-                "What are the delivery hours?",
+                "What are the takeaway hours?",
                 "Can I modify my order?",
             ],
         },

@@ -86,7 +86,8 @@ export default function Categories({ route, navigation }) {
   const [resSettings, setResSettings] = useState(null);
   const reservationScaleAnim = useRef(new Animated.Value(0)).current;
 
-  const offersAnim = useRef(new Animated.Value(0)).current;
+  const offersAnim = useRef(new Animated.Value(1)).current; // Default to expanded
+  const [isOffersOpen, setIsOffersOpen] = useState(true);
 
   const toggleOffers = () => {
     const toValue = isOffersOpen ? 0 : 1;
@@ -97,6 +98,10 @@ export default function Categories({ route, navigation }) {
     }).start();
     setIsOffersOpen(!isOffersOpen);
   };
+
+  useEffect(() => {
+    console.log("Categories Screen - Current userId:", userId);
+  }, [userId]);
 
   const bannerScrollX = useRef(new Animated.Value(0)).current;
   const offerScrollX = useRef(new Animated.Value(0)).current;
@@ -109,17 +114,29 @@ export default function Categories({ route, navigation }) {
     { colors: ["#F2994A", "#F2C94C"], textColor: "#5D4037", icon: "wallet" },
   ];
   const [activeIndex, setActiveIndex] = useState(0);
+
+  // Filter offers to only those relevant to THIS restaurant's categories
+  const filteredOffers = React.useMemo(() => {
+    const myCatIds = new Set(categories.map(c => c.id));
+    return promoOffers.filter(offer => {
+      // If it's a global offer (no targets), show it
+      if (!offer.targets || offer.targets.length === 0) return true;
+      // Otherwise, check if at least one category target belongs to this restaurant
+      return offer.targets.some(t => t.type === 'category' && myCatIds.has(t.id));
+    });
+  }, [promoOffers, categories]);
   const [settings, setSettings] = useState(null);
 
   useEffect(() => {
     const loadSettings = async () => {
       const data = await fetchAppSettings();
       if (data) setSettings(data);
-      const offersData = await fetchActiveOffers(userId);
+      const targetId = userId || route?.params?.userId;
+      const offersData = await fetchActiveOffers(targetId);
       setPromoOffers(offersData || []);
     };
     loadSettings();
-  }, []);
+  }, [userId]);
   const animatedTexts = settings ? [
     `EARN £${Number(settings.earn_per_order_amount).toFixed(2)} ON EVERY ORDER`,
     `REFER & EARN £${Number(settings.referral_bonus_amount).toFixed(2)}`,
@@ -679,7 +696,7 @@ export default function Categories({ route, navigation }) {
         </View>
 
         {/* DROPDOWN OFFERS SECTION - Inline with ScrollView */}
-        {promoOffers.length > 0 && (
+        {filteredOffers.length > 0 && (
           <View style={styles.inlineOfferSection}>
             <TouchableOpacity
               style={offerStyles.offerToggleHeaderInline}
@@ -692,7 +709,7 @@ export default function Categories({ route, navigation }) {
                   <Text style={offerStyles.offerSectionTitle}>Current Special Offers</Text>
                 </View>
                 <View style={offerStyles.headerRight}>
-                  <Text style={offerStyles.offerCount}>{promoOffers.length} available</Text>
+                  <Text style={offerStyles.offerCount}>{filteredOffers.length} available</Text>
                   <Ionicons
                     name={isOffersOpen ? "chevron-down" : "chevron-up"}
                     size={22 * scale}
@@ -724,9 +741,9 @@ export default function Categories({ route, navigation }) {
                 scrollEventThrottle={16}
                 contentContainerStyle={offerStyles.offerScrollContent}
               >
-                {promoOffers.map((offer, idx) => (
+                {filteredOffers.map((offer, idx) => (
                   <TouchableOpacity
-                    key={offer.id}
+                    key={offer.id || idx}
                     style={offerStyles.offerCardInline}
                     activeOpacity={0.9}
                     onPress={() => setSelectedOffer(selectedOffer?.id === offer.id ? null : offer)}
@@ -757,9 +774,9 @@ export default function Categories({ route, navigation }) {
               </Animated.ScrollView>
 
               {/* Pagination Dots */}
-              {promoOffers.length > 1 && (
+              {filteredOffers.length > 1 && (
                 <View style={offerStyles.dotContainer}>
-                  {promoOffers.map((_, i) => {
+                  {filteredOffers.map((_, i) => {
                     const step = width - 28;
                     const inputRange = [(i - 1) * step, i * step, (i + 1) * step];
                     const dotWidth = bannerScrollX.interpolate({

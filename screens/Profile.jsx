@@ -45,10 +45,6 @@ export default function Profile({ navigation }) {
   const [authModalVisible, setAuthModalVisible] = useState(false);
   const [orderCount, setOrderCount] = useState(0);
 
-  // Animation values
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(30)).current;
-
   // Premium Alert State
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertTitle, setAlertTitle] = useState("");
@@ -87,7 +83,6 @@ export default function Profile({ navigation }) {
           setProfile(JSON.parse(cachedProfile));
           setWallet(JSON.parse(cachedWallet));
           setLoading(false);
-          startAnimations();
         }
 
         // Fetch fresh
@@ -110,7 +105,6 @@ export default function Profile({ navigation }) {
           setOrderCount(list.length);
         }
         setLoading(false);
-        startAnimations();
       } catch (err) {
         console.log("Profile error", err);
         setLoading(false);
@@ -134,13 +128,6 @@ export default function Profile({ navigation }) {
       }
     })();
   }, [userLocal, isFocused]);
-
-  const startAnimations = () => {
-    Animated.parallel([
-      Animated.timing(fadeAnim, { toValue: 1, duration: 800, useNativeDriver: true }),
-      Animated.timing(slideAnim, { toValue: 0, duration: 800, useNativeDriver: true }),
-    ]).start();
-  };
 
   const showPremiumAlert = (title, msg, type = "info") => {
     setAlertTitle(title);
@@ -287,7 +274,7 @@ export default function Profile({ navigation }) {
           contentContainerStyle={{ paddingBottom: 20, paddingTop: insets.top }}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#16a34a" />}
         >
-          <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
+          <View>
             {/* PREMIUM HEADER CARD */}
             <LinearGradient colors={["#FE724C", "#FF9272"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.profileHeader}>
               <View style={styles.headerContent}>
@@ -382,7 +369,7 @@ export default function Profile({ navigation }) {
 
             <Text style={styles.versionText}>ZingBite Business v2.0.1</Text>
 
-          </Animated.View>
+          </View>
         </ScrollView>
       )}
 
@@ -544,7 +531,7 @@ const styles = StyleSheet.create({
 
   referralCard: { padding: 20, borderRadius: 22, flexDirection: 'row', alignItems: 'center', elevation: 8, shadowColor: '#000', shadowOpacity: 0.05, borderWidth: 1, borderColor: '#FFF' },
   refLeft: { flex: 1 },
-  refTitle: { fontSize: 18 * scale, fontFamily: "PoppinsBold", color: "#1C1C1C" },
+  refTitle: { fontSize: 18 * scale, fontFamily: "PoppinsSemiBold", color: "#1C1C1C" },
   refDesc: { fontSize: 12 * scale, fontFamily: "PoppinsMedium", color: "#64748B", marginTop: 2 },
   codeRow: { flexDirection: 'row', alignItems: 'center', marginTop: 12 },
   refCodeLabel: { fontSize: 10 * scale, fontFamily: "PoppinsBold", color: "#94A3B8" },
@@ -557,7 +544,7 @@ const styles = StyleSheet.create({
   menuItem: { flexDirection: 'row', alignItems: 'center', padding: 15 },
   menuIconBg: { width: 48, height: 48, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
   menuTextContent: { flex: 1, marginLeft: 15 },
-  menuLabel: { fontSize: 15 * scale, fontFamily: "PoppinsBold", color: "#1E293B" },
+  menuLabel: { fontSize: 15 * scale, fontFamily: "PoppinsSemiBold", color: "#1E293B" },
   menuSub: { fontSize: 12 * scale, fontFamily: "PoppinsMedium", color: "#94A3B8", marginTop: 1 },
   chevron: { opacity: 0.5 },
 

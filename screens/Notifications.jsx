@@ -196,7 +196,7 @@ export default function Notifications({ navigation }) {
             <Ionicons
               name="notifications"
               size={20}
-              color={isUnread ? "#E23744" : "#999"}
+              color={isUnread ? "#FE724C" : "#999"}
             />
           </View>
 
@@ -398,7 +398,7 @@ const styles = StyleSheet.create({
   },
   unreadCard: {
     borderLeftWidth: 4,
-    borderLeftColor: "#E23744",
+    borderLeftColor: "#FE724C",
   },
   iconWrap: {
     marginRight: 12,
@@ -428,7 +428,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: "#E23744",
+    backgroundColor: "#FE724C",
     marginLeft: 6,
     marginTop: 4
   },

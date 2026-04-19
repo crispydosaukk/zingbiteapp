@@ -227,7 +227,7 @@ export default function SignupScreen({ navigation }) {
 
   return (
     <>
-      <LinearGradient colors={["#B3E5FC", "#F7CB45"]} style={styles.root}>
+      <LinearGradient colors={["#FFF7ED", "#FFFFFF"]} style={styles.root}>
         <StatusBar translucent backgroundColor="transparent" barStyle="dark-content" />
 
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingTop: insets.top + 20, paddingBottom: 60 }}>
@@ -450,7 +450,7 @@ const InputItem = ({ icon, ...props }) => (
 );
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: "#F8FAFC" },
+  root: { flex: 1, backgroundColor: "#FFF7ED" },
   headerGradient: {
     paddingTop: 0,
     paddingBottom: 15,
