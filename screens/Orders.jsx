@@ -244,13 +244,26 @@ export default function Orders({ navigation, route }) {
 
           <View style={styles.cardContent}>
             {dateStr ? (
-              <View style={styles.infoRow}>
+              <View style={[styles.infoRow, { marginBottom: (item.takeaway_time || item.delivery_estimate_time) ? 8 : 12 }]}>
                 <Ionicons
                   name="calendar-outline"
                   size={14 * scale}
                   color="#64748B"
                 />
                 <Text style={styles.dateText}>{dateStr}</Text>
+              </View>
+            ) : null}
+
+            {(item.takeaway_time) ? (
+              <View style={styles.infoRow}>
+                <Ionicons
+                  name="time-outline"
+                  size={14 * scale}
+                  color="#FE724C"
+                />
+                <Text style={[styles.dateText, { color: "#FE724C", fontFamily: 'PoppinsBold' }]}>
+                  Scheduled: {item.takeaway_time}
+                </Text>
               </View>
             ) : null}
 
@@ -509,6 +522,17 @@ export default function Orders({ navigation, route }) {
                             {ORDER_STATUS[Number(orderDetails.status)]?.label || "Unknown"}
                           </Text>
                         </View>
+                        {orderDetails.takeaway_time && (
+                          <>
+                            <View style={styles.verticalDivider} />
+                            <View style={styles.orderInfoItem}>
+                              <Text style={styles.orderInfoLabel}>SCHEDULED</Text>
+                              <Text style={[styles.orderInfoValueBasic, { color: '#FACC15' }]}>
+                                {orderDetails.takeaway_time}
+                              </Text>
+                            </View>
+                          </>
+                        )}
                       </View>
                     </View>
 

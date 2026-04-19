@@ -20,6 +20,19 @@ export default function BottomBar({ navigation, activeTab }) {
         />
         <Text style={[styles.tabLabel, activeTab === "Home" && { color: "#FE724C" }]}>Home</Text>
       </TouchableOpacity>
+      
+      <TouchableOpacity
+        style={styles.tabItem}
+        onPress={() => navigation.navigate("Offers")}
+        activeOpacity={0.6}
+      >
+        <Ionicons 
+          name={activeTab === "Offers" ? "pricetag" : "pricetag-outline"} 
+          size={24 * scale} 
+          color={activeTab === "Offers" ? "#FE724C" : "#334155"} 
+        />
+        <Text style={[styles.tabLabel, activeTab === "Offers" && { color: "#FE724C" }]}>Offers</Text>
+      </TouchableOpacity>
 
       <TouchableOpacity
         style={styles.tabItem}

@@ -31,6 +31,7 @@ import HelpCenter from "./screens/HelpCenter.jsx";
 import Notifications from "./screens/Notifications.jsx";
 import PrivacyPolicyScreen from "./screens/PrivacyPolicyScreen.jsx";
 import TermsConditionsScreen from "./screens/TermsConditionsScreen.jsx";
+import OffersScreen from "./screens/OffersScreen.jsx";
 
 const Stack = createNativeStackNavigator();
 
@@ -162,6 +163,7 @@ export default function App() {
             <Stack.Screen name="Signup" component={SignupScreen} />
             <Stack.Screen name="Credits" component={Credits} />
             <Stack.Screen name="Profile" component={Profile} />
+            <Stack.Screen name="Offers" component={OffersScreen} />
             <Stack.Screen name="PaymentHistory" component={PaymentHistory} />
             <Stack.Screen name="FAQ" component={FAQ} />
             <Stack.Screen name="InviteFriends" component={InviteFriends} />

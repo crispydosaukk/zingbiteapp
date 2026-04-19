@@ -50,6 +50,24 @@ export default function CheckoutScreen({ navigation }) {
   const [kerbsideReg, setKerbsideReg] = useState("");
   const [allergyNote, setAllergyNote] = useState("");
 
+  const generateTimeSlots = () => {
+    const slots = ["ASAP"];
+    const current = new Date();
+    current.setMinutes(Math.ceil(current.getMinutes() / 30) * 30);
+    current.setSeconds(0);
+    const endOfDay = new Date();
+    endOfDay.setHours(23, 30, 0, 0);
+
+    while (current <= endOfDay) {
+      slots.push(current.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+      current.setMinutes(current.getMinutes() + 30);
+    }
+    return slots;
+  };
+
+  const [timeSlots] = useState(generateTimeSlots());
+  const [takeawayTime, setTakeawayTime] = useState("ASAP");
+
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
   const [walletBalance, setWalletBalance] = useState(0);
@@ -374,6 +392,7 @@ export default function CheckoutScreen({ navigation }) {
         reg_number: kerbsideReg,
         owner_name: kerbsideName,
         mobile_number: user.mobile_number || "",
+        takeaway_time: takeawayTime === "ASAP" ? null : takeawayTime,
         wallet_used: useWallet ? walletUsed : 0,
         loyalty_used: useLoyalty ? loyaltyUsed : 0,
         items: (visibleCart || []).map((i) => ({
@@ -490,7 +509,9 @@ export default function CheckoutScreen({ navigation }) {
                 </View>
                 <View style={{ flex: 1, marginLeft: 16 }}>
                   <Text style={styles.serviceLabel}>{deliveryMethod === 'instore' ? "In-store Pickup" : "Kerbside Delivery"}</Text>
-                  <Text style={styles.serviceSub}>Estimated Prep: 20 - 25 Mins</Text>
+                  <Text style={styles.serviceSub}>
+                    {takeawayTime === "ASAP" ? "Estimated Prep: 20 - 25 Mins" : `Scheduled: Today at ${takeawayTime}`}
+                  </Text>
                 </View>
                 <TouchableOpacity style={styles.changeBtn} onPress={() => { setDeliveryPopup(true); openSheet(); }}>
                   <Text style={styles.changeBtnText}>Change</Text>
@@ -731,6 +752,32 @@ export default function CheckoutScreen({ navigation }) {
                 <TextInput style={styles.kInput} placeholder="Car Name / Make" value={kerbsideName} onChangeText={setKerbsideName} placeholderTextColor="#BCBCBC" />
                 <TextInput style={styles.kInput} placeholder="Car Color" value={kerbsideColor} onChangeText={setKerbsideColor} placeholderTextColor="#BCBCBC" />
                 <TextInput style={styles.kInput} placeholder="Reg Number" value={kerbsideReg} onChangeText={setKerbsideReg} placeholderTextColor="#BCBCBC" />
+              </View>
+            )}
+
+            {deliveryMethod && (
+              <View style={{ marginTop: 20 }}>
+                <Text style={{ fontSize: 16 * scale, fontFamily: "PoppinsSemiBold", color: "#0F172A", marginBottom: 12 }}>Select Time (Today)</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10, paddingRight: 20 }}>
+                  {timeSlots.map(time => {
+                    const isSelected = takeawayTime === time;
+                    return (
+                      <TouchableOpacity
+                        key={time}
+                        activeOpacity={0.8}
+                        onPress={() => setTakeawayTime(time)}
+                        style={[
+                          styles.timeChip,
+                          isSelected && styles.timeChipSelected
+                        ]}
+                      >
+                        <Text style={[styles.timeChipText, isSelected && styles.timeChipTextSelected]}>
+                          {time}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </ScrollView>
               </View>
             )}
 
@@ -1186,5 +1233,26 @@ const styles = StyleSheet.create({
     fontFamily: "PoppinsBold",
     color: "#FFF",
     fontWeight: "800",
+  },
+  timeChip: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 12,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  timeChipSelected: {
+    backgroundColor: '#FFF7ED',
+    borderColor: '#FE724C',
+  },
+  timeChipText: {
+    fontSize: 14 * scale,
+    fontFamily: 'PoppinsMedium',
+    color: '#64748B',
+  },
+  timeChipTextSelected: {
+    color: '#FE724C',
+    fontFamily: 'PoppinsBold',
   },
 });
