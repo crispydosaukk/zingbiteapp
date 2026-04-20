@@ -349,11 +349,11 @@ export default function CheckoutScreen({ navigation }) {
         if (key && key.trim() !== "") {
           global.updateStripeKey(key);
           setStripeConfigured(true);
-          // Wait briefly for Provider to catch up
+          // Wait briefly for Provider to catch up (reduced from 800ms to 100ms for speed)
           setTimeout(() => {
             preparePayment();
             setIsKeyLoading(false);
-          }, 800);
+          }, 100);
         } else {
           setStripeConfigured(false);
           setIsKeyLoading(false);
@@ -725,18 +725,23 @@ export default function CheckoutScreen({ navigation }) {
             <View style={[styles.premiumStickyBar, { paddingBottom: insets.bottom > 0 ? insets.bottom + 5 : 15 }]}>
               <TouchableOpacity
                 activeOpacity={0.9}
-                style={[styles.actionBtnPremium, (!stripeConfigured || isKeyLoading) && { opacity: 0.5 }]}
+                style={[styles.actionBtnPremium, (!stripeConfigured) && !isKeyLoading && { opacity: 0.5 }]}
                 onPress={placeOrder}
                 disabled={processingPayment || !stripeConfigured || isKeyLoading}
               >
                 <LinearGradient
-                  colors={!stripeConfigured || isKeyLoading ? ["#94a3b8", "#64748b"] : ["#FE724C", "#FF9272"]}
+                  colors={(!stripeConfigured && !isKeyLoading) ? ["#94a3b8", "#64748b"] : ["#FE724C", "#FF9272"]}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
                   style={styles.btnGradient}
                 >
-                  {processingPayment || isKeyLoading ? (
+                  {processingPayment ? (
                     <ActivityIndicator size="small" color="#FFF" />
+                  ) : isKeyLoading ? (
+                    <>
+                      <ActivityIndicator size="small" color="#FFF" style={{ marginRight: 8 }} />
+                      <Text style={styles.btnTextPremium}>Loading checkout...</Text>
+                    </>
                   ) : (
                     <>
                       <Text style={styles.btnTextPremium}>

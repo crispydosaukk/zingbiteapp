@@ -160,25 +160,7 @@ export default function CartSummary({ navigation }) {
     }
   };
 
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(20)).current;
-
-  useEffect(() => {
-    if (!loadingCart && products.length > 0) {
-      Animated.parallel([
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 500,
-          useNativeDriver: true,
-        }),
-        Animated.timing(slideAnim, {
-          toValue: 0,
-          duration: 500,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    }
-  }, [loadingCart, products.length]);
+  const fadeAnim = useRef(new Animated.Value(1)).current;
 
   return (
     <View style={styles.root}>
@@ -223,7 +205,7 @@ export default function CartSummary({ navigation }) {
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingBottom: 40 }}
             ListHeaderComponent={() => (
-              <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
+              <View>
                 <View style={styles.listHeader}>
                   <View style={styles.headerLeft}>
                     <Text style={styles.headerTitle}>Review Items</Text>
@@ -264,7 +246,7 @@ export default function CartSummary({ navigation }) {
                     <Ionicons name="chevron-forward" size={20} color="#FE724C" />
                   </View>
                 </TouchableOpacity>
-              </Animated.View>
+              </View>
             )}
             renderItem={({ item }) => {
               const qty = item.product_quantity || 0;

@@ -27,12 +27,14 @@ import { PermissionsAndroid } from "react-native";
 import AppHeader from "./AppHeader";
 import BottomBar from "./BottomBar";
 import MenuModal from "./MenuModal";
+import { OfferCardSkeleton } from "./SkeletonLoader";
 import { fetchRestaurants } from "../services/restaurantService";
 import { fetchActiveOffers } from "../services/offerService";
 import { addToCart, getCart, removeFromCart } from "../services/cartService";
 
 const { width } = Dimensions.get("window");
 const scale = width / 400;
+const GPS_CACHE_KEY = "offers_gps_cache";
 
 export default function OffersScreen({ navigation }) {
   const insets = useSafeAreaInsets();
@@ -106,23 +108,48 @@ export default function OffersScreen({ navigation }) {
   const loadData = async () => {
     try {
       setLoading(true);
-      const hasPermission = await requestLocationPermission();
-      let lat = null, lng = null;
 
+      // ✅ Use cached GPS coordinates for instant first render
+      let lat = null, lng = null;
+      try {
+        const cached = await AsyncStorage.getItem(GPS_CACHE_KEY);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          lat = parsed.lat;
+          lng = parsed.lng;
+          // Immediately fetch with cached coords so screen loads fast
+          const cachedRestos = await fetchRestaurants(lat, lng);
+          setRestaurants(cachedRestos);
+          const cachedOfferResults = await Promise.all(
+            cachedRestos.slice(0, 5).map(async (r) => {
+              try {
+                const offers = await fetchActiveOffers(r.userId);
+                return offers.map(o => ({ ...o, restaurant: r }));
+              } catch { return []; }
+            })
+          );
+          setAllOffers(cachedOfferResults.flat());
+          setLoading(false); // Show content immediately from cache
+        }
+      } catch (e) {
+        console.log("GPS cache read error", e);
+      }
+
+      // Then refresh with fresh GPS in background
+      const hasPermission = await requestLocationPermission();
       if (hasPermission) {
         const pos = await new Promise((resolve) => {
           Geolocation.getCurrentPosition(
             (p) => resolve(p.coords),
-            (e) => {
-              console.log("Location error", e);
-              resolve(null);
-            },
-            { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+            (e) => { console.log("Location error", e); resolve(null); },
+            { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }
           );
         });
         if (pos) {
           lat = pos.latitude;
           lng = pos.longitude;
+          // Persist for next open
+          await AsyncStorage.setItem(GPS_CACHE_KEY, JSON.stringify({ lat, lng }));
         }
       }
 
@@ -140,8 +167,7 @@ export default function OffersScreen({ navigation }) {
       });
 
       const results = await Promise.all(offerPromises);
-      const flattenedOffers = results.flat();
-      setAllOffers(flattenedOffers);
+      setAllOffers(results.flat());
     } catch (err) {
       console.log("loadData global error:", err);
     } finally {
@@ -393,10 +419,10 @@ export default function OffersScreen({ navigation }) {
             <View style={styles.headerLine} />
           </View>
 
-          {loading ? (
-            <View style={styles.center}>
-              <ActivityIndicator size="large" color="#FE724C" />
-              <Text style={styles.loadingText}>Finding best deals...</Text>
+          {loading && allOffers.length === 0 ? (
+            // ✅ Skeleton cards — header always visible, no blocking spinner
+            <View style={{ paddingTop: 10, paddingHorizontal: 16 }}>
+              {[1, 2, 3].map(i => <OfferCardSkeleton key={i} />)}
             </View>
           ) : (
             <>
@@ -511,7 +537,7 @@ const styles = StyleSheet.create({
   headerBox: {
     backgroundColor: '#FFFFFF',
   },
-  center: { flex: 1, justifyContent: "center", alignItems: "center" },
+  center: { justifyContent: "center", alignItems: "center", paddingVertical: 60 },
   headerTitleRow: {
     paddingHorizontal: 16,
     paddingVertical: 18,

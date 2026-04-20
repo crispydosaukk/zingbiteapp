@@ -26,6 +26,7 @@ import { addToCart, getCart, removeFromCart } from "../../services/cartService";
 import AppHeader from "../AppHeader";
 import BottomBar from "../BottomBar";
 import MenuModal from "../MenuModal";
+import { ProductCardSkeleton } from "../SkeletonLoader";
 import LinearGradient from "react-native-linear-gradient";
 import { fetchAppSettings } from "../../services/settingsService";
 
@@ -765,7 +766,9 @@ export default function Products({ route, navigation }) {
         </View>
 
         {loading ? (
-          <ActivityIndicator size="large" style={{ marginTop: 24 }} />
+          <View style={{ paddingTop: 10 }}>
+            {[1, 2, 3, 4, 5].map(i => <ProductCardSkeleton key={i} />)}
+          </View>
         ) : (
           <View style={{ flex: 1 }}>
             <View style={styles.listHeaderComp}>

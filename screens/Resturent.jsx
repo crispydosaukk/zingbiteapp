@@ -666,70 +666,72 @@ export default function Resturent({ navigation }) {
         </View>
 
         {/* Premium Offer Slider - Integrated for Unified Look */}
-        <View style={styles.sliderContainer}>
-          <Animated.ScrollView
-            horizontal
-            pagingEnabled={Platform.OS === 'ios'}
-            snapToInterval={Platform.OS === 'android' ? width : undefined}
-            snapToAlignment="start"
-            decelerationRate="fast"
-            disableIntervalMomentum={true}
-            showsHorizontalScrollIndicator={false}
-            ref={scrollRef}
-            onScroll={Animated.event(
-              [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-              { useNativeDriver: false }
-            )}
-            onMomentumScrollEnd={(e) => setActiveIndex(Math.round(e.nativeEvent.contentOffset.x / width))}
-            scrollEventThrottle={16}
-          >
-            {offers.map((offer, i) => (
-              <View key={i} style={styles.sliderPage}>
-                <View style={[styles.offerCardWrapper, { backgroundColor: 'transparent' }]}>
-                  <View style={styles.offerCardContent}>
-                    <View style={styles.offerTextCol}>
-                      <Text style={[styles.offerBadge, { backgroundColor: offer.badgeColor, color: offer.textColor, fontWeight: '900', opacity: 1 }]}>
-                        {offer.title}
-                      </Text>
-                      <Text
-                        style={[styles.offerMainTitle, { color: offer.textColor, fontWeight: '900' }]}
-                        numberOfLines={1}
-                        adjustsFontSizeToFit={true}
-                      >
-                        {offer.subtitle}
-                      </Text>
-                      <Text style={[styles.offerDesc, { color: offer.textColor, opacity: 1, fontFamily: 'PoppinsBold', fontWeight: '900' }]}>
-                        {offer.desc}
-                      </Text>
+        {offers.length > 0 && (
+          <View style={styles.sliderContainer}>
+            <Animated.ScrollView
+              horizontal
+              pagingEnabled={Platform.OS === 'ios'}
+              snapToInterval={Platform.OS === 'android' ? width : undefined}
+              snapToAlignment="start"
+              decelerationRate="fast"
+              disableIntervalMomentum={true}
+              showsHorizontalScrollIndicator={false}
+              ref={scrollRef}
+              onScroll={Animated.event(
+                [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+                { useNativeDriver: false }
+              )}
+              onMomentumScrollEnd={(e) => setActiveIndex(Math.round(e.nativeEvent.contentOffset.x / width))}
+              scrollEventThrottle={16}
+            >
+              {offers.map((offer, i) => (
+                <View key={i} style={styles.sliderPage}>
+                  <View style={[styles.offerCardWrapper, { backgroundColor: 'transparent' }]}>
+                    <View style={styles.offerCardContent}>
+                      <View style={styles.offerTextCol}>
+                        <Text style={[styles.offerBadge, { backgroundColor: offer.badgeColor, color: offer.textColor, fontWeight: '900', opacity: 1 }]}>
+                          {offer.title}
+                        </Text>
+                        <Text
+                          style={[styles.offerMainTitle, { color: offer.textColor, fontWeight: '900' }]}
+                          numberOfLines={1}
+                          adjustsFontSizeToFit={true}
+                        >
+                          {offer.subtitle}
+                        </Text>
+                        <Text style={[styles.offerDesc, { color: offer.textColor, opacity: 1, fontFamily: 'PoppinsBold', fontWeight: '900' }]}>
+                          {offer.desc}
+                        </Text>
+                      </View>
+                      <View style={[styles.offerIconCircle, { borderColor: offer.textColor, backgroundColor: 'rgba(255,255,255,0.15)' }]}>
+                        <Ionicons name={offer.icon} size={42 * scale} color={offer.textColor} />
+                      </View>
                     </View>
-                    <View style={[styles.offerIconCircle, { borderColor: offer.textColor, backgroundColor: 'rgba(255,255,255,0.15)' }]}>
-                      <Ionicons name={offer.icon} size={42 * scale} color={offer.textColor} />
-                    </View>
+                    {/* Decorative Elements */}
+                    <View style={[styles.decorCircle1, { backgroundColor: 'rgba(255,255,255,0.15)' }]} />
+                    <View style={[styles.decorCircle2, { backgroundColor: 'rgba(255,255,255,0.1)' }]} />
                   </View>
-                  {/* Decorative Elements */}
-                  <View style={[styles.decorCircle1, { backgroundColor: 'rgba(255,255,255,0.15)' }]} />
-                  <View style={[styles.decorCircle2, { backgroundColor: 'rgba(255,255,255,0.1)' }]} />
                 </View>
-              </View>
-            ))}
-          </Animated.ScrollView>
+              ))}
+            </Animated.ScrollView>
 
-          {/* dots */}
-          <View style={styles.dotContainer}>
-            {offers.map((_, i) => (
-              <View
-                key={i}
-                style={[
-                  styles.dot,
-                  {
-                    width: activeIndex === i ? 18 : 6,
-                    backgroundColor: activeIndex === i ? "#FFF" : "rgba(255,255,255,0.4)",
-                  },
-                ]}
-              />
-            ))}
+            {/* dots */}
+            <View style={styles.dotContainer}>
+              {offers.map((_, i) => (
+                <View
+                  key={i}
+                  style={[
+                    styles.dot,
+                    {
+                      width: activeIndex === i ? 18 : 6,
+                      backgroundColor: activeIndex === i ? "#FFF" : "rgba(255,255,255,0.4)",
+                    },
+                  ]}
+                />
+              ))}
+            </View>
           </View>
-        </View>
+        )}
       </View>
 
       <ScrollView

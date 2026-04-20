@@ -37,6 +37,7 @@ import { fetchActiveOffers } from "../../services/offerService";
 // import { IMAGE_BASE_URL } from "../../config/baseURL";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { submitTableReservation, fetchTableReservationSettings } from "../../services/reservationService";
+import { CategoryCardSkeleton } from "../SkeletonLoader";
 
 
 const { width } = Dimensions.get("window");
@@ -84,6 +85,7 @@ export default function Categories({ route, navigation }) {
   const [reservationSubmitting, setReservationSubmitting] = useState(false);
   const [reservationSuccessVisible, setReservationSuccessVisible] = useState(false);
   const [resSettings, setResSettings] = useState(null);
+  const [offersLoading, setOffersLoading] = useState(true);
   const reservationScaleAnim = useRef(new Animated.Value(0)).current;
 
   const offersAnim = useRef(new Animated.Value(0)).current;
@@ -113,13 +115,19 @@ export default function Categories({ route, navigation }) {
 
   useEffect(() => {
     const loadSettings = async () => {
-      const data = await fetchAppSettings();
-      if (data) setSettings(data);
-      const offersData = await fetchActiveOffers(userId);
-      setPromoOffers(offersData || []);
+      setOffersLoading(true);
+      setPromoOffers([]); // Clear stale offers
+      try {
+        const data = await fetchAppSettings();
+        if (data) setSettings(data);
+        const offersData = await fetchActiveOffers(userId);
+        setPromoOffers(offersData || []);
+      } finally {
+        setOffersLoading(false);
+      }
     };
     loadSettings();
-  }, []);
+  }, [userId]);
   const animatedTexts = settings ? [
     `EARN £${Number(settings.earn_per_order_amount).toFixed(2)} ON EVERY ORDER`,
     `REFER & EARN £${Number(settings.referral_bonus_amount).toFixed(2)}`,
@@ -234,6 +242,7 @@ export default function Categories({ route, navigation }) {
     let mounted = true;
     (async () => {
       setLoading(true);
+      setCategories([]); // Clear stale categories
       const d = await fetchCategories(userId);
       if (mounted) setCategories(Array.isArray(d) ? d : []);
       setLoading(false);
@@ -719,7 +728,7 @@ export default function Categories({ route, navigation }) {
                 <View style={offerStyles.headerRight}>
                   <Text style={offerStyles.offerCount}>{promoOffers.length} available</Text>
                   <Ionicons
-                    name={isOffersOpen ? "chevron-down" : "chevron-up"}
+                    name={isOffersOpen ? "chevron-up" : "chevron-down"}
                     size={22 * scale}
                     color="#FE724C"
                     style={{ marginLeft: 8 }}
