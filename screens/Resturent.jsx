@@ -41,8 +41,53 @@ const { width } = Dimensions.get("window");
 const scale = width / 400;
 const FONT_FAMILY = Platform.select({ ios: "System", android: "System" });
 
-function RestaurantCard({ name, address, photo, onPress, instore, kerbside, distance, index, foodType, isHalal }) {
+function RestaurantCard({ name, address, photo, onPress, instore, kerbside, distance, index, foodType, isHalal, timings, onClosedPress }) {
   const isEven = index % 2 === 0;
+
+  // Status Calculation
+  const getStatus = () => {
+    if (!timings || timings.length === 0) return { isOpen: true, message: "Open Now", color: "#16a34a" };
+    
+    const now = new Date();
+    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    let dayIndex = now.getDay();
+    const currentTimeStr = now.toLocaleTimeString('en-GB', { hour12: false });
+    
+    let todayTiming = timings.find(t => t.day === days[dayIndex]);
+    
+    if (todayTiming && todayTiming.is_active) {
+      if (currentTimeStr < todayTiming.opening_time) {
+        return { 
+          isOpen: false, 
+          message: "Closed", 
+          nextOpenMessage: `This restaurant is currently closed.\nIt will open Today at ${todayTiming.opening_time.substring(0, 5)}.`,
+          color: "#64748b" 
+        };
+      }
+      if (currentTimeStr <= todayTiming.closing_time) {
+        return { isOpen: true, message: `Open until ${todayTiming.closing_time.substring(0, 5)}`, color: "#16a34a" };
+      }
+    }
+
+    // If closed today or closed for the day, find next open day
+    for (let i = 1; i <= 7; i++) {
+      let nextDayIndex = (dayIndex + i) % 7;
+      let nextTiming = timings.find(t => t.day === days[nextDayIndex]);
+      if (nextTiming && nextTiming.is_active) {
+        let dayName = i === 1 ? "Tomorrow" : days[nextDayIndex];
+        return { 
+          isOpen: false, 
+          message: "Closed", 
+          nextOpenMessage: `This restaurant is currently closed.\nIt will open on ${dayName} at ${nextTiming.opening_time.substring(0, 5)}.`,
+          color: "#64748b" 
+        };
+      }
+    }
+
+    return { isOpen: false, message: "Closed", nextOpenMessage: "This restaurant is currently closed.", color: "#64748b" }; // Grey color for closed
+  };
+
+  const status = getStatus();
 
   // Extremely robust dynamic parsing (0=Veg, 1=NonVeg, 2=Jain)
   const rawFT = foodType !== null && foodType !== undefined ? String(foodType) : "";
@@ -56,15 +101,29 @@ function RestaurantCard({ name, address, photo, onPress, instore, kerbside, dist
   return (
     <TouchableOpacity
       style={cardStyles.card}
-      onPress={onPress}
+      onPress={() => {
+        if (!status.isOpen && onClosedPress) {
+          onClosedPress("Store Currently Unavailable", status.nextOpenMessage);
+        } else {
+          onPress();
+        }
+      }}
       activeOpacity={0.9}
     >
       <View style={cardStyles.cardBody}>
         <View style={cardStyles.imageColumn}>
-          <Image
-            source={photo ? { uri: photo } : RestaurantImg}
-            style={cardStyles.image}
-          />
+          <View style={cardStyles.imageContainer}>
+            <Image
+              source={photo ? { uri: photo } : RestaurantImg}
+              style={[cardStyles.image, !status.isOpen && { opacity: 0.5, tintColor: 'gray' }]} // Grey out image
+            />
+            {/* Dark overlay if closed */}
+            {!status.isOpen && (
+              <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 18, justifyContent: 'center', alignItems: 'center' }]}>
+                <Text style={{ color: '#fff', fontFamily: 'PoppinsBold', fontSize: 14 * scale, letterSpacing: 1 }}>CLOSED</Text>
+              </View>
+            )}
+          </View>
           {distance !== null && distance !== undefined && (
             <View style={cardStyles.distanceBadgeBelow}>
               <Ionicons name="navigate" size={10 * scale} color="#FFF" />
@@ -109,9 +168,15 @@ function RestaurantCard({ name, address, photo, onPress, instore, kerbside, dist
 
           <View style={cardStyles.addressRow}>
             <Ionicons name="location" size={12 * scale} color="#94A3B8" style={{ marginTop: 2 }} />
-            <Text style={cardStyles.address}>
+            <Text style={cardStyles.address} numberOfLines={1}>
               {address}
             </Text>
+          </View>
+
+          {/* Status Indicator */}
+          <View style={[cardStyles.statusBadge, { backgroundColor: status.color + '15', borderColor: status.color + '30' }]}>
+             <View style={[cardStyles.statusDot, { backgroundColor: status.color }]} />
+             <Text style={[cardStyles.statusText, { color: status.color }]}>{status.message}</Text>
           </View>
 
           <View style={cardStyles.bottomRow}>
@@ -150,6 +215,8 @@ export default function Resturent({ navigation }) {
   const [locationSearchQuery, setLocationSearchQuery] = useState("");
   const [locationSuggestions, setLocationSuggestions] = useState([]);
   const [infoVisible, setInfoVisible] = useState(false);
+  const [closedModalVisible, setClosedModalVisible] = useState(false);
+  const [closedModalData, setClosedModalData] = useState({ title: "", message: "" });
 
   const scrollRef = useRef(null);
   const isFocused = useIsFocused();
@@ -713,6 +780,11 @@ export default function Resturent({ navigation }) {
               distance={r.distance}
               foodType={r.food_type || r.foodType || r.restaurant_food_type}
               isHalal={r.is_halal || r.isHalal || r.halal}
+              timings={r.timings}
+              onClosedPress={(title, message) => {
+                setClosedModalData({ title, message });
+                setClosedModalVisible(true);
+              }}
               onPress={() =>
                 navigation.navigate("Categories", { userId: r.userId })
               }
@@ -728,6 +800,35 @@ export default function Resturent({ navigation }) {
         navigation={navigation}
       />
       <BottomBar navigation={navigation} activeTab="Home" />
+
+      {/* CLOSED RESTAURANT MODAL */}
+      <Modal visible={closedModalVisible} animationType="fade" transparent={true} onRequestClose={() => setClosedModalVisible(false)}>
+        <View style={styles.alertOverlay}>
+          <View style={[styles.alertCard, { backgroundColor: "#FFF" }]}>
+            <View style={styles.alertContent}>
+              <View style={[styles.alertIconRing, { backgroundColor: "rgba(244, 63, 94, 0.1)" }]}>
+                <Ionicons name="storefront-outline" size={40 * scale} color="#F43F5E" />
+              </View>
+              <Text style={styles.alertTitleText}>{closedModalData.title}</Text>
+              <Text style={styles.alertMsgText}>{closedModalData.message}</Text>
+              <TouchableOpacity
+                style={styles.alertBtn}
+                onPress={() => setClosedModalVisible(false)}
+                activeOpacity={0.8}
+              >
+                <LinearGradient
+                  colors={["#FE724C", "#FF8D6A"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={styles.alertBtnGrad}
+                >
+                  <Text style={styles.alertBtnText}>Ok, Got it</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       {/* LOCATION SEARCH MODAL */}
       <Modal visible={searchLocationModal} animationType="slide" transparent={false}>
@@ -1471,6 +1572,28 @@ const cardStyles = StyleSheet.create({
     fontSize: 12 * scale,
     fontFamily: 'PoppinsBold',
     marginLeft: 4,
+  },
+  statusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    marginTop: 8,
+    borderWidth: 1,
+  },
+  statusDot: {
+    width: 6 * scale,
+    height: 6 * scale,
+    borderRadius: 3 * scale,
+    marginRight: 6,
+  },
+  statusText: {
+    fontSize: 11 * scale,
+    fontFamily: "PoppinsBold",
+    fontWeight: '800',
+    letterSpacing: 0.3,
   },
   foodBadgeRow: {
     flexDirection: 'row',

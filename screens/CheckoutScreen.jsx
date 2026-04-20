@@ -28,7 +28,7 @@ import { getCart } from "../services/cartService";
 import { createOrder } from "../services/orderService";
 import { getWalletSummary } from "../services/walletService";
 import { useStripe } from "@stripe/stripe-react-native";
-import { fetchStripeKey } from "../services/restaurantService";
+import { fetchStripeKey, fetchRestaurantTimings } from "../services/restaurantService";
 import { API_BASE_URL } from "../config/baseURL";
 
 const { width, height } = Dimensions.get("window");
@@ -50,22 +50,48 @@ export default function CheckoutScreen({ navigation }) {
   const [kerbsideReg, setKerbsideReg] = useState("");
   const [allergyNote, setAllergyNote] = useState("");
 
-  const generateTimeSlots = () => {
-    const slots = ["ASAP"];
-    const current = new Date();
-    current.setMinutes(Math.ceil(current.getMinutes() / 30) * 30);
-    current.setSeconds(0);
-    const endOfDay = new Date();
-    endOfDay.setHours(23, 30, 0, 0);
+  const [restaurantTimings, setRestaurantTimings] = useState([]);
 
-    while (current <= endOfDay) {
-      slots.push(current.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+  const generateTimeSlots = (timings) => {
+    const slots = ["ASAP"];
+    const now = new Date();
+    
+    // Get current day timing
+    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const currentDay = days[now.getDay()];
+    const todayTiming = (timings || []).find(t => t.day === currentDay);
+
+    if (!todayTiming || !todayTiming.is_active) {
+      return slots; // Only ASAP if closed or no timings
+    }
+
+    const [openH, openM] = todayTiming.opening_time.split(':').map(Number);
+    const [closeH, closeM] = todayTiming.closing_time.split(':').map(Number);
+
+    const current = new Date();
+    // Start from now + 30 mins, rounded to next 30 min slot
+    current.setMinutes(Math.ceil((current.getMinutes() + 30) / 30) * 30);
+    current.setSeconds(0);
+    current.setMilliseconds(0);
+
+    // If current time is before opening, start from opening time
+    const openingDate = new Date();
+    openingDate.setHours(openH, openM, 0, 0);
+    if (current < openingDate) {
+      current.setHours(openH, openM, 0, 0);
+    }
+
+    const closingDate = new Date();
+    closingDate.setHours(closeH, closeM, 0, 0);
+
+    while (current <= closingDate) {
+      slots.push(current.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }));
       current.setMinutes(current.getMinutes() + 30);
     }
     return slots;
   };
 
-  const [timeSlots] = useState(generateTimeSlots());
+  const [timeSlots, setTimeSlots] = useState(["ASAP"]);
   const [takeawayTime, setTakeawayTime] = useState("ASAP");
 
   const [orderPlaced, setOrderPlaced] = useState(false);
@@ -310,6 +336,15 @@ export default function CheckoutScreen({ navigation }) {
           return;
         }
 
+        // Fetch Timings
+        try {
+          const timings = await fetchRestaurantTimings(restaurantId);
+          setRestaurantTimings(timings);
+          setTimeSlots(generateTimeSlots(timings));
+        } catch (e) {
+          console.log("Failed to fetch timings:", e);
+        }
+
         const key = await fetchStripeKey(restaurantId);
         if (key && key.trim() !== "") {
           global.updateStripeKey(key);
@@ -342,6 +377,27 @@ export default function CheckoutScreen({ navigation }) {
         navigation.navigate("Login");
       }, 2000);
       return;
+    }
+
+    if (takeawayTime === "ASAP" && restaurantTimings && restaurantTimings.length > 0) {
+      const now = new Date();
+      const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+      const currentDay = days[now.getDay()];
+      const currentTimeStr = now.toLocaleTimeString('en-GB', { hour12: false });
+      
+      const todayTiming = restaurantTimings.find(t => t.day === currentDay);
+      
+      let isClosedNow = true;
+      if (todayTiming && todayTiming.is_active) {
+        if (currentTimeStr >= todayTiming.opening_time && currentTimeStr <= todayTiming.closing_time) {
+          isClosedNow = false;
+        }
+      }
+
+      if (isClosedNow) {
+        showPremiumAlert("Store Closed", "This restaurant is currently closed. Please select a valid scheduled time slot or check back later.", "error");
+        return;
+      }
     }
 
     try {

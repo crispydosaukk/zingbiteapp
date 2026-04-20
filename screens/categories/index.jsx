@@ -243,12 +243,13 @@ export default function Categories({ route, navigation }) {
     };
   }, [userId]);
 
-  // today timing
+  // timings
   useEffect(() => {
     if (!restaurant?.id) return;
     (async () => {
       const d = await fetchRestaurantTimings(restaurant.id);
       if (!d?.length) return;
+      setTimings(d);
       const today = new Date().toLocaleString("en-US", { weekday: "long" });
       const t = d.find((i) => i.day === today);
       setTodayTiming(t || null);
@@ -310,8 +311,11 @@ export default function Categories({ route, navigation }) {
     // Reload timings
     if (d?.id) {
       const t = await fetchRestaurantTimings(d.id);
-      const today = new Date().toLocaleString("en-US", { weekday: "long" });
-      setTodayTiming(t.find((i) => i.day === today) || null);
+      if (t?.length) {
+        setTimings(t);
+        const today = new Date().toLocaleString("en-US", { weekday: "long" });
+        setTodayTiming(t.find((i) => i.day === today) || null);
+      }
     }
 
     // Reload cart
@@ -525,13 +529,29 @@ export default function Categories({ route, navigation }) {
     );
   };
 
-  const timeLabel = todayTiming
-    ? todayTiming.is_active
-      ? `${formatTime(todayTiming.opening_time)} - ${formatTime(
-        todayTiming.closing_time
-      )}`
-      : "Closed Today"
-    : "Loading...";
+  const getStatus = () => {
+    if (!timings || timings.length === 0) return { isOpen: true, message: "Open Now", color: "#16a34a" };
+    
+    const now = new Date();
+    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    let dayIndex = now.getDay();
+    const currentTimeStr = now.toLocaleTimeString('en-GB', { hour12: false });
+    
+    let todayTimingInfo = timings.find(t => t.day === days[dayIndex]);
+    
+    if (todayTimingInfo && todayTimingInfo.is_active) {
+      if (currentTimeStr < todayTimingInfo.opening_time) {
+        return { isOpen: false, message: `Opens at ${todayTimingInfo.opening_time.substring(0, 5)}`, color: "#f59e0b" };
+      }
+      if (currentTimeStr <= todayTimingInfo.closing_time) {
+        return { isOpen: true, message: `Open until ${todayTimingInfo.closing_time.substring(0, 5)}`, color: "#FE724C" };
+      }
+    }
+
+    return { isOpen: false, message: "Closed", color: "#64748b" }; // Grey color for closed
+  };
+
+  const status = getStatus();
 
   const highlightAmount = (text) => {
     if (!settings) return <Text style={styles.offerText}>{text}</Text>;
@@ -611,8 +631,13 @@ export default function Categories({ route, navigation }) {
                         ? { uri: restaurant.restaurant_photo }
                         : require("../../assets/restaurant.png")
                     }
-                    style={styles.fullBoutiqueImage}
+                    style={[styles.fullBoutiqueImage, !status.isOpen && { opacity: 0.5, tintColor: 'gray' }]} // Grey out image
                   />
+                  {!status.isOpen && (
+                    <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 24, justifyContent: 'center', alignItems: 'center' }]}>
+                      <Text style={{ color: '#fff', fontFamily: 'PoppinsBold', fontSize: 18 * scale, letterSpacing: 1.5 }}>CLOSED NOW</Text>
+                    </View>
+                  )}
                 </View>
 
                 <View style={styles.textColumn}>
@@ -656,8 +681,8 @@ export default function Categories({ route, navigation }) {
                 <View style={styles.vDividerSmall} />
 
                 <View style={styles.footerRowItem}>
-                  <Ionicons name="time" size={16 * scale} color="#FE724C" />
-                  <Text style={styles.footerTextSmall}>{timeLabel}</Text>
+                  <Ionicons name="time" size={16 * scale} color={status.color} />
+                  <Text style={[styles.footerTextSmall, { color: status.isOpen ? "#1C1C1C" : status.color, fontFamily: "PoppinsSemiBold" }]}>{status.message}</Text>
                 </View>
 
                 <TouchableOpacity style={styles.detailsChevron} onPress={openTimingsModal}>
