@@ -36,6 +36,19 @@ const { width } = Dimensions.get("window");
 const scale = width / 400;
 const GPS_CACHE_KEY = "offers_gps_cache";
 
+const isRestaurantOpen = (timings) => {
+  if (!timings || timings.length === 0) return true;
+  const now = new Date();
+  const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  const dayIndex = now.getDay();
+  const currentTimeStr = now.toLocaleTimeString("en-GB", { hour12: false });
+  const todayTiming = timings.find((t) => t.day === days[dayIndex]);
+  if (todayTiming && todayTiming.is_active) {
+    return currentTimeStr >= todayTiming.opening_time && currentTimeStr <= todayTiming.closing_time;
+  }
+  return false;
+};
+
 export default function OffersScreen({ navigation }) {
   const insets = useSafeAreaInsets();
   const [loading, setLoading] = useState(true);
@@ -121,8 +134,9 @@ export default function OffersScreen({ navigation }) {
           const cachedRestos = await fetchRestaurants(lat, lng);
           setRestaurants(cachedRestos);
           const cachedOfferResults = await Promise.all(
-            cachedRestos.slice(0, 5).map(async (r) => {
+            cachedRestos.slice(0, 10).map(async (r) => {
               try {
+                if (!isRestaurantOpen(r.timings)) return [];
                 const offers = await fetchActiveOffers(r.userId);
                 return offers.map(o => ({ ...o, restaurant: r }));
               } catch { return []; }
@@ -156,8 +170,9 @@ export default function OffersScreen({ navigation }) {
       const nearbyRestos = await fetchRestaurants(lat, lng);
       setRestaurants(nearbyRestos);
 
-      const offerPromises = nearbyRestos.slice(0, 5).map(async (r) => {
+      const offerPromises = nearbyRestos.slice(0, 10).map(async (r) => {
         try {
+          if (!isRestaurantOpen(r.timings)) return [];
           const offers = await fetchActiveOffers(r.userId);
           return offers.map(o => ({ ...o, restaurant: r }));
         } catch (err) {
